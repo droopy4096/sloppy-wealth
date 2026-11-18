@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "Lease or own a vehicle for 20 years",
+  "jurisdiction": "CA",
+  "horizon": {"start": "2027-01-01", "end": "2046-12-01"},
+  "openingCash": "350000",
+  "effectiveTaxRate": "0",
+  "annualInflation": "0.025",
+  "dollarsOf": "2027-01-01",
+  "items": [
+    {"type": "vehicle", "id": "suv", "name": "SUV (bought)", "purchaseDate": "2027-01-01",
+     "price": "45000", "annualDepreciation": "0.15"},
+    {"type": "associatedExpense", "id": "suv-insurance", "name": "Insurance", "parent": "suv",
+     "amount": "1800", "per": "year", "indexing": "inflation"},
+    {"type": "associatedExpense", "id": "suv-fuel", "name": "Fuel", "parent": "suv",
+     "amount": "250", "per": "month", "indexing": "inflation"},
+    {"type": "associatedExpense", "id": "suv-maintenance", "name": "Maintenance and repairs",
+     "parent": "suv", "amount": "800", "per": "year", "indexing": "custom", "indexRate": "0.08"},
+    {"type": "expense", "id": "lease", "name": "SUV lease", "startDate": "2027-01-01",
+     "amount": "650", "per": "month", "indexing": "inflation", "enabled": false},
+    {"type": "associatedExpense", "id": "lease-insurance", "name": "Insurance", "parent": "lease",
+     "amount": "2100", "per": "year", "indexing": "inflation"},
+    {"type": "associatedExpense", "id": "lease-fuel", "name": "Fuel", "parent": "lease",
+     "amount": "230", "per": "month", "indexing": "inflation"},
+    {"type": "associatedExpense", "id": "lease-maintenance", "name": "Maintenance", "parent": "lease",
+     "amount": "300", "per": "year", "indexing": "inflation"}
+  ]
+}

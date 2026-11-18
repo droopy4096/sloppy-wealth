@@ -6,7 +6,7 @@ calculator for a household's big financial questions.
 
 Over the years I kept asking questions like these:
 
-- Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?
+- [Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?](docs/user/vehicle-lease-or-own.md)
 - When can I sell the house without losing the money I put into buying and maintaining it?
 - Would it be cheaper to rent?
 - When can I retire with an income of $NNN in today's dollars?
@@ -61,6 +61,7 @@ backlog).
 ## Repository map
 | Path | What |
 |---|---|
+| `docs/user/` | User tutorials: how to answer the questions above with the app, with screenshots and example scenario files |
 | `docs/adr/` | Architecture Decision Records 0001–0074, many with dated amendments. The source of truth for decisions. |
 | `docs/open-questions.md` | Decisions still open, deferred or on watch |
 | `docs/glossary.md` | Domain terms |
