@@ -485,5 +485,25 @@ class VehicleCostInTheApp(unittest.TestCase):
         self.assertEqual(r["view"]["rows"][0]["costPerMonth"], "200.00")
 
 
+class ExpenseCardCosts(unittest.TestCase):
+    def test_an_expense_card_adds_associated_costs(self):
+        """A one-off cost at an expense's start, end or a date (e.g. a lease's fees) can be
+        added on the expense's card, as on an income's."""
+        s = {"schemaVersion": 1, "name": "lease", "jurisdiction": "CA",
+             "horizon": {"start": "2027-01-01", "end": "2030-12-01"}, "openingCash": "50000",
+             "items": [{"type": "expense", "id": "lease", "name": "Lease",
+                        "startDate": "2027-01-01", "endDate": "2030-12-01", "amount": "650",
+                        "per": "month", "indexing": "none"}]}
+        client = client_with(s)
+        card = section(client.get("/").data.decode(), 'id="item-lease"', "</details>")
+        self.assertIn('data-kind="associatedCost"', card)
+        client.post("/items/add", data={"type": "associatedCost", "parent": "lease",
+                                         "name": "Disposition fee", "at": "end",
+                                         "amount": "400"})
+        self.assertEqual(client.scenario["items"][-1]["parent"], "lease")
+        ledger = engine.run_detailed(client.scenario)["ledger"]
+        self.assertIn(("2030-12", "COST"), {(x["month"], x["kind"]) for x in ledger})
+
+
 if __name__ == "__main__":
     unittest.main()
