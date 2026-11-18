@@ -1,0 +1,12 @@
+<h1 id="adr-0021-cash-flows-are-monthly-annual-amounts-are-spread-evenly">ADR-0021: Cash flows are monthly; annual amounts are spread evenly</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>Some costs are naturally annual (maintenance, insurance, property tax). We had to choose between adding a frequency to cash flows and spreading annual amounts over the months.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>Every cash flow is <strong>monthly</strong>. There is no frequency attribute.</li><li>Annual amounts and annual percentage rates are spread evenly: monthly amount = annual / 12. Authoring tooling may accept annual input and convert it.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>A frequency field (MONTHLY / ANNUAL plus a month of occurrence): more realistic cash timing, but more model and more stepping logic.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Spreading is gentle on cash timing, so shortfalls caused by a lumpy annual bill are not visible. Real lump-sum items can still be entered as one-off events.</li><li>Frequency can be added later as a new attribute with default MONTHLY, without breaking existing scenarios.</li></ul>
+<h2 id="amendment-2026-11-07-amounts-may-be-stated-per-month-quarter-or-year">Amendment (2026-11-07): amounts may be stated per month, quarter or year</h2>
+<ul><li>A cash flow states its amount <strong>per month</strong> (default), <strong>per quarter</strong> or <strong>per year</strong> (<code>per</code>). The stated figure is kept in the JSON, so files show contract figures such as $120,000 a year and stay easy to edit (ADR-0008).</li><li>The engine still works monthly: a quarterly amount is applied as 1/3 and a yearly one as 1/12 <strong>every month</strong>, each monthly movement rounded (ADR-0009). Indexing applies to the stated figure.</li><li>Quarterly and yearly amounts are <strong>spread evenly</strong>, not paid in one go. A "paid in one go" option (e.g. a bonus every March) can be added later if cash timing within a quarter or year matters.</li><li>No other frequencies (weekly, bi-weekly) (ADR-0007).</li><li>This replaces "there is no frequency attribute" above; conversion is no longer left to authoring tools.</li></ul>

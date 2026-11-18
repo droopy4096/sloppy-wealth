@@ -1,0 +1,10 @@
+<h1 id="adr-0049-withdrawal-as-a-percentage-of-the-balance-reset-yearly">ADR-0049: Withdrawal as a percentage of the balance, reset yearly</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-07</li><li><strong>Relates to:</strong> ADR-0039 (even drawdown), ADR-0035 (withdrawal tax), ADR-0013 (yearly step on the anniversary)</li></ul>
+<h2 id="context">Context</h2>
+<p>Funds (RRSP, TFSA, investments) could be drawn by a fixed amount or by an even drawdown over the remaining horizon (ADR-0039). Planning also needs "withdraw X% a year", where the income follows the fund's performance.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>A new cash flow, <strong><code>PercentWithdrawal</code></strong>: <code>from : Account</code>, <code>start : Period</code>, <code>end : Period [0..1]</code>, <code>annualRate : RateGenerator</code>.</li><li>On the start period and on <strong>each anniversary</strong> of it, the yearly amount is set to <strong>balance at the opening of that period × annual rate</strong>; it is paid as <strong>1/12 each month</strong> (ADR-0021) until the next anniversary.</li><li>Amounts are <strong>gross</strong>; tax applies as for any withdrawal (ADR-0035). A month's payment is capped at the balance (ADR-0015).</li><li>The yearly reset on the anniversary is the same cadence as indexing (ADR-0013 amendment), so the model has one rhythm for yearly changes. RRIF minimum withdrawals follow the same pattern (rate × balance at the start of the year).</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Recalculated every month: income changes every month.</li><li>The classic "4% rule" (a fixed amount from the starting balance, indexed to inflation): can be added later as an option; not needed now.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>A percentage withdrawal never fully empties the fund; an even drawdown (ADR-0039) does.</li><li>Retirement income tallies (ADR-0037) include these withdrawals by tag, like any other withdrawal.</li></ul>

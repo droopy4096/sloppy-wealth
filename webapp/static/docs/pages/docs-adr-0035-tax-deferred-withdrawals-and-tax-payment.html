@@ -1,0 +1,8 @@
+<h1 id="adr-0035-taxing-tax-deferred-withdrawals-and-which-account-pays-tax">ADR-0035: Taxing tax-deferred withdrawals, and which account pays tax</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-05</li><li><strong>Amends:</strong> ADR-0017 (single flat rate), ADR-0018 step 7</li></ul>
+<h2 id="context">Context</h2>
+<p>RRSP withdrawals are taxed, often in a lower bracket than working income. The tax step deducted tax without naming the account that pays it.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>A tax-deferred account may specify its own <strong><code>withdrawalTaxRate : RateGenerator [0..1]</code></strong>. If it is not set, the scenario's effective tax rate applies (ADR-0017).</li><li>Withdrawal cash flows are <strong>gross</strong>: the stated amount leaves the account, and tax on it is charged separately in the tax step. The engine does not gross amounts up; if a net amount is wanted, the user enters the grossed-up figure.</li><li>The scenario has <strong><code>taxPaidFrom : Account</code></strong>. Every tax computed in the tax step (and the capital gains tax on a sale) is debited from it, under the capping and shortfall rule (ADR-0015).</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>ADR-0017's "one flat rate" becomes "one flat rate by default, overridable for each tax-deferred account".</li><li>A shortfall on <code>taxPaidFrom</code> signals that the plan cannot afford its taxes.</li></ul>

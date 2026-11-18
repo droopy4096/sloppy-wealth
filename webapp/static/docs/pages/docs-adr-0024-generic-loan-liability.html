@@ -1,0 +1,8 @@
+<h1 id="adr-0024-a-generic-loan-liability-with-mortgage-as-a-specialisation">ADR-0024: A generic Loan liability, with Mortgage as a specialisation</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>Vehicle purchases may be financed. Only <code>Mortgage</code> existed as a liability.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>Hierarchy: <code>Liability</code> → <code>Loan</code> → <code>Mortgage</code>.</li><li><code>Loan</code>: amortising, an interest rate generator, amortisation in months, optional <code>securedBy</code> asset, prepayment options, early closure penalty rule. Default compounding MONTHLY.</li><li><code>Mortgage</code>: a loan secured by real estate, with a <code>TermScheduleRate</code> and SEMI_ANNUAL compounding by default (ADR-0019).</li><li>Settlement on sale (ADR-0018 step 4) applies to <strong>every loan secured by the sold asset</strong>, not only mortgages.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>A car loan is a <code>Loan</code> with securedBy = the vehicle. Selling the vehicle settles the loan.</li></ul>

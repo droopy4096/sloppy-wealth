@@ -1,0 +1,128 @@
+{# Building blocks shared by both builder views (ADR-0070 amendment): change an item's
+   display here and both views follow. Import "with context". #}
+{% macro details(item) -%}
+{% for field in fields[item.type] if item.id ~ ":" ~ field in set_by or field in ("endDate", "on", "covers") or (item.type, field) in blank_shown or (item[field] is defined and item[field] is not none and item[field] != "") %}{% set by = set_by.get(item.id ~ ":" ~ field) %}{{ field }}={% if by and field == "endDate" and item.endDate %}{{ item.endDate }} or &#9889; {{ by }} if earlier{% elif by %}&#9889; {{ by }}{% elif field == "endDate" and not item.endDate %}never{% elif not item[field] and (item.type, field) in blank_shown %}{{ blank_shown[(item.type, field)] }}{% elif field == "keepPayment" %}{{ "yes" if item.keepPayment else "no" }}{% elif field == "covers" %}{{ "whole balance" if item.payOff else "amount" }}{% elif field == "amountIn" %}{{ "today's $" if item.amountIn == "base" else "start $" }}{% elif field == "on" %}{{ "its end" if item.on == "end" else "its date" }}{% elif item[field] is sameas true %}yes{% elif item[field] is sameas false %}no{% elif not item[field] %}-{% elif field in percent_fields %}{{ item[field]|percent }}{% elif field == "mortgage" %}{{ names.mortgage.get(item[field], item[field]) }}{% elif field == "account" %}{{ names.account.get(item[field], item[field]) }}{% elif field in person_fields %}{{ names.person.get(item[field], item[field]) }}{% elif field == "flow" %}{{ names.flow.get(item[field], item[field]) }}{% elif field in ("event", "target") %}{{ names.dated.get(item[field], item[field]) }}{% elif field == "parent" %}{{ names.parent.get(item[field], item[field]) }}{% elif field == "action" %}{{ {"start": "start", "end": "end (month before)", "startAndEnd": "only that month"}.get(item[field], item[field]) }}{% elif field == "property" %}{{ names.asset.get(item[field], item[field]) }}{% else %}{{ item[field] }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+{%- endmacro %}
+
+{% macro add_form(kind, fixed) -%}
+{% set kind_fields = fields[kind] %}
+<form method="post" action="{{ url_for('web.add_item') }}" class="add-form">
+  <fieldset>
+    <legend>{{ legends.get(kind, kind|capitalize) }}</legend>
+    <input type="hidden" name="type" value="{{ kind }}">
+    <label>name <input name="name" size="14"></label>
+    {% for name, value in fixed.items() %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+    {% for field in kind_fields if field not in fixed and (field not in person_fields or names.person) %}
+      {% set hint = hints.get((kind, field)) or hints.get(field) %}
+      <label>{{ field }}{% if hint %} ({{ hint }}){% endif %}{% if field in percent_fields %} (%){% endif %}
+        {% if field in selects %}
+        <select name="{{ field }}">{% for value, label in selects[field] %}<option value="{{ value }}"{% if defaults.get((kind, field)) == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        {% elif field == "property" %}
+        <select name="property">{% for pid, pname in (names.asset if kind in ("sale", "marketAdjustment") else names.property).items() %}<option value="{{ pid }}">{{ pname }}</option>{% endfor %}{% if kind == "mortgage" %}<option value="">none</option>{% endif %}</select>
+        {% elif field in person_fields %}
+        <select name="{{ field }}"><option value="">{{ "the owner" if field == "contributor" else "the first person" }}</option>{% for xid, xname in names.person.items() %}<option value="{{ xid }}">{{ xname }}</option>{% endfor %}</select>
+        {% elif field == "parent" %}
+        <select name="parent">{% for xid, xname in names[needs.get(kind, "parent")].items() %}<option value="{{ xid }}">{{ xname }}</option>{% endfor %}</select>
+        {% elif field in ("mortgage", "account", "flow", "event", "target") %}
+        <select name="{{ field }}">{% for xid, xname in names[field].items() %}<option value="{{ xid }}">{{ xname }}</option>{% endfor %}</select>
+        {% else %}
+        <input name="{{ field }}" size="10"{% if field.endswith("Date") %} placeholder="YYYY-MM-DD"{% elif field in percent_fields %} placeholder="e.g. 3.79"{% endif %}>
+        {% endif %}
+      </label>
+    {% endfor %}
+    <button type="submit">Add {{ kind }}</button>
+  </fieldset>
+</form>
+{%- endmacro %}
+
+{% macro adders(kinds, ctx, label="+ Add") -%}
+{% set shown = addable(kinds, ctx) %}
+{% if shown %}
+<p class="adders"><span class="muted">{{ label }}</span>
+  {% for kind in shown %}<button type="button" class="add-kind" data-kind="{{ kind }}" data-fixed="{{ fixed_for(kind, ctx)|tojson|forceescape }}" title="{{ legends.get(kind, kind) }}">{{ kind }}</button>{% endfor %}
+</p>
+{% endif %}
+{%- endmacro %}
+
+{% macro figure(e, total=none) -%}
+{% set value = total if total is not none else e.monthly %}
+<span class="estimate" title="{{ estimate_tip }}{% if e.tax %} After tax at {{ e.tax|percent }}.{% endif %}{% if e.later and value is none %} Starts {{ e.later.at }}: its first month's amount{% if e.later.tax %} after tax at {{ e.later.tax|percent }}{% endif %}, in {{ layout.base }} dollars (an amount indexed with inflation shows as entered); not in the totals.{% endif %}">
+{%- if value is not none %}{{ "+" if value > zero else "" }}{{ value|money }}/mo
+{%- elif e.oneOff is not none %}one-off {{ "+" if e.oneOff > zero else "" }}{{ e.oneOff|money }}{% if e.at %} ({{ e.at }}){% elif e.note %} ({{ e.note }}){% endif %}
+{%- elif e.later %}from {{ e.later.at }}: {{ "+" if e.later.monthly > zero else "" }}{{ e.later.monthly|money }}/mo{% if e.later.gross is not none %} ({{ e.later.gross|money }} before tax){% endif %}
+{%- elif e.note %}{{ e.note }}{% if e.at %} ({{ e.at }}){% endif %}
+{%- endif %}</span>
+{%- endmacro %}
+
+{% macro switch(item) -%}
+<form class="keep-scroll inline switch" method="post" action="{{ url_for('web.toggle_item', item_id=item.id) }}"><input type="checkbox" class="check" aria-label="{{ item.name }} on" title="{{ 'switched off: tick to switch it on' if item.enabled is sameas false else 'on: untick to switch it off' }}; what is linked to it follows" onchange="this.form.requestSubmit()"{% if item.enabled is not sameas false %} checked{% endif %}></form>
+{%- endmacro %}
+
+{# Icons (ADR-0070 amendment): pencil = edit (green), trash = delete (red), plus = add a
+   linked item (blue). Inline SVG so they look the same everywhere. #}
+{% macro icon(name) -%}
+{%- if name == "edit" -%}<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+{%- elif name == "delete" -%}<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+{%- elif name == "chart" -%}<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M3 3h2v16h16v2H3V3zm4 12 4-5 3 3 5-7 1.6 1.2-6.4 9-3-3-2.6 3.3L7 15z"/></svg>
+{%- else -%}<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro delete(item) -%}
+<form class="keep-scroll inline" method="post" action="{{ url_for('web.delete_item', item_id=item.id) }}" data-confirm="Delete {{ item.name }} and everything linked to it?"><button type="submit" class="icon delete" title="delete {{ item.name }} and everything linked to it" aria-label="delete {{ item.name }}">{{ icon("delete") }}</button></form>
+{%- endmacro %}
+
+{% macro edit(item) -%}
+<button type="button" class="icon edit" data-edit="{{ item.id }}" data-kind="{{ item.type }}" data-values="{{ form_values(item)|tojson|forceescape }}" title="edit {{ item.name }}" aria-label="edit {{ item.name }}">{{ icon("edit") }}</button>
+{%- endmacro %}
+
+{% macro chart(item) -%}
+{%- if item.type == "property" -%}<a class="icon chart" href="{{ url_for('web.run_break_even', property=item.id) }}" title="break-even and rent equivalent of {{ item.name }} (ADR-0073)" aria-label="break-even of {{ item.name }}">{{ icon("chart") }}</a>
+{%- elif item.type == "vehicle" -%}<a class="icon chart" href="{{ url_for('web.run_vehicle_cost', vehicle=item.id) }}" title="cost of ownership per month of {{ item.name }} (ADR-0074)" aria-label="cost of ownership of {{ item.name }}">{{ icon("chart") }}</a>{%- endif -%}
+{%- endmacro %}
+
+{% macro add_icon(name) -%}
+<button type="button" class="icon add" data-open-add title="add to {{ name }}" aria-label="add to {{ name }}">{{ icon("add") }}</button>
+{%- endmacro %}
+
+{% macro actions(item) -%}
+<span class="actions">{{ chart(item) }}{{ edit(item) }}{{ delete(item) }}</span>
+{%- endmacro %}
+
+{% macro off_note(iid) -%}
+{% if iid in off %} <em>(off{% if off[iid] %} via {{ names.any.get(off[iid], off[iid]) }}{% endif %})</em>{% endif %}
+{%- endmacro %}
+
+{% macro own_figure(iid) -%}
+{{ figure(layout.estimates.get(iid, {"monthly": none, "oneOff": none, "note": none, "tax": none})) }}
+{%- endmacro %}
+
+{% macro settings_form() -%}
+<form id="settings" method="post" action="{{ url_for('web.settings') }}">
+  <fieldset>
+    <legend>Scenario</legend>
+    <label>Name <input name="name" value="{{ scenario.name }}"></label>
+    <label title="tax rules, account types and limits (ADR-0071); it can change only while no item needs the current one">Jurisdiction <select name="jurisdiction">{% for j in jurisdictions %}<option value="{{ j.code }}"{% if j.code == jurisdiction.code %} selected{% endif %}>{{ j.name }}</option>{% endfor %}</select></label>
+    <label>Horizon start <input name="start" value="{{ scenario.horizon.start }}" placeholder="YYYY-MM-DD" size="10"></label>
+    <label>Horizon end <input name="end" value="{{ scenario.horizon.end }}" placeholder="YYYY-MM-DD" size="10"></label>
+    <label>Opening cash <input name="openingCash" value="{{ scenario.openingCash }}" size="12"></label>
+    <label>Income <select name="incomeMode">
+      <option value="modelled"{% if scenario.incomeMode != "expensesCovered" %} selected{% endif %}>modelled (income items pay the expenses)</option>
+      <option value="expensesCovered"{% if scenario.incomeMode == "expensesCovered" %} selected{% endif %}>not modelled (expenses covered, nothing left over)</option>
+    </select></label>
+    <label>Income tax (%) <input name="effectiveTaxRate" value="{{ (scenario.effectiveTaxRate or "0")|percent|replace("%", "") }}" placeholder="e.g. 25" size="5"></label>
+    <label>Retirement tax (%) <input name="retirementTaxRate" value="{{ scenario.retirementTaxRate|percent|replace("%", "") if scenario.retirementTaxRate else "" }}" placeholder="blank = same" size="5"></label>
+    <label>Show real values in dollars of <input name="dollarsOf" value="{{ scenario.dollarsOf or "" }}" placeholder="blank = horizon start" size="14"></label>
+    <label>Inflation (%) <input name="annualInflation" value="{{ (scenario.annualInflation or "0")|percent|replace("%", "") }}" placeholder="e.g. 2" size="5"></label>
+    <button type="submit">Save settings</button>
+  </fieldset>
+</form>
+{%- endmacro %}
+
+{% macro form_templates() -%}
+{# One form per item type, copied into place by web.js when a "+ Add" button is used
+   (with the card's link or the section's owner filled in). #}
+{% for kind in fields %}
+<template id="form-{{ kind }}">{{ add_form(kind, {}) }}</template>
+{% endfor %}
+{%- endmacro %}

@@ -1,0 +1,10 @@
+<h1 id="adr-0011-accounts-assets-and-liabilities-share-a-common-holding-base">ADR-0011: Accounts, assets and liabilities share a common Holding base</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>Accounts (TFSA, RRSP, cash), assets (real estate, vehicles) and liabilities (mortgage) all carry a value that changes each period through rates and movements. Net worth, comparisons and goals all aggregate across them.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>A common base concept, <strong>Holding</strong>, has specialised subtypes:<ul><li><strong>Account</strong>: holds money, has a tax treatment, and takes contributions, withdrawals and returns.</li><li><strong>Asset</strong>: a non-cash value with appreciation or depreciation, plus fixed and variable costs.</li><li><strong>Liability</strong>: a negative value, with interest, a payment schedule, prepayments and penalties.</li></ul></li><li>Net worth is the sum over all holdings.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Separate, unrelated types: every aggregation and every rate-application step would have to be duplicated for each type.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>The monthly stepping steps and goal observation can work on holdings in general and specialise only where needed.</li><li>A goal such as "retirement funds ≥ $1M" needs a way to select holdings (by subtype, tax treatment or tag). Selectors are to be designed in the domain model.</li></ul>

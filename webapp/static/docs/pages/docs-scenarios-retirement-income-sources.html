@@ -1,0 +1,16 @@
+<h1 id="scenario-retirement-income-sources-rrsp-drawdown-vs-guaranteed-pension">Scenario: retirement income sources (RRSP drawdown vs guaranteed pension)</h1>
+<p>Two shapes of retirement money:</p>
+<ul><li><strong>RRSP</strong>: a finite pot. Withdrawals are taxed and the pot can run out.</li><li><strong>Pension</strong> (defined-benefit-like, or CPP/OAS-like): a guaranteed monthly income from a start date until the recipient's death, indexed to inflation. No pot, and it cannot run out.</li></ul>
+<p>Death = the end of the scenario's horizon (the planned lifespan, e.g. age 80; ADR-0016).</p>
+<h2 id="mapping-onto-the-model">Mapping onto the model</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Details</th></tr>
+<tr><td>RRSP</td><td><code>Account</code>, taxTreatment = TAX_DEFERRED</td><td>balance, return rate; tagged <code>retirement</code></td></tr>
+<tr><td>RRSP withdrawals</td><td><code>CashFlow</code> RRSP → bank</td><td>from the retirement date; capped at the balance → shortfall when it runs out (ADR-0015)</td></tr>
+<tr><td>Tax on withdrawals</td><td>tax step (ADR-0018 step 7)</td><td>rate = RRSP withdrawalTaxRate or the scenario rate; paid from taxPaidFrom</td></tr>
+<tr><td>Pension</td><td><code>CashFlow</code> (outside) → bank</td><td>start = pension start, end = horizon end, <code>InflationIndexed</code> (or <code>CustomRate</code> for partial indexing), taxable = true; tagged <code>retirement-income</code>; not in net worth</td></tr>
+<tr><td>Goal "≥ $3k monthly retirement income"</td><td>goal on a tally of monthly inflows tagged <code>retirement-income</code>, window PERIOD, activeFrom = retirement</td></tr>
+<tr><td>Goal "RRSP lasts to 80"</td><td>MAINTAIN: SHORTFALL(RRSP withdrawals) = 0</td></tr>
+</table>
+<h2 id="decisions-taken-from-this-scenario">Decisions taken from this scenario</h2>
+<ul><li>P1 → ADR-0035: an optional withdrawalTaxRate per tax-deferred account, falling back to the scenario rate.</li><li>P2 → ADR-0035: withdrawals are gross; the engine does not gross them up.</li><li>P3 → ADR-0035: the scenario's taxPaidFrom account pays every tax.</li><li>P4 → ADR-0036: RRIF not modelled (Q-13).</li><li>P5 → ADR-0036: a pension is income only, with no net worth value (Q-14).</li><li>P6 → ADR-0037: TagSum window PERIOD; goal active window. "≥ $3k monthly retirement income" = MAINTAIN, TagSum(retirement-income, IN, PERIOD) ≥ $3k (real), activeFrom = the retirement date.</li><li>P7 → Q-15 (later).</li></ul>

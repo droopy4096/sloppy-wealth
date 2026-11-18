@@ -1,0 +1,63 @@
+<h1 id="event-emitters-feasibility-branch-poc-state-machine">Event emitters: feasibility (branch poc/state-machine)</h1>
+<h2 id="1-verdict">1. Verdict</h2>
+<p><strong>Feasible, and close to the current code.</strong> It is mostly a refactor that splits each handler's <code>fire()</code> into two steps: <em>decide</em> (the emitter, which owns the rule) and <em>apply</em> (the event, which mutates the Household). It is not a rewrite.</p>
+<p>Caveats:</p>
+<ul><li><strong>Do not compute state-dependent amounts at emit time.</strong> The Household changes inside the month: a sale pays off a loan before debt service, a contribution lands before a withdrawal, and tax needs the month's accumulator. So either poll emitters per phase, or have events carry <em>intent</em> ("withdraw up to X") that is resolved when applied.</li><li><strong>Order is still the hard part.</strong> Parity needs the 17-phase <code>(phase, ordinal, sub)</code> order exactly. Emitters do not remove that need; they only move it.</li><li>Most ledger lines come from recurring processes, as README notes. So the event stream will be long: about 5–15 events per item per month. This costs some performance and makes debugging noisier. It is not a correctness problem.</li></ul>
+<p>Distance from the current code:</p>
+<table>
+<tr><th>Already matches</th><th>Differs</th></tr>
+<tr><td><code>@item_type</code> factories = emitter constructors (one per form item type, plus a registry)</td><td>Factories return handlers that are <strong>precompiled per phase</strong>, and <code>Clock</code> calls <code>fire()</code>, which mutates directly</td></tr>
+<tr><td><code>Event</code> (one-shot, dated) and <code>Process</code> (window <code>first..last</code>, <code>due(m)</code>) = emitter schedules</td><td>There is no Event value object between the decision and the mutation, so there is no event stream/log</td></tr>
+<tr><td><code>Household</code> is the main object with aggregates, <code>move</code>, tax accumulator, month state</td><td>Some intra-item logic lives inside one handler (DebtService runs renewal, then accrue or pay, then extras), so it is not separate events</td></tr>
+<tr><td>Rules are separate (<code>TaxRule</code>, <code>WithdrawalTaxRule</code>, <code>IndexingRule</code>)</td><td><code>Clock.run</code> is the "Scenario loop", but it iterates over handlers, not emitted events</td></tr>
+<tr><td><code>RetirementEvent</code> already works as a runtime state change (D2)</td><td>Some cross-item wiring happens at compile time (<code>env.bucket</code>, <code>env.sales</code>), i.e. modifiers are folded into their host</td></tr>
+</table>
+<h2 id="2-model-sketch">2. Model sketch</h2>
+<pre><code>class Event:           # value object, immutable intent
+    key: (phase, ordinal, sub)        # for ordering and ledger order
+    source: str                       # item id (ledger attribution)
+    def apply(self, household) -&gt; None   # resolve state-dependent parts here, then household.move(...)
+
+class Emitter:         # one per scenario item (the form input)
+    ordinal: int                      # item index / holding slot
+    schedule: Schedule                # OneShot(m) | Window(first, last) | Always | Anniversary
+    def emit(self, month, household, phase) -&gt; Iterable[Event]   # may read state, never writes it
+
+class Rule: ...        # unchanged: TaxRule, IndexingRule, WithdrawalTaxRule, ...
+
+class Scenario:
+    def run(self):
+        for e in emitters: e.initial(household)          # INITIAL (carry-ins, accounts at start)
+        for m in months:
+            household.begin_month(m)
+            for phase in MONTHLY_PHASES:                 # poll per phase (recommended)
+                evs = [ev for e in emitters_by_phase[phase] if e.schedule.due(m)
+                          for ev in e.emit(m, household, phase)]
+                for ev in sorted(evs, key=attrgetter(&quot;key&quot;)): ev.apply(household); log.append(ev)</code></pre>
+<ul><li><strong>How ordering works:</strong> poll emitters per phase. Within a phase, sort by <code>(ordinal, sub)</code>. This reproduces <code>Clock</code> exactly, and the uniqueness check in <code>Clock.register</code> carries over to emitter registration. The alternative is to emit everything at the start of the month and sort by the full key. That is only safe if every event resolves its amount in <code>apply()</code>, so it is stricter and more fragile. Recommendation: poll per phase <strong>and</strong> resolve in apply, which covers both cases.</li><li>How state-dependent emission works:<ul><li><strong>Withdrawal:</strong> the emitter emits <code>Withdraw(account, requested)</code>. <code>apply</code> caps the amount at the current balance and skips if the balance is None or 0. Strategy state (the percent anniversary, the latched even amount) stays on the emitter. The emitter may read <code>household.opening</code>.</li><li><strong>Payoff (lumpSum with <code>payOff</code>):</strong> emits <code>Prepay(loan, amount=None)</code>. <code>apply</code> uses the balance at that moment.</li><li><strong>Sale:</strong> emits <code>Sale(asset)</code>. <code>apply</code> emits or performs the follow-up movements: SALE, SELLING_COST, <code>LOAN_PAYOFF</code> for each secured loan (current balances), PENALTY. Choose one: either keep these as a single compound event (simplest, gives parity), or have the Household <em>dispatch</em> follow-up events (<code>Sale -&gt; LoanPayoff*</code>) inline, depth-first, which keeps the ledger order.</li><li><strong>Tax:</strong> the scenario-level <code>TaxEmitter</code> emits <code>TaxDue()</code> in phase TAX. <code>apply</code> runs <code>TaxRule</code> on <code>household.tax</code>. Retirement: the <code>RetirementEmitter</code> emits <code>Retire()</code> in OPEN (sub 0), as today.</li><li><strong>Mortgage service:</strong> emits, in order (sub 0..n): <code>Renew?</code>, then <code>Accrue</code> or <code>SettleAccrued</code> + <code>Interest</code> + <code>ScheduledPayment</code>, then <code>Prepay*</code>. The emitter checks <code>is_opened</code> and <code>balance &gt; 0</code> at emit time (SERVICE_DEBT runs after SELL, so this is correct when polling per phase).</li></ul></li></ul>
+<h2 id="3-form-json-item-to-emitter-mapping">3. Form/JSON item to emitter mapping</h2>
+<table>
+<tr><th>Item type</th><th>Emitter kind</th><th>Events emitted</th></tr>
+<tr><td>property, vehicle</td><td>one-shot dated (purchase/carry-in) + recurring</td><td>Purchase/CarryIn; Appreciation (GROW); vehicle Maintenance (MAINTAIN)</td></tr>
+<tr><td>mortgage</td><td>one-shot + recurring, state-gated</td><td>LoanAdvance; DebtService sub-events</td></tr>
+<tr><td>account</td><td>one-shot (or initial) + recurring</td><td>AccountOpening; Return (GROW) + investment income tax</td></tr>
+<tr><td>pension</td><td>initial + windowed recurring + always</td><td>PensionCreation; PensionPayment; Revaluation</td></tr>
+<tr><td>income, expense</td><td>windowed recurring, indexed</td><td>Income (+taxable) / Expense</td></tr>
+<tr><td>contribution</td><td>windowed recurring</td><td>Contribute (+match, +deduction)</td></tr>
+<tr><td>withdrawal</td><td>windowed recurring, state-capped</td><td>Withdraw (+withdrawal tax rule)</td></tr>
+<tr><td>transfer, improvement, marketAdjustment</td><td>one-shot dated</td><td>Transfer / Improve+Revalue / Adjust</td></tr>
+<tr><td>sale</td><td>one-shot dated (or at retirement), compound</td><td>Sale -&gt; LoanPayoff* -&gt; Penalty</td></tr>
+<tr><td>retirement (+ legacy <code>retirementDate</code>)</td><td>scenario-level, one-shot</td><td>Retire</td></tr>
+<tr><td>(none: tax, incomeMode, inflation)</td><td>scenario-level, always</td><td>TaxDue; settings stay on Household</td></tr>
+</table>
+<p><strong>Modifiers</strong> (they change another emitter rather than act on their own): renewal, extraPayment and lumpSum modify a mortgage. improvement, marketAdjustment and sale modify an asset.</p>
+<ul><li>Today they are folded in at compile time (<code>env.bucket</code>, <code>env.sales</code>), and the host runs them.</li><li><strong>Recommended model:</strong> a modifier is its own emitter, but it emits at its <strong>host's key</strong>: <code>(host.phase, host.ordinal, sub)</code>. For example, the Sale emitter emits in SELL at the asset's slot, because the reference loops over holdings. Extras emit in SERVICE_DEBT at the mortgage slot, after the scheduled payment, in item order.</li><li>The form then shows each modifier as a child of its host emitter, as the builder already does with mortgage/property selects.</li><li>One caveat: a renewal must apply <em>before</em> the payment, and "last renewal per month wins". So the host emitter still needs to query its modifiers, or the modifiers need sub-ordering such as <code>sub=(stage, item_index)</code>.</li><li>improvement and marketAdjustment are not tied to the host's slot (they use the item index), so they can stay plain one-shot emitters.</li></ul>
+<h2 id="4-parity">4. Parity</h2>
+<p><strong>Yes, achievable.</strong> The safety net already exists: <code>run_reference_tests.py</code> (151), <code>tools/diff_engines.py</code> (242 scenarios, byte-identical), and package tests WP0–WP8. The first pass should be a pure refactor, with every diff kept at 0 after each step.</p>
+<p>Risks:</p>
+<ol><li><strong>Emit-time vs apply-time values.</strong> Any amount read too early, e.g. an emitter reading the balance before a same-month sale or contribution, silently changes results. The kitchen_sink and ordering_quirks fixtures cover this.</li><li><strong>Order keys for modifiers and compound events.</strong> The sale's LOAN_PAYOFF order across multiple secured loans, renewal before payment, extras in item order, and the "last renewal wins" duplicate rule.</li><li><strong>Rounding and quirks stay in apply.</strong> <code>move()</code> rounding, 0 moves recording nothing, Decimal('0') vs '0.00', the late-first-payment window that drops extras. These must not move into emitters.</li><li><strong>Results expect holdings in slot order with empty points</strong> (D1). This is unchanged, provided Household keeps <code>_order</code>.</li></ol>
+<h2 id="5-effort-and-plan">5. Effort and plan</h2>
+<p>Effort: about 1–2 focused days. Most of the ~2,700 lines are reused. The touched parts are <code>base.py</code>, <code>clock.py</code> (into <code>scenario.py</code>), <code>compiler.py</code>, and the <code>fire</code>/<code>run</code> bodies of ~20 handler classes, which split into an emitter and its events.</p>
+<ol><li><strong>Core:</strong> add <code>Event</code> (value, key, apply), <code>Emitter</code> (schedule, emit) and a <code>Scenario</code> loop with per-phase polling. Add an adapter so old Handlers can run as emitters. Diff = 0.</li><li><strong>Simple types:</strong> convert one-shot items (transfer, improvement, marketAdjustment, purchase, account opening, loan advance). Diff = 0.</li><li><strong>Recurring items:</strong> convert income, expense, contribution, withdrawal, growth, pension, maintenance, tax and retirement. Add the event log as a by-product (the ledger stays the output).</li><li><strong>Mortgage and sale:</strong> convert the mortgage with its modifier emitters, and the sale compound. Remove <code>env.bucket</code>/<code>env.sales</code> folding where possible. Diff = 0.</li><li><strong>Update the docs:</strong> INTERFACES/OBJECTS. Optionally have the builder form group modifiers under their host.</li></ol>
+<p>Decisions for the user:</p>
+<ul><li><strong>D-E1:</strong> Should modifiers (renewal/extra/lumpSum; sale/improvement/adjustment) be separate emitters keyed at their host's slot, or parameters of the host emitter? This is also a form/UI choice.</li><li><strong>D-E2:</strong> For ordering, poll per phase (recommended, gives exact parity), or use one sorted event list per month? Either way, should every event resolve amounts in <code>apply()</code>?</li><li><strong>D-E3:</strong> Should compound effects (sale -&gt; loan payoffs) be one event, or cascaded follow-up events dispatched by the Household?</li><li><strong>D-E4:</strong> Should the event log become a public output next to the ledger (a new API field, a deliberate interface change), or stay internal?</li></ul>

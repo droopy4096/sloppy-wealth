@@ -1,0 +1,8 @@
+<h1 id="adr-0037-tallies-per-period-and-goals-with-an-active-window">ADR-0037: Tallies per period, and goals with an active window</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-05</li><li><strong>Amends:</strong> ADR-0027 (TagSum), ADR-0014 (goal evaluation)</li></ul>
+<h2 id="context">Context</h2>
+<p>"At least $3k monthly retirement income" needs the inflow <em>in the current period</em>, and it should only be checked from retirement onward. A MAINTAIN goal evaluated from the start of the horizon would be violated in the working years.</p>
+<h2 id="decision">Decision</h2>
+<ul><li><code>TagSumTally</code> gains <strong><code>window : PERIOD | CUMULATIVE</code></strong>. PERIOD is the sum within the current period; CUMULATIVE is the running total from the start (the previous behaviour, and the default).</li><li>Goals gain an optional <strong>active window</strong>: <code>activeFrom : Period [0..1]</code> and <code>activeUntil : Period [0..1]</code>. Outside the window the goal is not evaluated. REACH looks for the first period it is met inside the window; MAINTAIN must hold for the whole window.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Example: MAINTAIN, TagSum(retirement-income, IN, PERIOD) ≥ $3k (real), activeFrom = the retirement date.</li><li>Both new fields can be shifted with the shift tool (ADR-0007).</li></ul>

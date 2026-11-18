@@ -1,0 +1,108 @@
+{
+  "name": "Zero quirks, int zeros (synthetic)",
+  "description": "Raw JSON number 0 for marketValue, valueAdded, salePrice, sellingCostRate, salePenalty, withdrawalTaxRate, retirementTaxRate, openingBalance, openingCash, annualInflation (all 'absent'); renewal amortizationYears 0; market adjustment percent 0 with newValue.",
+  "horizon": {
+    "start": "2026-01-01",
+    "end": "2029-06-01"
+  },
+  "openingCash": 0,
+  "annualInflation": 0,
+  "effectiveTaxRate": "0.25",
+  "retirementTaxRate": 0,
+  "items": [
+    {
+      "type": "income",
+      "id": "pay",
+      "startDate": "2026-01-01",
+      "amount": "5000",
+      "taxable": true,
+      "endsAtRetirement": true
+    },
+    {
+      "type": "property",
+      "id": "lot",
+      "purchaseDate": "2026-03-01",
+      "price": "200000",
+      "marketValue": 0,
+      "annualAppreciation": "0.03"
+    },
+    {
+      "type": "improvement",
+      "id": "fence",
+      "property": "lot",
+      "improvementDate": "2026-08-01",
+      "cost": "10000",
+      "valueAdded": 0
+    },
+    {
+      "type": "sale",
+      "id": "sell-lot",
+      "property": "lot",
+      "saleDate": "2028-06-01",
+      "salePrice": 0,
+      "sellingCostRate": 0,
+      "salePenalty": 0
+    },
+    {
+      "type": "account",
+      "id": "r1",
+      "accountType": "rrsp",
+      "annualReturn": "0.05",
+      "openingBalance": "100000",
+      "withdrawalTaxRate": 0
+    },
+    {
+      "type": "account",
+      "id": "later",
+      "accountType": "tfsa",
+      "annualReturn": "0.03",
+      "openedDate": "2027-01-01",
+      "openingBalance": 0
+    },
+    {
+      "type": "contribution",
+      "id": "c",
+      "account": "later",
+      "startDate": "2027-01-01",
+      "amount": "300",
+      "employerMatch": 0
+    },
+    {
+      "type": "withdrawal",
+      "id": "w",
+      "account": "r1",
+      "method": "amount",
+      "amount": "2000",
+      "startDate": "2027-01-01"
+    },
+    {
+      "type": "retirement",
+      "id": "ret",
+      "retirementDate": "2027-01-01"
+    },
+    {
+      "type": "mortgage",
+      "id": "m",
+      "startDate": "2026-01-01",
+      "principal": "50000",
+      "annualRate": "0.05",
+      "amortizationYears": "5"
+    },
+    {
+      "type": "renewal",
+      "id": "rn",
+      "mortgage": "m",
+      "startDate": "2027-01-01",
+      "annualRate": "0.06",
+      "amortizationYears": 0
+    },
+    {
+      "type": "marketAdjustment",
+      "id": "adj",
+      "property": "lot",
+      "adjustmentDate": "2027-02-01",
+      "percent": 0,
+      "newValue": "210000"
+    }
+  ]
+}

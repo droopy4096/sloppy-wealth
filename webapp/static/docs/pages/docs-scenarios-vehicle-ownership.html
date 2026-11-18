@@ -1,0 +1,38 @@
+<h1 id="scenario-set-vehicle-ownership-new-vs-lease-vs-used">Scenario set: vehicle ownership (new vs lease vs used)</h1>
+<p>Three competing scenarios over the <strong>same horizon</strong>, compared against each other (ADR-0006). Every vehicle-related object is tagged <code>vehicle</code> (ADR-0023). Prices are entered including HST. Insurance and registration are optional <code>FixedCost</code>s.</p>
+<h2 id="common-to-all-three">Common to all three</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Details</th></tr>
+<tr><td>Horizon</td><td><code>Horizon</code></td><td>same start and end in all three, length T years</td></tr>
+<tr><td>Bank</td><td><code>Account</code> (TAXABLE)</td><td>pays for everything; has a return rate, so money spent on the car shows up as investment growth forgone</td></tr>
+<tr><td>Inflation</td><td><code>RateGenerator</code> (untagged, shared)</td><td>for real-dollar comparison</td></tr>
+</table>
+<h2 id="s1-buy-new-from-a-dealer">S1: buy new from a dealer</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Details</th></tr>
+<tr><td>Vehicle</td><td><code>Vehicle</code></td><td>acquisitionPrice = P_new, <code>valueRate</code> = depreciation (negative)</td></tr>
+<tr><td>Purchase</td><td><code>PurchaseEvent</code></td><td>paidFrom = bank, or financed (below)</td></tr>
+<tr><td>Car loan (optional)</td><td><code>Loan</code> securedBy vehicle</td><td>rate, amortisation; payments bank → loan</td></tr>
+<tr><td>Maintenance</td><td><code>VariableCost</code></td><td><code>SegmentedRate</code> (tagged <code>vehicle</code>): X% for N years (warranty), then X'%</td></tr>
+</table>
+<p>Shifting the purchase: shift tag <code>vehicle</code>. The vehicle, the purchase, the loan, the cost and the warranty rate segments move together.</p>
+<h2 id="s2-lease">S2: lease</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Details</th></tr>
+<tr><td>Vehicle</td><td><code>Vehicle</code>, owned = <strong>false</strong></td><td>acquisitionPrice = MSRP, depreciation generator; projected but not in net worth</td></tr>
+<tr><td>Down payment</td><td><code>OneOffTransfer</code> bank → (outside)</td><td>at lease start</td></tr>
+<tr><td>Lease payment</td><td><code>CashFlow</code> bank → (outside)</td><td>monthly, FixedNominal, for the lease term</td></tr>
+<tr><td>Maintenance</td><td><code>FixedCost</code></td><td></td></tr>
+<tr><td>Buyout at lease end (optional)</td><td><code>PurchaseEvent</code> on the leased vehicle</td><td>price omitted, so its current projected value is used; vehicle becomes owned, maintenance switches to a <code>VariableCost</code> from then on</td></tr>
+</table>
+<h2 id="s3-buy-used-m-years-old">S3: buy used, M years old</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Details</th></tr>
+<tr><td>Vehicle</td><td><code>Vehicle</code></td><td>acquisitionPrice = P_used, its own depreciation generator</td></tr>
+<tr><td>Purchase</td><td><code>PurchaseEvent</code></td><td>paidFrom = bank (or Loan)</td></tr>
+<tr><td>Maintenance</td><td><code>VariableCost</code></td><td>Y% of P_used</td></tr>
+</table>
+<h2 id="comparison">Comparison</h2>
+<ul><li>Primary: <strong>net worth at the end of the horizon</strong> (real dollars). An owned car is counted at its residual value; a lease leaves nothing.</li><li>Secondary: <strong>total cost by tag <code>vehicle</code></strong>, i.e. the sum of all tagged movements.</li></ul>
+<h2 id="decisions-taken-from-this-scenario">Decisions taken from this scenario</h2>
+<p>G1 → ADR-0021, G2 → ADR-0022, G3/G4 → ADR-0023, G6 → ADR-0024, G5 → ADR-0025 (L1), ADR-0026 (L2).</p>

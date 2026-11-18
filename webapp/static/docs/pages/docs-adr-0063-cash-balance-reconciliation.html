@@ -1,0 +1,12 @@
+<h1 id="adr-0063-cash-balance-reconciliation-item">ADR-0063: Cash balance reconciliation item</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-11</li><li><strong>Relates to:</strong> ADR-0011 (holdings, implicit cash), ADR-0033 (revaluation; C-P16 market adjustment of accounts), ADR-0062 (cash flow adjustment)</li></ul>
+<h2 id="context">Context</h2>
+<p>A plan that starts in the past (the owner's starts in 2019) drifts from the real bank balance: actual spending, gifts and one-off costs are not all modelled. Today the cash balance can only be corrected with a one-month income or expense whose amount must be worked out by hand and goes stale when earlier items change.</p>
+<h2 id="decision">Decision</h2>
+<p>A <strong><code>cashBalance</code> item</strong> (<code>balanceDate</code>, <code>balance</code>) states the actual cash balance at the end of that month. The engine sets cash to it; the difference is a <code>CASH_RECONCILIATION</code> movement from or to outside the model.</p>
+<h3 id="mechanics-defaults-not-separate-owner-decisions">Mechanics (defaults; not separate owner decisions)</h3>
+<ul><li>Applied after the month's tax step, before the month's results row, so the row shows the stated balance.</li><li>Not income, not an expense, not taxable; it changes no other holding.</li><li>Several items follow each other (e.g. one per statement); in one month the last in item order wins.</li><li>The date must be within the horizon. Also applies in income-less mode.</li><li>Visible in the ledger and the event log (the difference, and the balance before).</li><li>Investment accounts are not covered (C-P16, decided, built separately).</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li><code>marketAdjustment</code> on cash: cash does not change value; the name and its percent option do not fit.</li><li>One-month income or expense (no change): manual and goes stale.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Plans can be anchored to real statements; the gap between plan and reality is shown.</li></ul>

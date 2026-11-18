@@ -1,0 +1,28 @@
+<h1 id="state-machine-re-implementation-coordinator-decisions">State-machine re-implementation: coordinator decisions</h1>
+<p>Coordinator: main session. Inputs: FEASIBILITY.md (90301c6). Branch: <code>poc/state-machine</code>. <code>main</code> and <code>poc/python-flask</code> are protected: never modified.</p>
+<table>
+<tr><th>#</th><th>Question (FEASIBILITY.md §7)</th><th>Decision</th></tr>
+<tr><td>D1</td><td>Aggregates PLANNED from the start vs created by events</td><td><strong>Events create the aggregates</strong> (the user's design). Parity of output order is restored by ordering: the household keeps aggregates keyed and iterated by <strong>scenario item index</strong>, and result assembly emits a holdings entry for every item that would have a holding, including ones not created yet (empty points). No PLANNED placeholder objects.</td></tr>
+<tr><td>D2</td><td>Retirement: resolved at load vs runtime event</td><td><strong>Runtime <code>RetirementEvent</code></strong>, dispatched first in its month: it sets <code>household.retired</code> and switches the tax rate. Flows tied to retirement start/stop by consulting household state. The retirement <em>date</em> is also known up front (scenario lookahead) where forward-looking values need it (pension value, drawdown months). Results must be identical either way.</td></tr>
+<tr><td>D3</td><td>Validation</td><td><strong>One pure function, ported verbatim</strong> (identical first error message).</td></tr>
+<tr><td>D4</td><td>Standalone package; which engine leads afterwards</td><td><strong>Standalone</strong>: <code>webapp/state_machine/</code> must not import <code>webapp/engine.py</code> (only the differential harness loads it, as the reference). Which engine leads after parity is the user's call later.</td></tr>
+<tr><td>D5</td><td>Commit fixtures like the owner's personal scenario</td><td><strong>No</strong> personal data committed. The harness takes extra local paths on the command line. WP2 adds a <strong>synthetic kitchen-sink scenario</strong> (every item type and same-month interaction, invented figures) under <code>webapp/state_machine/fixtures/</code>.</td></tr>
+</table>
+<h2 id="process">Process</h2>
+<ul><li>One commit per task, message prefix <code>state-machine:</code> (or <code>sm-wpN:</code> on sub-branches); git log is the transaction log.</li><li>Parallel work packages run on sub-branches <code>poc/sm-wpN-&lt;name&gt;</code> cut from <code>poc/state-machine</code> after WP0, merged back by the coordinator.</li><li>Files are added by explicit path; never commit the owner's personal scenario files (see <code>.gitignore</code>), diagrams/svg/.</li></ul>
+<h2 id="event-emitters-2026-11-10-user-decisions-on-emitters-feasibility-md">Event emitters (2026-11-10, user decisions on EMITTERS_FEASIBILITY.md)</h2>
+<p>Form inputs become <strong>event emitters</strong>: event-producing factories with their own rules. The Scenario walks the date range over the Household (main object), asks emitters for events and applies them.</p>
+<table>
+<tr><th>#</th><th>Question</th><th>Decision</th></tr>
+<tr><td>D-E1</td><td>Modifiers (renewal, extraPayment, lumpSum on a mortgage; sale, improvement, marketAdjustment on an asset)</td><td><strong>Separate emitters attached to their host</strong>, timed at the host's position; the form groups them under their host. One form input = one emitter.</td></tr>
+<tr><td>D-E2</td><td>How the loop collects events</td><td><strong>Order number built into each emitter class</strong> (instance may override). The Scenario sorts all emitters by order (ties: scenario item index) and splits them into as many phases as it needs; each month it walks the sorted list, asks each emitter for events and applies them immediately, so later emitters see earlier state. Reordering = changing a number. An item acting at several points of a month (e.g. mortgage advance vs servicing) yields several emitters with their own orders. Defaults reproduce today's 17-phase order (parity).</td></tr>
+<tr><td>D-E3</td><td>Sale and secured loans</td><td><strong>Follow-up events</strong>: the sale event emits a payoff event per secured loan, then the penalty, applied immediately; each loan settles itself.</td></tr>
+<tr><td>D-E4</td><td>Event log</td><td><strong>Public</strong>: <code>run_detailed()</code> gains an <code>events</code> key and the app a view of it. A deliberate interface addition; rows, holdings, ledger and tax stay identical, the diff harness ignores <code>events</code>.</td></tr>
+</table>
+<h2 id="iterations-and-the-reference-engine-2026-11-10-user-decisions">Iterations and the reference engine (2026-11-10, user decisions)</h2>
+<table>
+<tr><th>#</th><th>Question</th><th>Decision</th></tr>
+<tr><td>D4 (resolved)</td><td>Which engine leads for new features</td><td><strong>Iteration 2 (this event-emitter engine) is the only PoC.</strong> New features go here.</td></tr>
+<tr><td>D6</td><td>Branch layout</td><td><code>poc/state-machine</code> was <strong>rebased onto <code>main</code></strong> with its history kept (baseline commit importing iteration 1's <code>webapp/</code>, then the replayed commits; pre-rebase history in tag <code>poc/state-machine-before-rebase</code>). <code>poc/python-flask</code> is <strong>kept, not renamed</strong>: iteration 1, tag <code>poc-iteration-1</code>.</td></tr>
+<tr><td>D7</td><td>Iteration 1 on this branch</td><td><strong>Retired.</strong> <code>webapp/engine.py</code>, the parity shims and the diff/record tools were deleted; <code>app.py</code> and all tests use <code>state_machine.engine</code>. Iteration 1's results are frozen in the golden suite (<code>tests/golden/</code>). For iteration-1 references use branch <code>poc/python-flask</code>.</td></tr>
+</table>

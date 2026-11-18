@@ -1,0 +1,1852 @@
+{
+ "fixtures/invalid_renewal_at_sale.json": {
+  "error": {
+   "message": "item r: renewal of Loan on 2029-03 is in the same month as the sale of House; remove the renewal, or put the penalty on the sale",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "fixtures/invalid_sale_without_property.json": {
+  "error": {
+   "message": "'property'",
+   "stage": "validate",
+   "type": "KeyError"
+  }
+ },
+ "fixtures/keep_payment.json": {
+  "holdings": "405424d12fad2eca60ed31efe7e15b771b78ca799b43142d501efa002642db38",
+  "lastNetWorth": "2268116.30",
+  "ledger": "22b97a06a3eef18499aa0e2246aba4954f1bfb12d007250177007c522a952294",
+  "rowCount": 252,
+  "rows": "82f01e49c4d00c6f107632c4a60f5d027433497164277124cf50fd1d47004b0a",
+  "tax": "244843d49a97273a3b46ed15aa1d4b484f7dd1c7d622f049e07cd9dbfa7f750e"
+ },
+ "fixtures/kitchen_sink.json": {
+  "holdings": "e778bf3319e625043050548cfeee53679023b85711cb1f8614186df9ae93a2dd",
+  "lastNetWorth": "2351685.46",
+  "ledger": "be75cec98632c99d4fba9d69add00304e9d144c5445fb12fbf96709973893889",
+  "rowCount": 144,
+  "rows": "83ec810a0d29670b51c42e85fa691784e37e0462275549aa5802614ccbfe4d2f",
+  "tax": "d70217f82da0b06506bef84e0abc68a2e5676d44730cce31de963deb64e34cb7"
+ },
+ "fixtures/kitchen_sink_covered.json": {
+  "holdings": "a52410b7762d2cff63650aaa63108ff854916ceb149d27da1d7cb2b6d9fab97b",
+  "lastNetWorth": "2922455.74",
+  "ledger": "f71b36f0287eba7c30fb854007cf5a7e7cdb3b8f05f92c665645eff3d23b5249",
+  "rowCount": 144,
+  "rows": "6a8161cc94fd8c8992a22261088a9ab7dab5ad76d54c435ca7be57221812c691",
+  "tax": "c48a17276dbcdabda0a6e93f529516f6858c0a646bc10d7addd35045c3b84ec4"
+ },
+ "fixtures/late_first_payment.json": {
+  "holdings": "2010b73d64f1542aa399a4e2759c96202095f245117265979c6aa2caac519938",
+  "lastNetWorth": "308024.38",
+  "ledger": "5e3fd95940e4b5754fe7b99778ab2ee6af2c21bf9546060c008664ec6072b55d",
+  "rowCount": 36,
+  "rows": "192257f88476768bf712e32ce423b3477583754b6d382e9732ed7578f05d3268",
+  "tax": "8cbcfc9f9208b05fd6bf27df968b87c2f5c2e2ab722e2bfeda0b03aa52e97715"
+ },
+ "fixtures/legacy_retired_before_start.json": {
+  "holdings": "fcf09e0349d0bcb094e800831028719425e3e4b40b87b147c2f3553e667c602e",
+  "lastNetWorth": "491693.50",
+  "ledger": "b9a141a3493481e1d4d8343ac2160e998da6bccdd6b5fc5c2e041f9983a7ff24",
+  "rowCount": 60,
+  "rows": "3e4c632d28a38f9876fee6bc3725ba275288178b6a367daea311bebe7050da7e",
+  "tax": "e09fc6885c8a992163c2b8fbd31366d28afbc97b7266c0d16b215aedfdb8200f"
+ },
+ "fixtures/legacy_retirement_in_horizon.json": {
+  "holdings": "f1f549cdcb232125238c3268cd0cf4c188947285dbd09632ac29c9e628b5f409",
+  "lastNetWorth": "91715.90",
+  "ledger": "0fce1bf316d6c8d8215cf1916c2ae79a6b25aa49d2c576f5a0d2e199317b68de",
+  "rowCount": 48,
+  "rows": "280986f53324989e9efe4a07aeca1d96d716d45143680193c3399263207dfd2a",
+  "tax": "89703e27738c1505c9dcfdf100a144df723b74eea69c763d9bf7e739993ccd68"
+ },
+ "fixtures/ordering_quirks.json": {
+  "holdings": "a38e514bcaa2d7abf6e0c7ebed1466d95ec9e55f4fa59c82b26d00a469c1b29c",
+  "lastNetWorth": "43686.92",
+  "ledger": "b0c52bac4a6aad8d599b8c8038bcce0c6f4c5d00872fd295a14311af509edc2d",
+  "rowCount": 18,
+  "rows": "e483a7331a20b5244379a2aee7336e9759631b41ad01d7944b0e8122270fd7c0",
+  "tax": "b236a3ec58e9de0d5a3ba66a01b4801c14e087f1e60f5647683c2d3c9610ebe7"
+ },
+ "fixtures/two_person.json": {
+  "holdings": "28daa14b679ef8d481c9cff8b528c5941d8db99fcbc25c8408945a45bcf1d481",
+  "lastNetWorth": "982513.83",
+  "ledger": "53ad0b1e6eb3a0aae57bfd0564d95d81bf103c3d2608105169e7adafd9982afc",
+  "rowCount": 96,
+  "rows": "b25893e495cf385bd418fd6536411872c0602b370d3726b7e3fd8271a82b445f",
+  "tax": "9afe534c89c9536affcd562374c85035db4717e9c5f94d6e667eba3e0d4ae857"
+ },
+ "fixtures/zero_quirks_numbers.json": {
+  "holdings": "1aaa644844b73e8063ddbeded4ee539c0a7ce81f214ab14cf0e4598db13a1ee7",
+  "lastNetWorth": "146588.68",
+  "ledger": "ea99b908e17e726f43113f53b939400f3f2f1bdee5dcc74896ccff39f9c95eaa",
+  "rowCount": 42,
+  "rows": "a29eb3e1d141ea637ce7ef4e0c7253ac772032a63925e1fdd884a26edf181571",
+  "tax": "83fba37cb516b17dbb2d69fe817b34f48470eee7688c392dc0123d5bd45245fa"
+ },
+ "fixtures/zero_quirks_strings.json": {
+  "holdings": "6a60228b205750c933bf99fe2831727e54c788b0424c8fba47e7fe34edc93528",
+  "lastNetWorth": "-49732.43",
+  "ledger": "652c5241991b84c3fdc3a5fac8a8aa744334e544221e8f8072dcb8e9acf8fdbd",
+  "rowCount": 42,
+  "rows": "b5e86f151e2ddc74c069fdd45aafef99ced37c5133b739bb903ea985877ea3fd",
+  "tax": "d7dbac4a704645aa7d7cfcc28272285e4c1d6c1577f4a4fb8eb7c1abc36297ef"
+ },
+ "jurisdictions/ca/sample.json": {
+  "holdings": "33f72c324c1e00424f3effb06edeac0bba4083f75b0e83b2450421c64d312f1d",
+  "lastNetWorth": "553661.41",
+  "ledger": "b6d50758ea9baaf2f7e986b68f6f52605810c7585763697c30506204d9cd69ed",
+  "rowCount": 60,
+  "rows": "bb074cab74e8f9e3c57e6bdd9f12b33e8b488c5b61c4611bf2a611630125182a",
+  "tax": "d6606c3368b2dd90be0ba7885ef35e2a3d3179fdb13fdebf59edf57cbe4af6b1"
+ },
+ "samples/household-baseline.json": {
+  "holdings": "21c73c79906831331c2452cafb28d35e4a7e29629732d5dd0a971a39ea6377b6",
+  "lastNetWorth": "7115678.57",
+  "ledger": "0686f88443cc2b0a0ef3565b448269d8a62a2148a52237708fbbc7397fc057e1",
+  "rowCount": 437,
+  "rows": "1ea937cacfb3ba5ba339638f3d121d1c8d1da9688aac1bc0d4469ee0f6a14874",
+  "tax": "9cca5afd826b81418a3ca4e142860364eedfce829e18013e1d1cdbc3d519bd81"
+ },
+ "samples/rent.json": {
+  "holdings": "d97eae1a69e1851f6e49ea36788fa3aea637c482356611d0f70f81de9e27f3f8",
+  "lastNetWorth": "420000.00",
+  "ledger": "295e34243f0bf72768731cfb8435e9523fc933d34cf985e013a23aed483ce825",
+  "rowCount": 300,
+  "rows": "acb8b79539e3aa19d7de96b55ddb780f8ebd30ea275a1ec53e9a86434d33734a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "samples/single-house-prepay.json": {
+  "holdings": "a5c5d9746da92bc34d3423972c98f7941b369eb5b99b3f41713b996f4437ef6f",
+  "lastNetWorth": "2614034.48",
+  "ledger": "a0cdba23d3df99bcca4adaf78438fb9c82f3b5a264ba6320d12da6d7b5c5da13",
+  "rowCount": 300,
+  "rows": "725bc5c533892974277748fda4bdf3a16bb479fb216db41b27267ece544b0070",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "samples/single-house-renewals.json": {
+  "holdings": "11be44994994bb879bc0a0d83476458f4a13de077ecfa70e8e349553ca5a86a6",
+  "lastNetWorth": "3881830.66",
+  "ledger": "93daf2d6c0b4c20bbde7de8d8b4b117e62603a24645a72d27ea3107e1177a889",
+  "rowCount": 396,
+  "rows": "1c5cc3ebf68836c5523249c3e62d94fc5d5ade1521aeaf7e8fe9ff83cdaaa63b",
+  "tax": "0475f87a9e6f9c5961fe6398b31f3d0806d470ab6ace3bd6753856dda86478c4"
+ },
+ "samples/single-house-sold.json": {
+  "holdings": "4bd9ecfda6e5fe80e37a1cd391a94cadfa00614aa05649e5f442a4bdd7c0effd",
+  "lastNetWorth": "1398125.06",
+  "ledger": "644fe5a45b4f92bf18406780909c46155d79c114918adf624dab9b54abf1cf32",
+  "rowCount": 300,
+  "rows": "12f4c9d9463c15a0775aaec1b87ceae90747b732d6fd4628b7dec2308bb2b52d",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "samples/single-house.json": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Accounts.test_even_drawdown_empties_the_account_f4e95fde": {
+  "holdings": "3391f609ce597646123cfbd34db6a970385506cc371c3460cb87abe10e54bf90",
+  "lastNetWorth": "12000.00",
+  "ledger": "a2adffdc49fa9378b26212ffe8fb0411638ccddd56935f4eef1ca2a15ea1e872",
+  "rowCount": 120,
+  "rows": "aa3e6c1a9b3fcbb231464c2a304a282f4e90c96da530626d1e272602b977ed67",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/Accounts.test_income_less_mode_720a2a25": {
+  "holdings": "ad3bd6f99172852eb05cdd619a4d43cd00ae8a2086ac612801286989512912d3",
+  "lastNetWorth": "226000.00",
+  "ledger": "de21a26a1b83ad8e64849b3c47035889e2b8e8e5d6fc5bef83e4e322d1537c4a",
+  "rowCount": 120,
+  "rows": "48611d6ad881a1c7a48cde29a6ff891c8331550428674eace8058196fb5ec9e0",
+  "tax": "0c472ba75d73a1430205fb17d06626b16f17a0ee2a36d09464f610ed9d9edc01"
+ },
+ "tests/Accounts.test_non_registered_returns_are_taxed_87b21776": {
+  "holdings": "70d6223c9b85429835c4f8d67f554f10df01cef5ebdb623423138dee46efaabf",
+  "lastNetWorth": "247409.48",
+  "ledger": "8995cb6df3af4082802f0b5948993c76e4505003e67edad267673d8a1041ec8e",
+  "rowCount": 120,
+  "rows": "5a2aafcb7aa61e29baba3fbfeb66e4e91b6e318b03519f4561f00fca0ee8a2e9",
+  "tax": "5d0afa348c647997071e8db6f8f7af0fac7a3bae64ad11e3e58035eee5449239"
+ },
+ "tests/Accounts.test_opening_balance_grows_from_the_first_month_d2b2794c": {
+  "holdings": "85181129f5619c0d4933f41e793940a184206f6ea060ed631b08975546a5377e",
+  "lastNetWorth": "179084.76",
+  "ledger": "d84f1871cc247d6301823b72ba018cf5945ba44dcd10142e8b1df7e1e39f55e5",
+  "rowCount": 120,
+  "rows": "ec270d6b949dbc8fdbf6e2af3402b788aa4e156a41cf06706aaba45240ce75bb",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/Accounts.test_own_withdrawal_tax_rate_9c0e4ba0": {
+  "holdings": "ef82533871590d1982ff42613a6e78fc9d5be34263ed3c99907b8eb0a2dc051b",
+  "lastNetWorth": "80000.00",
+  "ledger": "cdcd3675dbc667852c4032bc8b2c6c0cf01d7dc3d791de8487b6ee2159a55631",
+  "rowCount": 120,
+  "rows": "dfcde96b4593dc0486c3bd833257eb8ecd63d805b7099913bae75bb3def4343c",
+  "tax": "6c262b2f2443603273ff94556d914a89c49d7a48f8f825fa7ce76f1b55e09a88"
+ },
+ "tests/Accounts.test_percent_withdrawal_resets_yearly_2326e00c": {
+  "holdings": "3713fc6ce151af131ed235d28f579d9f73ae926bf2ff39ea37a2ea9818292d01",
+  "lastNetWorth": "228343.15",
+  "ledger": "4fb51429a8d84a6e201555e8dd7e1c0fd6b4dd2b465f76ced63d041cd3f22b35",
+  "rowCount": 120,
+  "rows": "596ac720879e21a7c84d664317bb6a4201da743fb986750ef3cd80ea870a9ab2",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/Accounts.test_rrsp_contribution_is_deducted_and_matched_bfca8357": {
+  "holdings": "58fd128f71358954056ab1f6a6b5bcc9da0d7dd2308650c3a44c5e7499fbface",
+  "lastNetWorth": "590400.00",
+  "ledger": "b86754ba7cfe78cc3a0a2f5b1f8e316cc1b283e6ce34a9e99101748ef5266d1f",
+  "rowCount": 120,
+  "rows": "5e7048081b5721e889fe202e155e02d7008e808b8038f11b365dc86b1acaa30b",
+  "tax": "ea1dd61afe0e683b7c40dfaea60694122898cf6bd10c20c506777459512214bc"
+ },
+ "tests/Accounts.test_rrsp_withdrawal_is_taxed_tfsa_is_not_19df6e34": {
+  "holdings": "d791e4383694679e60c60a347a941b8512448fa300ed4f85737feba8baf70738",
+  "lastNetWorth": "100000.00",
+  "ledger": "0e4fa9444d7e8f8e14a7c6ec7c297b0a18234c2bf5e519045c477b0877838a4c",
+  "rowCount": 120,
+  "rows": "7ff616aa85fe820c1226f4ab9892c9c3188e56af5a96fe14276d8cabd954af10",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/Accounts.test_rrsp_withdrawal_is_taxed_tfsa_is_not_73be2829": {
+  "holdings": "d9ee0c2674ffac3ed9f0218a4208a4cd30bc88d761718d964e65d5bae0d2c941",
+  "lastNetWorth": "70000.00",
+  "ledger": "4d768b5a3966d9ea975215d6f91181b573d2a9211da1a3a7090afc6cf4612bd5",
+  "rowCount": 120,
+  "rows": "cf4e0d112f84bebe5db8037a1e1f9dc8740ea8e12a832c58c2cd1958185a4881",
+  "tax": "030e1cdba3d416adb2dae7ee674f41ed7d1daf6521cc9876652d34fe066c8d9e"
+ },
+ "tests/Accounts.test_tfsa_contribution_is_not_deducted_e7179ebe": {
+  "holdings": "3dfb3412633962fb276e99a76b26a487d4fe74b6af84736dfe062dd664c1fc62",
+  "lastNetWorth": "504000.00",
+  "ledger": "e2342dd54ba7f59ce79e06c52ed262858649fd5cf741433705792a88f23c01f4",
+  "rowCount": 120,
+  "rows": "d29d133875c32d1f0046b75306a2ba7e8bc5c98deeff4a8f4605cf45373309c6",
+  "tax": "ab2ef531c4a2dbed32440fcbdc46cb54187a0d5272c4afdfc2dba6fcb117e321"
+ },
+ "tests/Accounts.test_validation_and_cascade_03188b42": {
+  "holdings": "2d6aa1bc21fdf1e8431483b40d65b48b9e4f4f8d5eee3ba7d9105e1d00667f84",
+  "lastNetWorth": "290423.94",
+  "ledger": "89b476106faeadb5d85ea6120048f6492f7b4d7760ba69591b81b02a8e7cc9fe",
+  "rowCount": 120,
+  "rows": "c282c5e2530b4d1dda75f640b802c3814041ca507e78658f7065fae7f0593808",
+  "tax": "9aea5585a09400df15e7d33009f1659507fb30389d9c1aaf2f3438fed9f90d3e"
+ },
+ "tests/Accounts.test_validation_and_cascade_37f125db": {
+  "error": {
+   "message": "item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Accounts.test_validation_and_cascade_5cade248": {
+  "error": {
+   "message": "item 0: refers to unknown account 'x'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Alignment.test_first_payment_date_a92775db": {
+  "error": {
+   "message": "item House mortgage: firstPaymentDate must be after the mortgage start",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Alignment.test_first_payment_date_e0132adb": {
+  "holdings": "2c436f7208c54f03d2a4bdc5f07958d4d7dd7af1dbe6a5ff093b0c007434e801",
+  "lastNetWorth": "2554409.01",
+  "ledger": "b4ec0fef625326d8103ad87b9513a8cbb37e2cead740a9c0abb74eff53377a4a",
+  "rowCount": 300,
+  "rows": "37f39e51c0fc8cbc3de6f02ad8948f48596ad5b77e34d608dc40a677183981b0",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Alignment.test_penalties_3932c3d9": {
+  "holdings": "23e96fd3fa557808303d4dc136ce50926a882658d71318063a6e1b0ffd86b59f",
+  "lastNetWorth": "2568734.36",
+  "ledger": "a791943497b1a4de8ff15a9b390ae55946b776ec139d38246eb76cfdb196e8bb",
+  "rowCount": 300,
+  "rows": "aa214b233f9ea39448491045c0512e814840838d1b1af943dd9857e45f98382a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Alignment.test_penalties_65a5874f": {
+  "holdings": "4e25d14f8d125f2597c1da564559781ab057f6dc573f00310ca9960146bb0bc1",
+  "lastNetWorth": "2568434.36",
+  "ledger": "686d2a9f678c4c77b34f1d513158208db39b79b93d9cf67b0309c3287e7824dd",
+  "rowCount": 300,
+  "rows": "b8fce52186d6559301b19ed4800e517ecdbfeed35d3584ebe8d33dcde5f3a090",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Alignment.test_penalties_67781426": {
+  "holdings": "9bdc4e779993067a2d1b44d1716cbff99b833f8fdbaa3931740329d7039e5774",
+  "lastNetWorth": "984905.04",
+  "ledger": "0bb4e895c3a6338f9f0d6760b62b2c421e344534aced23c6fe9872d80eb705b4",
+  "rowCount": 168,
+  "rows": "293e9b60d75104054e4e9df32697ca779673104adc48cb7197c361039f91d742",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/Alignment.test_penalties_7a7d39e7": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "1f7b55568f930bc72c5364590d47b313212f7a63490e10660d275a823d2ae123",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Alignment.test_penalties_89a6caae": {
+  "holdings": "5735ebd0b1fb8f3b1776925afd5f6a5ee96b0f1c7dd0df46778e433f3f034423",
+  "lastNetWorth": "992905.04",
+  "ledger": "d01fbf6438aabf477576115826bb84fe92f4a16c4af5c4d1c9c2926ae5491379",
+  "rowCount": 168,
+  "rows": "dd7a3ac93e5eb3c1e1a9249661c108f67003c90472efd70d35081cbf0fc34a86",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/Alignment.test_penalties_9272cb3b": {
+  "holdings": "b26f72b65f4cdbb29597e910a89ca565c6e942fd26fcfdd13c644a42af725fba",
+  "lastNetWorth": "2551145.89",
+  "ledger": "badfb672ca1a489837082cae21f008b7d7ba3f5bcaf9ef9a88feced41b4b7e2a",
+  "rowCount": 300,
+  "rows": "12348885a98f39996c0f76842d8439adace960b9c3bb6540301b5f3faaf05b33",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Alignment.test_quarterly_amount_spread_over_three_months_318eb9a9": {
+  "holdings": "7fe709c1c022bfd4fdb7fdab45c1c3d8df5977a56eddc081e40f74bcd5a60b30",
+  "lastNetWorth": "2466145.89",
+  "ledger": "130d78c11a14ff3c6efe5fb25edf6d83c2459a2999ef1fb484f5072eb08e7987",
+  "rowCount": 300,
+  "rows": "7a0a1511929ea4760285fad8581c4ed8f3b66d361376f19b1f8595b2fb1f29cc",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Alignment.test_rate_ranges_a98bf57f": {
+  "holdings": "df7a7c2823eddfd318c775aa6c864a4eeeb9950b4f58cbc08cec0b06fbf487df",
+  "lastNetWorth": "246011.66",
+  "ledger": "06a318b33b4f676cf2ce487a35d5e624bf26ab51230d977ccb0cfa750806c6f8",
+  "rowCount": 300,
+  "rows": "3e35cedfea34675d52af4f9f9196a0611cfccc878874e56727e59b778a4bcfdf",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Alignment.test_rate_ranges_dc23dbf9": {
+  "error": {
+   "message": "item House mortgage: annualRate must be a fraction between 0 and 1, e.g. 0.0379 for 3.79%; got '-0.01'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/AmountInBaseDollars.test_base_dollars_inflated_to_the_start_351791c7": {
+  "holdings": "e93612de7fac971325a4579f106dfd37a819fb77448a71aece0b7bd43f05a991",
+  "lastNetWorth": "-378687.36",
+  "ledger": "427a07ab32e8f8150b6b5ae08d0fbe1341109da0e20e32e40315b2a6ebe3921b",
+  "rowCount": 120,
+  "rows": "a30ff17c058a31bb509b8c86aed6bdf62b093a37a79755ac50fd98f3a683f9fc",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/AmountInBaseDollars.test_base_dollars_inflated_to_the_start_8ec61d5c": {
+  "holdings": "7c6e4e8657ecc76f870de1133db3d47e25c4dc866bed635a4b0bd3cca0b6d68a",
+  "lastNetWorth": "-356565.72",
+  "ledger": "2d1fd203961b80bfaf96b6892ca4dd2cda4fe72e3afb1135425cbf77459d57f5",
+  "rowCount": 120,
+  "rows": "5e60af8e364e424a36df46004a7d17474c0afb9e6ce712c92135df7de1c62a37",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/AmountInBaseDollars.test_real_value_at_start_equals_todays_amount_407e92c9": {
+  "holdings": "87de2dd74a967b6f399abe756c882fd1309603f6f31953e27e13eee472f5236a",
+  "lastNetWorth": "-288605.46",
+  "ledger": "72806e6ddbf129341c8d73b5268db3b35835ed7bc76e7502243613c1665d311e",
+  "rowCount": 120,
+  "rows": "81cf6d82e1a7da0eebe31dd1734cac4b759374ab821dac50507af0e4eeeb81f2",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/AmountInBaseDollars.test_start_dollars_is_the_default_bc369c0e": {
+  "holdings": "5fb32a7f5f4914b7320302b67782323657e3e2d2b8f46c4d4879a166f7603fd3",
+  "lastNetWorth": "-336000.00",
+  "ledger": "0daf917625c199a10e0a072517fee66521446f61511fce145fbfacd0bf617cb9",
+  "rowCount": 120,
+  "rows": "68e276d8f5cdde3a06687e11688f188d7c864a17a1beff3f03f0a1f0ad3159e7",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/AmountInBaseDollars.test_start_dollars_is_the_default_d4ae8c5e": {
+  "holdings": "5fb32a7f5f4914b7320302b67782323657e3e2d2b8f46c4d4879a166f7603fd3",
+  "lastNetWorth": "-336000.00",
+  "ledger": "0daf917625c199a10e0a072517fee66521446f61511fce145fbfacd0bf617cb9",
+  "rowCount": 120,
+  "rows": "68e276d8f5cdde3a06687e11688f188d7c864a17a1beff3f03f0a1f0ad3159e7",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/AmountInBaseDollars.test_validation_and_form_c70c748e": {
+  "error": {
+   "message": "item Retired living: amountIn must be start or base; got 'today'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/AmountInBaseDollars.test_validation_and_form_dedb6bb9": {
+  "holdings": "a161b8c3a66d9b4ea151f68b0bad0972c8c66be6c9857f6c350e00f08e3cc293",
+  "lastNetWorth": "168000.00",
+  "ledger": "df430cea3860beb024d99798b05e22af620306a559065dc6d92de460e76bf476",
+  "rowCount": 120,
+  "rows": "c96f42fab9a0a5730c39552a6b3212ac352fa3c357376b76a4710d8b1d5cfcdc",
+  "tax": "ab2ef531c4a2dbed32440fcbdc46cb54187a0d5272c4afdfc2dba6fcb117e321"
+ },
+ "tests/BaseDate.test_base_month_is_unchanged_and_earlier_months_are_inflated_120d270b": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "a2d2fab560d5cfe36195935ca97eff9e3981b49bf1112d59075359f69af7e42e",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/BaseDate.test_blank_means_horizon_start_07ccedf4": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "e42e7b21cf754565b4f148a09981df26c4c12d3175c76f610f0ecd846dc75146",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/BaseDate.test_blank_means_horizon_start_61954ccc": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "e42e7b21cf754565b4f148a09981df26c4c12d3175c76f610f0ecd846dc75146",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/BaseDate.test_moving_the_base_scales_every_month_alike_8454fb0a": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "a24bbde33974f0744ee8d22f20c49cdcd2ef0aa7cb7ebb056fba1a1536255c28",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/BaseDate.test_validation_and_form_085a3a36": {
+  "error": {
+   "message": "dollarsOf: bad date '2026-13-01', expected YYYY-MM-DD",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/BaseDate.test_validation_and_form_f5e060d8": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "8f4d100dda0a47bd4a8e00b81f27745f1d3722790bf760388bf05959c080283b",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/BoughtBeforeHorizon.test_maintenance_counts_age_from_the_real_purchase_2aae6427": {
+  "holdings": "d25eacdc5b06eec2f70e58bda12b503399c31b4954d6ad4a17476f74bd4c9c35",
+  "lastNetWorth": "2242303.10",
+  "ledger": "cea3dbadac6127b10a18f2cd7afe07a262de06d695859080b945b5871eb6b6a2",
+  "rowCount": 300,
+  "rows": "3dc27bb1f9323de355aee431339fdf3ba5a85155350c29fd60f7a84485804049",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/BoughtBeforeHorizon.test_property_bought_before_the_horizon_9fae473f": {
+  "holdings": "bbd1af16a340cdc0d6e302480c2f895d9ba144a9a3e410f7d55f4130c266be68",
+  "lastNetWorth": "3659349.10",
+  "ledger": "5e84ce67b956036e1721e827617decbf500b355cab8ad672ed8eb1a991740d94",
+  "rowCount": 300,
+  "rows": "47c607838bb83edb83b8c25300c4b5b80670e032932b0963af7cde429e948878",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/BoughtBeforeHorizon.test_still_rejected_cd068dbc": {
+  "error": {
+   "message": "item House mortgage: startDate is outside the horizon",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/BoughtBeforeHorizon.test_still_rejected_ea7fad68": {
+  "error": {
+   "message": "item Car: purchaseDate is after the horizon end",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/DeductionCarryForward.test_large_rrsp_transfer_shelters_later_months_7cf4db61": {
+  "holdings": "fd1d24a10f2bce7c5000515e13646e5b53ddc91f82beaf1aff715ab0c5f1c8f8",
+  "lastNetWorth": "508500.00",
+  "ledger": "d2c8eded7bb4e9b7e4c3873f4be354a12bbbbc1caea5ebc83998a18f48a28f83",
+  "rowCount": 120,
+  "rows": "459ebc9b96d7faf2682c8eb5e2c56d563c048012905a3cc35af475cd7e249671",
+  "tax": "c36cfa9d25b60099edb1c6172d8a830615b34f259ceeb3cd3066c4d2bc247bdf"
+ },
+ "tests/EndChoices.test_extra_payment_and_pension_end_at_retirement_f719177e": {
+  "holdings": "9dd79bf820c3c00934bf0f6d7e637d891538f9497d92b02690badfd09aabcd76",
+  "lastNetWorth": "2625124.32",
+  "ledger": "88ef692f7f858acbbe93bef51fa3aa74f544ccaf19ea9947cf0da85191809eea",
+  "rowCount": 300,
+  "rows": "1ee27a096224a0da36731e215d4ad7143ada36b86421053e17828f5d6d5b2273",
+  "tax": "2509fa196b5b03e15a141ec2a6b2fcbe0a4d69cac8f38cf5230283f2f3999060"
+ },
+ "tests/EndChoices.test_form_three_ways_4299cb37": {
+  "holdings": "005c23c56eeb440c9292298affc7498ca006d8add92120e0d7282b22d1c67f6c",
+  "lastNetWorth": "2524845.89",
+  "ledger": "f721ea26c6bf03cb0f5fc1d5f4a8e656ee13cb1c2ade3616aaa02223023c2045",
+  "rowCount": 300,
+  "rows": "fe0a30498b4ad8897605bfad1c1ae4e63eeac3e5f5f2ee1dab2ac3e0af72cf68",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/EndChoices.test_form_three_ways_64d104f1": {
+  "holdings": "75637658f8f82488194fed141123a5ee03e2477d70d0829f759d120827f5de6b",
+  "lastNetWorth": "2527345.89",
+  "ledger": "fdd086c8e3cfaedf2075ec170d19f8f589064dc90dc6336d8015e84bf602ce80",
+  "rowCount": 300,
+  "rows": "084fc6282cfabc5adfefacacfbeea3ad59531c0105dfc7f058ef183fb5a9d736",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/EndChoices.test_form_three_ways_b79d3bc9": {
+  "holdings": "e66aac481673f8369375c6d20e97b3b3e43d2018c05343b54abde2e5a98a0d21",
+  "lastNetWorth": "2516445.89",
+  "ledger": "f5b89a09d386d609af4f8419d071f2db0751274278c33527f2c653bf57ada28f",
+  "rowCount": 300,
+  "rows": "679f664bb3fe5fed7ab501114b148b05a13ff5191bb0995c9eccff2ce76c4c6e",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/EndChoices.test_pension_starting_at_retirement_cannot_end_there_c8b2ce88": {
+  "error": {
+   "message": "item DB: ends 2034-12, before its effective start 2035-01 (retirement date)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/ExpensesCovered.test_cash_moves_only_on_events_d8ed675f": {
+  "holdings": "04ffe753e8605ca4203212f25ad1d6ef05922fe23ecbde803b240cfeb4f35358",
+  "lastNetWorth": "2360830.27",
+  "ledger": "f56163ca53fe25bc5b8d132100bdfbd4570cf4158bc73b6172d36e35c7eea28e",
+  "rowCount": 300,
+  "rows": "06c629b85ab1a8f0c1e6c4eb0e20a4c6d6f325f973837e2a7a3adc075db8f478",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/ExpensesCovered.test_debt_and_assets_follow_the_normal_schedule_a0865b08": {
+  "holdings": "35e3813c3d7ae4f22e315283e647255619b764623c38d5eea242e65b1d6855f8",
+  "lastNetWorth": "2624211.36",
+  "ledger": "c319c1e71ff454e86b769c320e4695b054f1904e16a39e4147b675bd50054be6",
+  "rowCount": 300,
+  "rows": "2bed97a0c5c6ef47d7242c755348141c5dfe86f68dd3adf912a271def655d683",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/ExpensesCovered.test_debt_and_assets_follow_the_normal_schedule_bd995dcd": {
+  "holdings": "f86b30d60aff5c3704c51e64e7ae142cb5a881e2124b9365daa68d5629ff2da6",
+  "lastNetWorth": "2370830.27",
+  "ledger": "24f44daae97a10d98de293965def4b6890ae26761dfebea2f52fe9b1e08626b7",
+  "rowCount": 300,
+  "rows": "1de6b1bbf8578f86b0ebfb7a87c2ccc6d476841a23c2e8c06f803dd3b05f8363",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/ExpensesCovered.test_sale_still_settles_through_cash_48bdf03b": {
+  "holdings": "2c7f88e1c1c1d5f0a1d87db591fbcb1e8c577673e42ca619463d2f1cb7bfdec0",
+  "lastNetWorth": "691119.95",
+  "ledger": "e90aa68bc47bf2d780b9153556c936f758f211442ecb1c1cfdf517a9903bd4c6",
+  "rowCount": 168,
+  "rows": "cecae514c5b55af5bc6967303a75d1ef10f410d76a09cd5bae891acce5889ff3",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/ExpensesCovered.test_validation_and_form_14096362": {
+  "holdings": "c991bc9526982fd75ac22b558221d55cc8198bd1ea6f57698c0f2c925b82bad1",
+  "lastNetWorth": "2367956.58",
+  "ledger": "1e2b1c88362d1dbd38bab9a45b80baa94a13ee55f4718a38a32af8f1a7279d83",
+  "rowCount": 300,
+  "rows": "6bdfa4f9cfe4dbe97806ac839d563fb59dd8efa9c8103b934af7e986e191adf7",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/ExpensesCovered.test_validation_and_form_769d278d": {
+  "error": {
+   "message": "scenario: incomeMode must be modelled or expensesCovered; got 'none'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/ExpensesTiedToRetirement.test_form_f11cc5f3": {
+  "holdings": "31ba1c5ee52383a8a2675d12aa341550d47a41dfa0a09095dcd3b38713fef350",
+  "lastNetWorth": "1728145.89",
+  "ledger": "f18cee330f1a680d674b255a38f477b809f3ba82208d4da0f673afae0b4283bb",
+  "rowCount": 300,
+  "rows": "2d9f35925b27622d50050034d7b3390a234e8eb8eafede575f6b19c49b393570",
+  "tax": "372e9eaa640f2e9b04375c7bed487fb7b6c5a5d35202668a5480280afd0fcd05"
+ },
+ "tests/ExpensesTiedToRetirement.test_indexing_counts_from_retirement_c319e162": {
+  "holdings": "11e592df372c5c340325c57265ae343fdbe751b84f1eac7264a14f02e2b9a136",
+  "lastNetWorth": "1766255.73",
+  "ledger": "483d6bc19bf5ca459e596c5f10653b97498c00f1bd8a3f9d68e3df8c2f7ba8fb",
+  "rowCount": 300,
+  "rows": "e5ba4304c4c51258ec361a5d9e78176b52699528618e2805453b6600a5ee3c15",
+  "tax": "372e9eaa640f2e9b04375c7bed487fb7b6c5a5d35202668a5480280afd0fcd05"
+ },
+ "tests/ExpensesTiedToRetirement.test_moving_retirement_moves_the_switch_f6db1ad0": {
+  "holdings": "60f8131cfe1daec3a6c669d3381be03d64ebca2c5d19081276a75c756f8c2b39",
+  "lastNetWorth": "1740145.89",
+  "ledger": "eecf07cf1ae3c99a54e4be037484189cfb54771cddf6b0cfd7b27d2df8b90c99",
+  "rowCount": 300,
+  "rows": "b637e7cd24433bff643dd33947cc502c86a4383eafa838b58ef101cdfe28b41c",
+  "tax": "6b124135e59c55beb5c68002a00140cf2c5b7f476521258fae47e95bd39571c8"
+ },
+ "tests/ExpensesTiedToRetirement.test_switches_at_the_retirement_date_b36c11a2": {
+  "holdings": "ccfd49fd28c5d028b77abda62d6982162993488e0a1d41663121cf448a1cf2b1",
+  "lastNetWorth": "1800145.89",
+  "ledger": "6d03a04dcf1e5ec52ae6802cc39816bcaa727ce30682f22561261ea9140794a7",
+  "rowCount": 300,
+  "rows": "86cffd6f1c4849931ed5c718e5e5280a66022d9f5737cc29b8e73a96072f85f9",
+  "tax": "372e9eaa640f2e9b04375c7bed487fb7b6c5a5d35202668a5480280afd0fcd05"
+ },
+ "tests/ExpensesTiedToRetirement.test_validation_e636939e": {
+  "error": {
+   "message": "item Living (retired): starts at retirement, but the scenario has no retirement event (add one, or give a startDate)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/ExpensesTiedToRetirement.test_validation_fa68a18b": {
+  "error": {
+   "message": "item Living (retired): cannot both start and end at retirement",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Improvements.test_cost_from_cash_value_added_defaults_to_cost_94653bb9": {
+  "holdings": "01dffea2bb5d39b79302e91baf3d973da53f38680155b1e5ef09bc6d00ed7f79",
+  "lastNetWorth": "2651815.56",
+  "ledger": "e02361ea9e6825eb239eb05bb93b067809cc8230399c70fadd4dece41b636460",
+  "rowCount": 300,
+  "rows": "b319c8d95b38f79369c5230e64ae7454c93eab767c871a7b60c7c7962ac64c98",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Improvements.test_financed_by_a_linked_mortgage_4b8c72cd": {
+  "holdings": "770ef7e970ea816a2325eef61c4ffe5c8ee365542f693f7eedad835e423e2730",
+  "lastNetWorth": "3385103.39",
+  "ledger": "9e49a4bcfa27594d6d572422c9cf90bb310cef62be90d9a7791ed454131a0e5e",
+  "rowCount": 300,
+  "rows": "f04468d93b97523c7d36442f91a6ae97b82ceb0920f667dffe5b225e3607633a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Improvements.test_validation_46d3ce6b": {
+  "error": {
+   "message": "item Basement: improvementDate is before the horizon start; include it in the property's marketValue instead",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Improvements.test_validation_fcc6cdb9": {
+  "error": {
+   "message": "item Basement: refers to unknown property 'nope'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Improvements.test_value_added_above_cost_is_a_gain_99bdcc5a": {
+  "holdings": "bddef9de10a2c15d9c01af16f30af8bb1b9f2605190a8f72e46b6d8423f68b99",
+  "lastNetWorth": "2739217.09",
+  "ledger": "11b88c3f362f55dbd816f1b1b0e508610005c5db66d6887a8967428e2bdd46cb",
+  "rowCount": 300,
+  "rows": "a75498ef43843648bfd099c5a9631015680be9c81bbd1af6f8dbe8f80e7270f0",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_annual_amount_spread_monthly_489212fb": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "38497bb8b46b507438a96209337e7e7ad4f3f5bcf7dee3eccb21a57976d6b701",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "c1bad7f18183efc7cb86de0384cf58fa3c0adc89d581a780c68dc795daad989c"
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_annual_amount_spread_monthly_80d65794": {
+  "holdings": "fc22479c7338b2fcf9d3608c85346b37aeb2772d6dd0640e5819e0eb2bb14442",
+  "lastNetWorth": "2436145.89",
+  "ledger": "1ecc9236135c108c49abbfb653c73498115b0d0052a4ea34360b7dd8741e65a4",
+  "rowCount": 300,
+  "rows": "4fafab8da56f194d6c2950c942134b475016aa3af8d93acfd8e87367925d00b1",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_flat_tax_on_taxable_income_only_8fbe64c8": {
+  "holdings": "5b3980fb5fe2b3da4768db23b9e40d3277af6e3f2c015bf523d9a4bbf9e41fe2",
+  "lastNetWorth": "3006145.89",
+  "ledger": "935873fffaedac011f2ac8bfdb99ec0496db57491dbff9245f8790fac8308857",
+  "rowCount": 300,
+  "rows": "4a76d8a732415228cb5607aab7357fe3b65b9bcea2a05009a34664abc43d5329",
+  "tax": "766a2fc166630e7bd15a8d12b75f5052420717f2f5f252570a616e0076c12ecb"
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_flat_tax_on_taxable_income_only_facfe6d2": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "38497bb8b46b507438a96209337e7e7ad4f3f5bcf7dee3eccb21a57976d6b701",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "c1bad7f18183efc7cb86de0384cf58fa3c0adc89d581a780c68dc795daad989c"
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_legacy_monthly_amount_still_works_5c028df3": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_no_rate_means_no_tax_089a15cc": {
+  "holdings": "5b3980fb5fe2b3da4768db23b9e40d3277af6e3f2c015bf523d9a4bbf9e41fe2",
+  "lastNetWorth": "3006145.89",
+  "ledger": "935873fffaedac011f2ac8bfdb99ec0496db57491dbff9245f8790fac8308857",
+  "rowCount": 300,
+  "rows": "4a76d8a732415228cb5607aab7357fe3b65b9bcea2a05009a34664abc43d5329",
+  "tax": "b0c185705f84483555cef646eca8b3886f1aa40be61b5b865c94b8f0a96e7bbb"
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_validation_and_form_1bdac586": {
+  "error": {
+   "message": "scenario: effectiveTaxRate must be a fraction between 0 and 1, e.g. 0.25 for 25%; got '30'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_validation_and_form_ad46687c": {
+  "error": {
+   "message": "item Free income: per must be month, quarter or year; got 'week'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_validation_and_form_ba86f285": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "e5daa93f7eae9d58b883075cb9abbf3d9beaf817fe3118fbbb80e9016d93b51f"
+ },
+ "tests/IncomeTaxAndAnnualAmounts.test_validation_and_form_e196e3b3": {
+  "holdings": "eec353dfa11c2e22714c1077d5b5f8dd5d6c676dffded4551fe43f2adcd3ef17",
+  "lastNetWorth": "4656145.89",
+  "ledger": "f7b3ccf01aa8eb629b061686e64d8bd72c1808f9ddc846eca0bc8a5d49d3e97c",
+  "rowCount": 300,
+  "rows": "b5d7e0a7395498b82b17657f2a31493328ac701e071a73cdca38b95cd2cf88dc",
+  "tax": "094cdadd435c7d8fee454241ebcf62832c96122445921bc29b99bfa56def939d"
+ },
+ "tests/Indexing.test_custom_rate_and_anniversary_of_item_start_202b8091": {
+  "holdings": "d8e42a2aed39a47d16a84b22de61e32aa46eb86b24966c195c14543b125605f8",
+  "lastNetWorth": "2200866.39",
+  "ledger": "9fbde57f059455cd7126c62d5367ae1a414b314af2bb04e52fd4113d75a641a2",
+  "rowCount": 300,
+  "rows": "e0d686d0bc174c183c14e8b370a21f3c506a5b9e6c05bb4aa2176df8a2f8566f",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Indexing.test_default_is_fixed_de35de20": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "e42e7b21cf754565b4f148a09981df26c4c12d3175c76f610f0ecd846dc75146",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Indexing.test_inflation_indexed_income_steps_up_yearly_379493fc": {
+  "holdings": "2ce5240b7bbaded471f6fc4b64b0530f4f9d91800c9044ff1b0790c895eadb97",
+  "lastNetWorth": "2851418.49",
+  "ledger": "66135c66d8cd71419cbf7dd889bfa53b61da01ade3745b1bfd90365c04cd5f1c",
+  "rowCount": 300,
+  "rows": "5976cdf7f066d55888530e0b82cef19991162eb9886db58423f23fa038686089",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Indexing.test_validation_and_form_51e9c83a": {
+  "error": {
+   "message": "item Free income: indexRate must be a fraction between -1 and 1, e.g. 0.03 for 3%; got '3'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Indexing.test_validation_and_form_d2daca72": {
+  "error": {
+   "message": "item Free income: indexing must be none, inflation or custom; got 'yearly'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Indexing.test_validation_and_form_e0f6d46c": {
+  "holdings": "68e826139e651ebbfc3c9740930c14b6d89d4d5adaf24a14a3965c36c3fae417",
+  "lastNetWorth": "1418616.81",
+  "ledger": "018fe53b4c50347c35e765e25adaf122b039b84c11a8bb79561573ef45c881f9",
+  "rowCount": 300,
+  "rows": "9e6f5e85d1efa7fea7d3f9947a124d1ece66c5ce864b63a9ba0a949d1e0e1fc5",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/LumpSumAtRetirement.test_form_de8f4a69": {
+  "holdings": "4391d3be7ab5798c75507e468064b82e7742959cd53a1992be9ed45997f2576e",
+  "lastNetWorth": "2710385.00",
+  "ledger": "f5215179cce3f82d2675e79fbb216fca0ec171eed86c387c14b127f824e26078",
+  "rowCount": 300,
+  "rows": "91d8c717533d75008081834f06790437af5da69560f3176dcac8f1ec6c41044c",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/LumpSumAtRetirement.test_pay_off_at_retirement_clears_the_loan_3ffaddb9": {
+  "holdings": "c9885e58ca0abc98c91ecaa0c8b20b3c8641f4363338ff11743480ba18e6922c",
+  "lastNetWorth": "2710178.47",
+  "ledger": "c583ac7435b578f771bd46c91adbff10cee674192f666f18a1c7ea05c4c8ec89",
+  "rowCount": 300,
+  "rows": "2a7df770f654cfd1a3c747190f959a4cab386534e230de318055939f9c3771f2",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/LumpSumAtRetirement.test_same_as_dated_amount_2e49fce8": {
+  "holdings": "59a61c68ea3c291b3bf68b0a0929f849e98d3be5fcd6ae747ad11fd191cce591",
+  "lastNetWorth": "2596376.66",
+  "ledger": "3cc88a7aaa398434fdeed14064fd39fec61d90dab46ed7ae776655df37734d7e",
+  "rowCount": 300,
+  "rows": "e018ab232a341bbca981154cf19e0b460da02dc539d7140585cadc1612d3dcfd",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/LumpSumAtRetirement.test_same_as_dated_amount_705d417c": {
+  "holdings": "59a61c68ea3c291b3bf68b0a0929f849e98d3be5fcd6ae747ad11fd191cce591",
+  "lastNetWorth": "2596376.66",
+  "ledger": "3cc88a7aaa398434fdeed14064fd39fec61d90dab46ed7ae776655df37734d7e",
+  "rowCount": 300,
+  "rows": "e018ab232a341bbca981154cf19e0b460da02dc539d7140585cadc1612d3dcfd",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/LumpSumAtRetirement.test_validation_0786d522": {
+  "error": {
+   "message": "item Pay off: paid at retirement, but the scenario has no retirement event (add one, or give a paymentDate)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/LumpSumAtRetirement.test_validation_195a593c": {
+  "error": {
+   "message": "item Pay off: give an amount or payOff, not both",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/LumpSumAtRetirement.test_validation_e9e01408": {
+  "error": {
+   "message": "item Pay off: give a paymentDate or atRetirement, not both",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/LumpSumAtRetirement.test_validation_f6298212": {
+  "error": {
+   "message": "item Pay off: missing field 'paymentDate' (give a date, or add a trigger)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/LumpSumSource.test_default_is_cash_and_bad_value_rejected_2efef67d": {
+  "error": {
+   "message": "item l: paidFrom must be cash or outside; got 'bank'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/LumpSumSource.test_default_is_cash_and_bad_value_rejected_e552d92f": {
+  "holdings": "23e96fd3fa557808303d4dc136ce50926a882658d71318063a6e1b0ffd86b59f",
+  "lastNetWorth": "2568734.36",
+  "ledger": "a791943497b1a4de8ff15a9b390ae55946b776ec139d38246eb76cfdb196e8bb",
+  "rowCount": 300,
+  "rows": "aa214b233f9ea39448491045c0512e814840838d1b1af943dd9857e45f98382a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/LumpSumSource.test_form_offers_the_choice_e3474d7a": {
+  "holdings": "0871adf66c015b2190564849d2709d9901f8e52bf936e1ecfe5ced4621a2ba55",
+  "lastNetWorth": "2578734.36",
+  "ledger": "1103bd83b61216162afcd6c11c110d79035476b11a23bab9f5a25025cddc914c",
+  "rowCount": 300,
+  "rows": "7565873d599f8ff1eae97ae1bcd282724c26388de31ba5ff5522e9f431e705f6",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/LumpSumSource.test_outside_money_reduces_debt_but_not_cash_41de6816": {
+  "holdings": "fad4fba8fab8f4ca124d19f46601f27b26186575687702715ba7920125ae7228",
+  "lastNetWorth": "2370830.27",
+  "ledger": "ddfe4d558a479bbb56ee6830d302f06b0e9c5be0835d875c70518ff695c2308f",
+  "rowCount": 300,
+  "rows": "dcb26e94ddda4d4e92f0c793243554ab52c8be3a3e3e9c072d6f7dbbdf14e9df",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/LumpSumSource.test_outside_money_reduces_debt_but_not_cash_4622e78e": {
+  "holdings": "e17c98df6148f3aacee02355c80405ea2458f288bd5cef2a8579c35377918448",
+  "lastNetWorth": "2360830.27",
+  "ledger": "f1128b60bbbaa5d9c2a0d92814d96ef28df2cba8e685723ae617d06e31b45a61",
+  "rowCount": 300,
+  "rows": "a27cb578722ecd3e0eba69d88b94d6d8c44be455b6832a34dcfd3dd85a6e7d50",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/LumpSumSource.test_outside_money_reduces_debt_but_not_cash_dd244801": {
+  "holdings": "0871adf66c015b2190564849d2709d9901f8e52bf936e1ecfe5ced4621a2ba55",
+  "lastNetWorth": "2578734.36",
+  "ledger": "c4ab0c5ee70c7e00fc60732cd5281903454f5c1ea733fc58b4a880ccc18f1d4a",
+  "rowCount": 300,
+  "rows": "7565873d599f8ff1eae97ae1bcd282724c26388de31ba5ff5522e9f431e705f6",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/MarketAdjustment.test_percent_drop_then_normal_growth_1ed45abe": {
+  "holdings": "b103260fdc242c56f67a29524f4a732aba7bf64905ad837235e5c2f11bb7751a",
+  "lastNetWorth": "2203458.30",
+  "ledger": "2b103c4520099b0c1837cad519e4f9b51bf10874be9645a3f49ca3ea79bf852c",
+  "rowCount": 300,
+  "rows": "caf3a9de04c28f4938ca8e5932faf0dd2951d9ef67ebe013a387f14cf2cf2840",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/MarketAdjustment.test_set_value_is_the_closing_value_83816aff": {
+  "holdings": "91dafeae913b0616a42c7f043f4b74f14b74ad237d0d24ef097dd2d922053248",
+  "lastNetWorth": "2584296.35",
+  "ledger": "ee0be9bd4534e06b5b61182bee1dc438d882b385a4173fda0a1868308da3fafa",
+  "rowCount": 300,
+  "rows": "14a81120f1309681a91b6ddb82b0511880fea5177ae4f14a0b9c48cecd9206a2",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/MarketAdjustment.test_validation_and_form_550b7d2d": {
+  "error": {
+   "message": "item Crash: give either percent or newValue, not both",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/MarketAdjustment.test_validation_and_form_71b82eb7": {
+  "holdings": "b103260fdc242c56f67a29524f4a732aba7bf64905ad837235e5c2f11bb7751a",
+  "lastNetWorth": "2203458.30",
+  "ledger": "118f3c91a26b9b94f96953d054a01b60762be5eea4f0c975d45dfa55f867ab2c",
+  "rowCount": 300,
+  "rows": "caf3a9de04c28f4938ca8e5932faf0dd2951d9ef67ebe013a387f14cf2cf2840",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/MarketAdjustment.test_validation_and_form_a80ef5e9": {
+  "error": {
+   "message": "item Crash: percent must be a fraction between -1 and 1, e.g. -0.15 for -15%; got '-15'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/MarketAdjustment.test_validation_and_form_f636d720": {
+  "error": {
+   "message": "item Crash: give either percent or newValue, not both",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/MarketAdjustment.test_value_only_cash_and_debt_unchanged_b45bfbe5": {
+  "holdings": "38cf9f0026cc5f6db5857aaef86733bf1497d9733abeaff973c7ae86e6caefd8",
+  "lastNetWorth": "2744245.79",
+  "ledger": "e9607af98c9f891f6a38f7fcfb31d358d9b30c08af8ecb7d4dedbfec0e8902bb",
+  "rowCount": 300,
+  "rows": "1429cc93d8dbb92b5d1e979abbd65d678ecd1cf8d2b52b9b1dcf224f20b8fdda",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/MortgageMath.test_assets_net_worth_column_shown_5093a4c7": {
+  "holdings": "fbe6f18f38c3d8786f50ef4dbcafd3746af22a224be64ad7f6f31ce84e93bbb9",
+  "lastNetWorth": "2595609.54",
+  "ledger": "4ffdaba92599c167342f815272a6b66eb12335c299537846d296c35a5811dbaa",
+  "rowCount": 303,
+  "rows": "836bf507f6650e8ce2abf215d3081b96148af3c83ed1b66058341d7d7bbc0569",
+  "tax": "46ff7ef3cfadc23f91301f60a998c1b21459c9bd3c7ea96e7d8f622115d6eccf"
+ },
+ "tests/OneOffTransfer.test_form_c16e2df6": {
+  "holdings": "c97e3ac544299406c44fe1e5e9a3e12cf4604719817282c0753ba795422aaf6e",
+  "lastNetWorth": "609000.00",
+  "ledger": "7438709ab78c19e26d7de127a4f9a33783eeee799bfb194ce332e0a0f0b0f781",
+  "rowCount": 120,
+  "rows": "64795cc2014671a8b481fca7a13563c4806363114325f37d74865e8ea888cc29",
+  "tax": "f133ccfb18f841e40311a5f1a19f3f3e76e14b821976af9790bae1b722f0141c"
+ },
+ "tests/OneOffTransfer.test_into_an_rrsp_is_a_deduction_b6c92d9d": {
+  "holdings": "28d61df789237a19c6a71ccf00a1198c647c45ac75049f7e461afdb2a6418e87",
+  "lastNetWorth": "504000.00",
+  "ledger": "eafa6ae11555855e0376100869f42b373b9471c8eee4decd2358e3ca863245c1",
+  "rowCount": 120,
+  "rows": "0ec99336b5ab124f147d0e35ad53013864a7fd5c2136490619b681256545a69f",
+  "tax": "bbb7bcd002ce770492a94d6d0371ae38c5a645c89d36c47f0a2c94683089d115"
+ },
+ "tests/OneOffTransfer.test_into_an_rrsp_is_a_deduction_b7993dc1": {
+  "holdings": "e2919b1c01ed0e5e0c7bfe80f967d0f9cc2fd14d0d41ce1296bfd9619f021641",
+  "lastNetWorth": "504300.00",
+  "ledger": "9f03b7eccd4424c05f42aedbe36afb4b98f5949b5f7d7e23e7294b557259484b",
+  "rowCount": 120,
+  "rows": "984da597b5684967a262348b66b1da3fab2bd901a1015af1230b1c5b48344547",
+  "tax": "d0f8ee3d8ae084288368602e41ac8dfdb4a8189cd0eb65255f33213c7a3dad5f"
+ },
+ "tests/OneOffTransfer.test_moves_cash_into_the_account_at_retirement_2e8d10c8": {
+  "holdings": "bf5ba74387eb466c0dc2db733954b48d40fe341504ac164385de03e7329867f5",
+  "lastNetWorth": "504000.00",
+  "ledger": "15345f9b64792e1e32b297936d76cb0d89cb2fc22329ccf3a2dfa50e1bcbfe4f",
+  "rowCount": 120,
+  "rows": "1c3eaaef0ee63a212b1d1dac258bdb982e4a6528fbac0ad0ffe4bffadabbc611",
+  "tax": "bbb7bcd002ce770492a94d6d0371ae38c5a645c89d36c47f0a2c94683089d115"
+ },
+ "tests/OneOffTransfer.test_moves_cash_into_the_account_at_retirement_c315c66e": {
+  "holdings": "bf5ba74387eb466c0dc2db733954b48d40fe341504ac164385de03e7329867f5",
+  "lastNetWorth": "504000.00",
+  "ledger": "15345f9b64792e1e32b297936d76cb0d89cb2fc22329ccf3a2dfa50e1bcbfe4f",
+  "rowCount": 120,
+  "rows": "1c3eaaef0ee63a212b1d1dac258bdb982e4a6528fbac0ad0ffe4bffadabbc611",
+  "tax": "bbb7bcd002ce770492a94d6d0371ae38c5a645c89d36c47f0a2c94683089d115"
+ },
+ "tests/OneOffTransfer.test_validation_596d0ef6": {
+  "error": {
+   "message": "item Top up: amount must be positive",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/OneOffTransfer.test_validation_bcc0bb26": {
+  "error": {
+   "message": "item Top up: give a transferDate or atRetirement, not both",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/OneOffTransfer.test_validation_db6c75bd": {
+  "error": {
+   "message": "item Top up: transfers at retirement, but the scenario has no retirement event (add one, or give a transferDate)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/OneOffTransfer.test_validation_e7014aac": {
+  "error": {
+   "message": "item Top up: missing field 'transferDate' (give a date, or add a trigger)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Pensions.test_end_before_effective_start_rejected_210fdcc8": {
+  "error": {
+   "message": "item DB pension: endDate is before startDate",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Pensions.test_end_before_effective_start_rejected_ef0def0f": {
+  "error": {
+   "message": "item DB pension: ends 2029-12, before its effective start 2030-01 (retirement date)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Pensions.test_member_contribution_is_deducted_value_unchanged_8c771d08": {
+  "holdings": "5e0726e6ab7e5b7c3def2892e77f3c9126766bf331b05e317790444384194c9d",
+  "lastNetWorth": "690210.96",
+  "ledger": "537e0bccd32004cc3d631120a5dc288036fe07e135de06061103ab97e180b8df",
+  "rowCount": 120,
+  "rows": "be97a08fd2f55b80deb7a015c31879b20e6dd6ee6415a142201eba0ee888ec23",
+  "tax": "662742dc36fbbb8369978393501ce6c2d2717735d213374b1899d72057327488"
+ },
+ "tests/Pensions.test_member_contribution_is_deducted_value_unchanged_d133e5b0": {
+  "holdings": "0f8bcb5f8ad6b66800882f4be7af627d904294d3ce578f79f6af96a6ee4ad0d0",
+  "lastNetWorth": "702810.96",
+  "ledger": "a66d4e5fd0924f53138215436726a71c99ba19ab5c05206c1a4be90f2b2f32e5",
+  "rowCount": 120,
+  "rows": "54031a89e621f84d93d756c6f3e36a74cfcc2406c50942b213c3e27a54ba70f7",
+  "tax": "136d4da22c3783ed0991b9340903e1aee9b2291052172b6853258333186b1ca7"
+ },
+ "tests/Pensions.test_needs_a_start_436ef629": {
+  "error": {
+   "message": "item DB pension: needs a startDate or a retirement event",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Pensions.test_own_start_and_end_dates_acba7b48": {
+  "holdings": "2143fea01098ebd4dc0c62d3f978720928e178492d0bd5232b7e87601f94ab35",
+  "lastNetWorth": "560202.12",
+  "ledger": "b2a34365b9e1ca0b75a6ab7078b0624f4913531d315d76044ee7b6dffb431f1a",
+  "rowCount": 120,
+  "rows": "ec970c996e0f971a899d3b59181a12e67f94f90b05dc52ed017d60dd24ab693f",
+  "tax": "2bf0257e91126f8878b16425804b61fdf8c4a01ef947c66c20965ced00a08e2d"
+ },
+ "tests/Pensions.test_payments_continue_in_income_less_mode_651b0e15": {
+  "holdings": "2738f83d352fc23cf88129a8620e237a871d253a1ba7b68114f1308d8a5f6e99",
+  "lastNetWorth": "198810.96",
+  "ledger": "0762d94bbb97517c6465dd71f72b4222aec581576b42d4d02c8d1f58ab21922d",
+  "rowCount": 120,
+  "rows": "3a14610cac746881477d25d2f83f5926714663fcc0e8578fcc7f814daada1c48",
+  "tax": "fa25e5c12b05189a879fb49dce754d2137754f77c9e7774d41fe665ae4d64a01"
+ },
+ "tests/PhaseZeroAccountOpening.test_from_cash_moves_cash_bb41783f": {
+  "holdings": "e0cdf260c3da7bbfb46f03e5286209ecf2a494af951e08a194136ed4c8fff118",
+  "lastNetWorth": "0.00",
+  "ledger": "019272af36fa05ff1917a5354b000c5e724ad155bf6b988c0aec2df0d7218ca0",
+  "rowCount": 120,
+  "rows": "86dfb1e41a603a8a0d8315ad4a5b6fa2637cbccc96ca7c2a48135d059edd3579",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/PhaseZeroAccountOpening.test_from_outside_adds_to_net_worth_436f6bfa": {
+  "holdings": "01ea2a013ae86142d89fc9a309ea49415503d1a309beee784701837e0584400f",
+  "lastNetWorth": "50000.00",
+  "ledger": "70d58738966738e2248d56ab9295c1f11a0f17b562c6187bad7725f06a6605b7",
+  "rowCount": 120,
+  "rows": "aa751aea0974bc2f9f88d321f6ebad27a290484252e3106884f8f7e6523a419c",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/PhaseZeroAccountOpening.test_not_needed_at_the_horizon_start_c5b1ae76": {
+  "holdings": "0ffe5453f81d54e43bc49a58d62458f71074185a4c5e3e48ed8fee2cce87f59d",
+  "lastNetWorth": "89542.39",
+  "ledger": "490bb1d46812e0a2613a6561b86c31a807c23b0389b6c6bb711943cd40cc2449",
+  "rowCount": 120,
+  "rows": "57d4823ac4aed9796912856a91c2c180c86842ef04b175b97b7518a8e8e64fc6",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/PhaseZeroAccountOpening.test_source_required_0d9c4413": {
+  "error": {
+   "message": "item TFSA: openingFrom must be cash or outside; got 'bank'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroAccountOpening.test_source_required_c955ac1f": {
+  "error": {
+   "message": "item TFSA: opens 2030-01, inside the horizon, with a balance; set openingFrom: cash (moved from cash) or outside (an existing balance not modelled before)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroAmortization.test_mortgage_and_renewal_2c6e48fb": {
+  "error": {
+   "message": "item rn: amortizationYears must be a whole number of months, at least 1 (e.g. 25, or 2.5 for 30 months); got '-1'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroAmortization.test_mortgage_and_renewal_41a1aa35": {
+  "error": {
+   "message": "item House mortgage: amortizationYears must be a whole number of months, at least 1 (e.g. 25, or 2.5 for 30 months); got '-1'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroAmortization.test_mortgage_and_renewal_6b51b8ec": {
+  "error": {
+   "message": "item House mortgage: amortizationYears must be a whole number of months, at least 1 (e.g. 25, or 2.5 for 30 months); got '0'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroAmortization.test_mortgage_and_renewal_702e82e0": {
+  "error": {
+   "message": "item rn: amortizationYears must be a whole number of months, at least 1 (e.g. 25, or 2.5 for 30 months); got '1.01'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroAmortization.test_mortgage_and_renewal_85e2b8c8": {
+  "error": {
+   "message": "item rn: amortizationYears must be a whole number of months, at least 1 (e.g. 25, or 2.5 for 30 months); got '0'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroAmortization.test_mortgage_and_renewal_a893e66f": {
+  "error": {
+   "message": "item House mortgage: amortizationYears must be a whole number of months, at least 1 (e.g. 25, or 2.5 for 30 months); got '0.05'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroAmortization.test_mortgage_and_renewal_bf1a8ed5": {
+  "error": {
+   "message": "item rn: amortizationYears must be a whole number of months, at least 1 (e.g. 25, or 2.5 for 30 months); got '0.05'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroAmortization.test_mortgage_and_renewal_debfeb47": {
+  "holdings": "3d728a223948330db83e0d8fa0cd0214438f45afc2de2802952d1f0d2dba4196",
+  "lastNetWorth": "2833218.66",
+  "ledger": "96908d8a294dc8d934a8789b751ecfb916545523e5c56e69877f0379a631c948",
+  "rowCount": 300,
+  "rows": "32525d86b513e4f11f0fb91802e1dc51e331cbd1240e59033bad11c62b879f68",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/PhaseZeroAmortization.test_mortgage_and_renewal_f8ead9ad": {
+  "error": {
+   "message": "item House mortgage: amortizationYears must be a whole number of months, at least 1 (e.g. 25, or 2.5 for 30 months); got '1.01'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroFirstPayment.test_no_balloon_and_interest_adjustment_paid_b256fa99": {
+  "holdings": "91c7380f7c66019f15b6a1768698fbdad880fc41eb02dbc7fcadf167dde82290",
+  "lastNetWorth": "2707404.08",
+  "ledger": "bf354d9f500e9bc749a724d19fca007647f1c8913522a934e2af69e458c1b0dc",
+  "rowCount": 312,
+  "rows": "5cf3c9ad33636938755405bba095199968814d73f5d3eddd5006e7386b406a9e",
+  "tax": "8822ab913c6139c51be29f43e500e63b203e318f378d16596058d5e409a3a0fb"
+ },
+ "tests/PhaseZeroRenewalAndSale.test_after_the_sale_rejected_ffff4c5a": {
+  "error": {
+   "message": "item rn: renewal of House mortgage on 2033-01 is after the sale of House; remove the renewal, or put the penalty on the sale",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroRenewalAndSale.test_before_the_sale_allowed_c188fb2e": {
+  "holdings": "4c714e50096acc97225eb2aa692e2ba941e68855b26add3697049e258e2ad978",
+  "lastNetWorth": "1278718.90",
+  "ledger": "3132f215f5fbb2c066f24f903f03d6597707fdf1e71b36a1bb30a47e37a2e232",
+  "rowCount": 300,
+  "rows": "1888f306270d9bf4a6b81ef086e9debb6b949112a9416cefc7025dbcd1de16d8",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/PhaseZeroRenewalAndSale.test_same_month_rejected_268ef7d2": {
+  "error": {
+   "message": "item rn: renewal of House mortgage on 2032-01 is in the same month as the sale of House; remove the renewal, or put the penalty on the sale",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroSales.test_sale_before_the_horizon_is_rejected_b5aac7cf": {
+  "error": {
+   "message": "item sell: sale of Old house on 2018-05 is before the horizon start 2027-01; remove the asset, or move the horizon",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroTax.test_negative_return_gives_no_credit_e3de9d29": {
+  "holdings": "6032c309fc60a42c2df6d92115785ab1cc54276ca0ea22d188c166c9b745b243",
+  "lastNetWorth": "1188678.44",
+  "ledger": "25e1988ff863864845efa1f82e63f91cefd1d2dc30fcc1ef03346bcee1a068e8",
+  "rowCount": 120,
+  "rows": "4ab013b56a108422b2aca036fce278aee61ddafb118227371675aa9ba8edc6ba",
+  "tax": "e380623ade9ca715d4af59c5fa2f69eee52d225d1ce6223ad719370300efcd18"
+ },
+ "tests/PhaseZeroWithdrawalIndexing.test_rejected_unless_fixed_amount_53b55a02": {
+  "error": {
+   "message": "item w: indexing applies only to methods 'amount' and 'annuity'; set indexing to none for method 'percent'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroWithdrawalIndexing.test_rejected_unless_fixed_amount_681a397d": {
+  "error": {
+   "message": "item w: indexing applies only to methods 'amount' and 'annuity'; set indexing to none for method 'even'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroWithdrawalIndexing.test_rejected_unless_fixed_amount_db76f42f": {
+  "holdings": "6a2af59733e49a21a47ff1d261964ca547436ae5c65f7158eb9b5d5594d13931",
+  "lastNetWorth": "164186.51",
+  "ledger": "9cc974c0e5678d31d993fa67f29a96538c622ff78227a8714fcb423626547595",
+  "rowCount": 120,
+  "rows": "4a592cd1818a49e39ca3f897a62515cf5c2ddd5bf4e91cd08ae9e1ade812b5b6",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/PhaseZeroWithdrawalIndexing.test_rejected_unless_fixed_amount_e98c5ec8": {
+  "holdings": "655e74f8f59f667bebb4bb0a90f00105131ea2e2bc193ca50ac5cb2184fb06a7",
+  "lastNetWorth": "157848.08",
+  "ledger": "81aa5d8dde626d5d2fc239527a2b64f0c7694bdc4370dcf1b26b1d9c181b6795",
+  "rowCount": 120,
+  "rows": "2ca1ea7417545539090cae2679ac024f31cbc9bd03d1686b974f6798417ed7f5",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/PhaseZeroWithdrawalIndexing.test_rejected_unless_fixed_amount_fa3ecf06": {
+  "holdings": "974fbe6155d62c4b02fbd1efa732b748eac2e36722168d502b0700a8bb06abba",
+  "lastNetWorth": "132268.80",
+  "ledger": "e3d50f91e94ebec8cedb120ef8de72c2734d1f99b9c889e596d66ac8e8e737e7",
+  "rowCount": 120,
+  "rows": "3c59e63b8f2354df2f0f410141bda6da8d360c83ea887e62273d0cf927c86e38",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/PhaseZeroWithdrawals.test_cannot_start_before_the_account_opens_d24a9cba": {
+  "error": {
+   "message": "item w: starts 2027-01, before its account TFSA opens 2028-01",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PhaseZeroWithdrawals.test_empty_account_gives_zero_without_crash_53b01b67": {
+  "holdings": "4206a815e95f4ccd244519f1528235201adbc7d0806d6d72b46c3e58ca374a35",
+  "lastNetWorth": "0.00",
+  "ledger": "9dfe2eeb48e670d1ddbdd34ba6a742e76c038873ab9ad76649178b31b00e6016",
+  "rowCount": 120,
+  "rows": "47b2b5b8f943155205826209b9b621991dd7c8eacad301244cfafd9f73bbe5ac",
+  "tax": "e77176b2693886fdd8399b87eaf91886071e8d1cf28127f415522b176e927fa2"
+ },
+ "tests/Prepayments.test_extra_monthly_payment_in_date_range_35cdce16": {
+  "holdings": "a419287590abe1561821f6706be9e71c054fe05de15ca519232abceb99d9d335",
+  "lastNetWorth": "2564568.54",
+  "ledger": "6e3b1f23b7691f772332b48661bf1dddcf26afbf7c17a71464596fd540c02144",
+  "rowCount": 300,
+  "rows": "68a01db0092d231a6919ae2a00a1e01116fcd6d9d52268d2862c6058f70bd16a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Prepayments.test_form_and_cascade_delete_974fc4da": {
+  "holdings": "9fd67fe631a5fc65b045293a58838bc10b9dda8b45b96ea5707726bcd27399cc",
+  "lastNetWorth": "2580113.99",
+  "ledger": "ec26d506dc5f0d33dbdac11425945005511191b5803255d697b62f0754eeb8ac",
+  "rowCount": 300,
+  "rows": "351fd29e4c1ed44002597e5af8f443bf574c111623b223bd0166576a7eb49faa",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Prepayments.test_form_and_cascade_delete_b4f57f46": {
+  "holdings": "14c2f8c4007dc18fb8715c82160f0c10f25f7c5898852a6b51679f9cc8e2d3d9",
+  "lastNetWorth": "2717293.73",
+  "ledger": "2dc2437a2529cf0438726b3925fb92032c5976070478b26d2d52976366d027a7",
+  "rowCount": 300,
+  "rows": "0da3ce3563a92347a4a3a5a592220110ec649b49977ea638c25832e6e99c278f",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Prepayments.test_lump_sum_on_date_57e85d6b": {
+  "holdings": "c15e6d8ace76d0487e3dacca08296b867833fddb8fb683a54a53f890cef32454",
+  "lastNetWorth": "2621860.50",
+  "ledger": "40f7872429cc2dd82683f5d798d9a98d62e55365f9fe6f0c1b69aa4894d5e00c",
+  "rowCount": 300,
+  "rows": "eb57089adf3c081b2c6c3adce05656d635f67d6b769462543ef0b77660061d09",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Prepayments.test_prepayment_capped_at_balance_65c5b7ba": {
+  "holdings": "6d233164a19aebac78f68e8a446ea8cfb7a5a5ec1abcf90de175245cd4a64eab",
+  "lastNetWorth": "2857324.08",
+  "ledger": "1c07caed3951583caf2777d525cb158193f148b7fc03d0b9981102f4429b77f3",
+  "rowCount": 300,
+  "rows": "e36bdaec00503496ec6cb2e43d3b94a38f873b7ff7575b605873a0158c7ca67d",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Prepayments.test_validation_e57d7f83": {
+  "error": {
+   "message": "item 3: refers to unknown mortgage 'nope'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Prepayments.test_validation_f81ac5fd": {
+  "error": {
+   "message": "item 3: paymentDate must be after the mortgage start",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PropertyLinkAndSale.test_form_and_cascade_delete_1ca36a79": {
+  "holdings": "30b176286f0bf4a3f4f8be591ac2dba7a863e5b3dc5883454aeea3a6948c1255",
+  "lastNetWorth": "2512711.74",
+  "ledger": "0a0fb8acb3199a430d53ead7c89eb1ec0d3707a5f6706408cea0fe9e45bf2fb4",
+  "rowCount": 300,
+  "rows": "3c72ae9b6cddc70c93abcbe434d331ff908fe27a8a79bb1e745d4d3777f60654",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/PropertyLinkAndSale.test_form_and_cascade_delete_924e560b": {
+  "holdings": "f568d6cd5ff086b93909de1a213c531d6555b887552cc55248a1346b0cc5fcf9",
+  "lastNetWorth": "2556145.89",
+  "ledger": "58c5511658c037b7c818cd27ff7ca4dfa914ad4e1401f21b6c98fa58197b5ddc",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/PropertyLinkAndSale.test_linked_mortgage_starts_with_purchase_6c5ad0e5": {
+  "holdings": "4800e4e727bc4a52324e171e5a0dc675a7ac809e0924cebf9507e6889be0988c",
+  "lastNetWorth": "1183884.20",
+  "ledger": "35a0493e4a2cae4949811d78430e1a0428e7fa7b7f6934cd658157f031a842c3",
+  "rowCount": 168,
+  "rows": "9f303451f3ab7779106b13b41df6b28f2528fea18f95c96f16fff65f4767b8fa",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/PropertyLinkAndSale.test_linked_mortgage_starts_with_purchase_e8d53030": {
+  "holdings": "4800e4e727bc4a52324e171e5a0dc675a7ac809e0924cebf9507e6889be0988c",
+  "lastNetWorth": "1183884.20",
+  "ledger": "35a0493e4a2cae4949811d78430e1a0428e7fa7b7f6934cd658157f031a842c3",
+  "rowCount": 168,
+  "rows": "9f303451f3ab7779106b13b41df6b28f2528fea18f95c96f16fff65f4767b8fa",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/PropertyLinkAndSale.test_market_value_differs_from_price_95cfacfe": {
+  "holdings": "168d23b3ddcf4158f7d084c7a6dd73f369fa85447ff2a95355b2cf5843703871",
+  "lastNetWorth": "1578263.77",
+  "ledger": "a8065cd11a109fd2bb5dea0fcc5ffc707dfbf5a5f4c52564130c7584b4bf11db",
+  "rowCount": 168,
+  "rows": "67002b1b8a46cddee0de883759a64d4e310fc91134d41e52a0f62a7490271686",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/PropertyLinkAndSale.test_sale_pays_off_linked_mortgage_706cdb93": {
+  "holdings": "cfb3cf59c94f24f737a196427cdf5f290016fff49cf242e74f9f2e49d5bb62a1",
+  "lastNetWorth": "936125.06",
+  "ledger": "2af11735e43fe149e2203a6318da15291860b75be054537c7f382121055bb75e",
+  "rowCount": 168,
+  "rows": "3bc4b57f7fb411d71f7c62169a2c18c30b87f32fa374533e9b92ff64ef7b9b71",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/PropertyLinkAndSale.test_unlinked_mortgage_survives_sale_1d68e7a5": {
+  "holdings": "60f29cd2e7dd4f156dda090834581a500ddb2bae02800b8044827049656a7256",
+  "lastNetWorth": "939155.36",
+  "ledger": "0f2abb0fbe76ed500456c84e4c60c155c8fbddca4d17655c534ed44edcd47373",
+  "rowCount": 168,
+  "rows": "f4cccb49936eef5110c39b769e1d4d2966e112ec99d3fa65b34ac2295bf0f0ad",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/PropertyLinkAndSale.test_validation_4e5f03f6": {
+  "error": {
+   "message": "item House mortgage: missing field 'startDate' (or link it to a property)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PropertyLinkAndSale.test_validation_62d195b6": {
+  "error": {
+   "message": "item House mortgage: starts after its property is sold",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PropertyLinkAndSale.test_validation_9586b2f5": {
+  "error": {
+   "message": "item House mortgage: refers to unknown property 'nope'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/PropertyLinkAndSale.test_validation_b5833eeb": {
+  "error": {
+   "message": "item House: saleDate must be after the purchase and within the horizon",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/RateInputs.test_engine_rejects_percent_typed_as_fraction_77244b35": {
+  "error": {
+   "message": "item House mortgage: annualRate must be a fraction between 0 and 1, e.g. 0.0379 for 3.79%; got '3.79'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/RateInputs.test_form_takes_percentages_1772be56": {
+  "holdings": "0f830878281658dfc680f7921239cbe545b493579ba984eca57ac905f080d118",
+  "lastNetWorth": "179170.54",
+  "ledger": "6f29dddce2643bf7049cb2919c9692963d88e05f80f177cc38bb92201d91e3af",
+  "rowCount": 24,
+  "rows": "a236cb6736c14ea19679d95d2ea5b2eeae3b2db8038fdaba02bd8fb85b3dd133",
+  "tax": "242bee1e910fd82336217787fd8d16266e1e3faa6d7281e12a1fc82a590d1812"
+ },
+ "tests/RateInputs.test_form_takes_percentages_46ec6173": {
+  "holdings": "94c2ce3c2889ae23b729bf9fd0775e5fab0dc2db654ae2193ee66073594fcc29",
+  "lastNetWorth": "150000.00",
+  "ledger": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "rowCount": 24,
+  "rows": "90bebbd0836bca7c74484767025a453cfef10031a23c595b1a7f854d34b2a8b8",
+  "tax": "242bee1e910fd82336217787fd8d16266e1e3faa6d7281e12a1fc82a590d1812"
+ },
+ "tests/RateInputs.test_form_takes_percentages_93482c3b": {
+  "holdings": "3688b66999bd28ef734dece7fb4e8e01c589cd406c0255736a94dcb181a5af97",
+  "lastNetWorth": "218618.56",
+  "ledger": "c630cfa835a7ad83cf88d9b12b93d25653790cb6ca6084ad7d4fff342314b460",
+  "rowCount": 24,
+  "rows": "0efc62859d7a98aed323e03872e56e63f4b97291292adc5a4fa9e097f2ad028f",
+  "tax": "242bee1e910fd82336217787fd8d16266e1e3faa6d7281e12a1fc82a590d1812"
+ },
+ "tests/RealNetWorth.test_percent_rejected_and_form_converts_714ee147": {
+  "error": {
+   "message": "scenario: annualInflation must be a fraction between -1 and 1, e.g. 0.02 for 2%; got '2'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/RealNetWorth.test_percent_rejected_and_form_converts_d9469f8f": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "e42e7b21cf754565b4f148a09981df26c4c12d3175c76f610f0ecd846dc75146",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/RenewalAttribution.test_interest_and_payments_are_caused_by_the_term_in_effect_c2e3a369": {
+  "holdings": "da6b40d39762491e4f0a528cb59ec3e8003bdfa7209915b7f8e22f6347afd0a0",
+  "lastNetWorth": "2519827.50",
+  "ledger": "4c12442c7a36fab223188f3efd60e94c1faec0134acd2dcc9ca243a690b34cc4",
+  "rowCount": 300,
+  "rows": "db2ae18eb6231569009b9eac8d355012e2caf7327ff039a0bcd813c6889a6083",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Renewals.test_new_rate_recalculates_payment_over_remaining_amortization_6bde8b7d": {
+  "holdings": "3ee25e13df9a000a99482844a7ce3539af83829f5581dbd1417a16550d45672f",
+  "lastNetWorth": "2528573.50",
+  "ledger": "afaf93683d90c17cbdba7334d7afb6cc74ebdbce33a748f71f6e00727a2449cc",
+  "rowCount": 306,
+  "rows": "122ba832726e9b372c04bfe4143791fa7544c13b1390517b7f706b381b410471",
+  "tax": "e556747bde13db6b43cfe12568cac6d03ab3eb69ea06554fd84617e1e097b9cb"
+ },
+ "tests/Renewals.test_same_rate_changes_nothing_material_b9ae08d0": {
+  "holdings": "e911ee3fe9fcd4fa2277b1b688995776ab4be3aff1e41b462b40c5486e5c2aae",
+  "lastNetWorth": "2635437.76",
+  "ledger": "9ae8a3e411be94b402d68f2487d1330593e0f406773a8b0cdf57b35b9ea8dc2a",
+  "rowCount": 306,
+  "rows": "73d409ed2617574fc7b26c6ff3d79765c6b6d88c895fa72d4d20bac5bed6faf4",
+  "tax": "e556747bde13db6b43cfe12568cac6d03ab3eb69ea06554fd84617e1e097b9cb"
+ },
+ "tests/Renewals.test_same_rate_changes_nothing_material_c6b0662f": {
+  "holdings": "e911ee3fe9fcd4fa2277b1b688995776ab4be3aff1e41b462b40c5486e5c2aae",
+  "lastNetWorth": "2635437.76",
+  "ledger": "07526b4bf2bbe3bb26468da26594d0fb7795a9e93d3b47069904d7428e21e727",
+  "rowCount": 306,
+  "rows": "73d409ed2617574fc7b26c6ff3d79765c6b6d88c895fa72d4d20bac5bed6faf4",
+  "tax": "e556747bde13db6b43cfe12568cac6d03ab3eb69ea06554fd84617e1e097b9cb"
+ },
+ "tests/Renewals.test_switch_lender_resets_amortization_5a6283ef": {
+  "holdings": "3cdf87f456f23e810ab7474606dd94da542420a1ff0097202b6f6f219a77032d",
+  "lastNetWorth": "3399713.56",
+  "ledger": "f6d9deb9b8b3425beeda4965c3f62ce9a36f8f0f0715fc632484692447f21b33",
+  "rowCount": 366,
+  "rows": "f352a638c3efe0336e33ab0e61f119b3028cbe6a9c4d7bda3f91d617830e9b2e",
+  "tax": "07f7c04c8bdb5fb1821e282e35037c3e4d6de6cbc06d5603d2c4fc1dae6e6a1a"
+ },
+ "tests/Renewals.test_validation_and_form_139ffe52": {
+  "holdings": "d48bc4a08e30c25cfeeeffd92b7700d2aa066f705909d875cd7004897ea53d03",
+  "lastNetWorth": "2512711.74",
+  "ledger": "a795382656004c22f0c9d1bae0665bb0102c730313ce746b527c36302a40313f",
+  "rowCount": 300,
+  "rows": "3c72ae9b6cddc70c93abcbe434d331ff908fe27a8a79bb1e745d4d3777f60654",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/Renewals.test_validation_and_form_153ee3e4": {
+  "error": {
+   "message": "item 3: startDate must be after the mortgage start",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/Renewals.test_validation_and_form_bd012ea9": {
+  "error": {
+   "message": "item Renewal: another renewal of this mortgage starts in the same month",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/RetirementDate.test_form_106bf0d3": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "cddab018ce33c52cf5ee01fd96bb8e19aed97227f5f610b4530aad88bc2ef44c"
+ },
+ "tests/RetirementDate.test_form_1a7f3702": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/RetirementDate.test_form_930cf82d": {
+  "holdings": "4642693f4d7dfa793d8f840412e902d1cb3ba672ccdbfc7c063b8e7689b5e0b6",
+  "lastNetWorth": "4397811.82",
+  "ledger": "24c0b084390aa9ab6958af5fd75cd30cc8d37cbeed1f972e28ea4cd9e83c293f",
+  "rowCount": 300,
+  "rows": "36d15f3f94b195c65e2ed5d6908c0773141910f2d1b5a856a8de099dea628163",
+  "tax": "34bc6889933fe5746d2cda88f76f33769e1a9653577134a3c1e432db1c285297"
+ },
+ "tests/RetirementDate.test_moving_the_retirement_date_moves_the_end_180abf88": {
+  "holdings": "2cd460d468a2241d7e8b3eb2652bf738c55da2fa326b52c2a306db02b42a790a",
+  "lastNetWorth": "2262145.89",
+  "ledger": "1698c098a31723f615e102facf5a19031329dcce2aca81eddb4cc06891dd8fee",
+  "rowCount": 300,
+  "rows": "9837f167f5e9bd8858e395959b7225d1a72c2aea59efd99ada6edf106582508f",
+  "tax": "6b124135e59c55beb5c68002a00140cf2c5b7f476521258fae47e95bd39571c8"
+ },
+ "tests/RetirementDate.test_moving_the_retirement_date_moves_the_end_6997190e": {
+  "holdings": "c388172c2a91640f6abcec9d2f95f7c7496c30785943d1906012a0008894f74d",
+  "lastNetWorth": "1842145.89",
+  "ledger": "d198aea3d45dff8a83cce3128bc984221b9db2ac0d48680654937523b77b69c1",
+  "rowCount": 300,
+  "rows": "ce3f865e2d0c065ce31d96c8830afde7fc5981612ede9a9ac0e90ce1b16b5bed",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/RetirementDate.test_salary_stops_the_month_before_retirement_7e43bac2": {
+  "holdings": "6cdc37c14145b80fc1313fe07832babede92d9389b68c6d39deaa7025441388a",
+  "lastNetWorth": "2052145.89",
+  "ledger": "24b2c9d97963f4f02c200caaee043029d4cd0c260e68fafb406e77379f50c407",
+  "rowCount": 300,
+  "rows": "74207d0680ae75bf61b58cf1447ef0bc1693c325c5eb823e40c7132a0ac70ee1",
+  "tax": "372e9eaa640f2e9b04375c7bed487fb7b6c5a5d35202668a5480280afd0fcd05"
+ },
+ "tests/RetirementDate.test_without_retirement_date_or_flag_nothing_changes_6f166366": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/RetirementDate.test_without_retirement_date_or_flag_nothing_changes_7d074fe1": {
+  "holdings": "6d66aef37c2e88b4b4cea120226edd8fe830eac73ec6e92ec80ec950ee79f96d",
+  "lastNetWorth": "2556145.89",
+  "ledger": "ccc230003a6c127dfc71a8698df86006f1f6126657cfb28d6ee6a44d45142e95",
+  "rowCount": 300,
+  "rows": "77c13195e59c9b964d3c18b21ff4b3b4e1cd1be223cab0d232c83813db49950a",
+  "tax": "372e9eaa640f2e9b04375c7bed487fb7b6c5a5d35202668a5480280afd0fcd05"
+ },
+ "tests/RetirementEvent.test_account_own_withdrawal_rate_still_wins_d26828e1": {
+  "holdings": "77cf080d3140f7fb75f425952f415a4a92f396f1a9b0c615d974f2640aa51eab",
+  "lastNetWorth": "377200.00",
+  "ledger": "d2eb4cfc9275df2e15155d298ae0341bc989258275e8231efedabf2392d5ef12",
+  "rowCount": 120,
+  "rows": "2dc15977267a250d9617a97f51f5179722cd3a97c60723e922fa2be57c9c483a",
+  "tax": "12868bde1540e7d3deafe8cc9d76b4aa32ad398373992963835f690612cd09e4"
+ },
+ "tests/RetirementEvent.test_loading_an_older_file_makes_the_event_315c4de2": {
+  "holdings": "728e04d0f48008403eb49bd95992feaa254bcd3802214151470242ded0256c0f",
+  "lastNetWorth": "343600.00",
+  "ledger": "f26e5847983406773ae1dbb47b8008c854e0eb50774c2f0d7bc6c40d9957ca5f",
+  "rowCount": 120,
+  "rows": "b2d8634cefcabd33090c2e856107034724fa85e55c61542f6b744c08e860e865",
+  "tax": "823870378ccb40a9a39d5039c78c5e42280a4d75520bb2e90a94e92b27e20b1d"
+ },
+ "tests/RetirementEvent.test_pension_and_withdrawal_without_start_begin_at_retirement_6d191fb3": {
+  "holdings": "728e04d0f48008403eb49bd95992feaa254bcd3802214151470242ded0256c0f",
+  "lastNetWorth": "343600.00",
+  "ledger": "f26e5847983406773ae1dbb47b8008c854e0eb50774c2f0d7bc6c40d9957ca5f",
+  "rowCount": 120,
+  "rows": "b2d8634cefcabd33090c2e856107034724fa85e55c61542f6b744c08e860e865",
+  "tax": "823870378ccb40a9a39d5039c78c5e42280a4d75520bb2e90a94e92b27e20b1d"
+ },
+ "tests/RetirementEvent.test_tax_switches_to_the_retirement_rate_b4bf282a": {
+  "holdings": "51dae5ea1cba7096cedd6558c2ea086368255fdeaf1389b123bd1b64fd323f91",
+  "lastNetWorth": "368800.00",
+  "ledger": "04f7f911c977b22333e8197efa2420bbb85dbb3b45e480caae065695adee70c4",
+  "rowCount": 120,
+  "rows": "d41204ec1d268ff1f3b4b92b807794f8a785b3083e57ddeb77f28b8e64f17847",
+  "tax": "d58d374ab573aa53d11732f15a3a5ed4b13328ed7162172b9633034290a3d673"
+ },
+ "tests/RetirementEvent.test_validation_05bd2812": {
+  "error": {
+   "message": "scenario: has both a retirement event and a retirementDate setting; keep the event",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/RetirementEvent.test_validation_159cab1d": {
+  "error": {
+   "message": "scenario: only one retirement event is allowed",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/RetirementEvent.test_validation_41dc79be": {
+  "error": {
+   "message": "item Retire: retirementDate must be within the horizon",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/RetirementEvent.test_validation_c179a356": {
+  "error": {
+   "message": "item w: needs a startDate or a retirement event",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/RetirementEvent.test_validation_d299d972": {
+  "error": {
+   "message": "scenario: retirementTaxRate must be a fraction between 0 and 1, e.g. 0.20 for 20%; got '20'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/SaleAtRetirement.test_form_86d1146c": {
+  "holdings": "eb2202e3c366c4414b2305875b5c90a92c8e1e773d55e765906b5550f5d71422",
+  "lastNetWorth": "1380735.22",
+  "ledger": "45809ce58a7e6ba09db99b16599f0afbd8b864b6c4ac1a6ecfb3c27c48d7a2f3",
+  "rowCount": 300,
+  "rows": "5294fba6c5cbcfd0726e5c52c4f0ed3312f58d166a5288cc903566758e5dd816",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/SaleAtRetirement.test_same_as_a_dated_sale_and_moves_with_retirement_0630c317": {
+  "holdings": "eb2202e3c366c4414b2305875b5c90a92c8e1e773d55e765906b5550f5d71422",
+  "lastNetWorth": "1380735.22",
+  "ledger": "0e6e13ca563461293ac73e02a29a54f017f6f4f8d7321dd60a1f7577d39a235f",
+  "rowCount": 300,
+  "rows": "5294fba6c5cbcfd0726e5c52c4f0ed3312f58d166a5288cc903566758e5dd816",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/SaleAtRetirement.test_same_as_a_dated_sale_and_moves_with_retirement_2f04933e": {
+  "holdings": "eb2202e3c366c4414b2305875b5c90a92c8e1e773d55e765906b5550f5d71422",
+  "lastNetWorth": "1380735.22",
+  "ledger": "0e6e13ca563461293ac73e02a29a54f017f6f4f8d7321dd60a1f7577d39a235f",
+  "rowCount": 300,
+  "rows": "5294fba6c5cbcfd0726e5c52c4f0ed3312f58d166a5288cc903566758e5dd816",
+  "tax": "01e7fe3ab346ecf941f2b951fedc97b146d31cb10ff2615721c781ec0b21e700"
+ },
+ "tests/SaleAtRetirement.test_same_as_a_dated_sale_and_moves_with_retirement_8b49db23": {
+  "holdings": "396e99dd5eb1dc95708096bc33e232c8275361e74645473faa89016ce81f00de",
+  "lastNetWorth": "1614185.87",
+  "ledger": "d20924eda6c5b417886d774b4c4058ab6d6ee0de39d4d1366cca6e9750b85d91",
+  "rowCount": 300,
+  "rows": "cb7b9c31c204331c58e42d2601d75bcb7e8867ec0449c01f57d7e5f715dafde1",
+  "tax": "2a529963c22e758f0f2087185cfb17023415041767ac4c918e650da0f5021d53"
+ },
+ "tests/SaleAtRetirement.test_validation_01cecb8a": {
+  "error": {
+   "message": "item Downsize: give a saleDate or atRetirement, not both",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/SaleAtRetirement.test_validation_0a95f930": {
+  "error": {
+   "message": "item Downsize: sells at retirement, but the scenario has no retirement event (add one, or give a saleDate)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/SaleAtRetirement.test_validation_7d13bfc0": {
+  "error": {
+   "message": "item Downsize: missing field 'saleDate' (give a date, or add a trigger)",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/SaleAtRetirement.test_validation_d531d2d2": {
+  "error": {
+   "message": "item rn: renewal of House mortgage on 2036-01 is after the sale of House; remove the renewal, or put the penalty on the sale",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/SaleItem.test_form_and_cascade_e2f78b62": {
+  "holdings": "23cfc6474b057e08b2521384acac15b67bc06c8cbb8b403e3cd93d0d4457fce8",
+  "lastNetWorth": "1526656.13",
+  "ledger": "9de553883b689d6b45a6ba618430c3e993a0a10772cb797d77cfc21d8844261b",
+  "rowCount": 300,
+  "rows": "978d9ffda4f0d47c82db34e3eb5bc83d0f9544ddc93a56e46ad9b07ab98d8a63",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/SaleItem.test_sale_pays_off_the_mortgage_and_penalty_728b3a5d": {
+  "holdings": "3358d804ada2f522d7273632b602b974f82f7b30bf5ca5d7f25a3ad985f1b09d",
+  "lastNetWorth": "929125.06",
+  "ledger": "38e6597fb7d620f5ea71e00160490d521b53736840e6d4296e167f37279604d5",
+  "rowCount": 168,
+  "rows": "75f4f82323e4174bc35930e120259f3256a91788d586abe1f76fc40851496b9a",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/SaleItem.test_sale_pays_off_the_mortgage_and_penalty_9be61093": {
+  "holdings": "cfb3cf59c94f24f737a196427cdf5f290016fff49cf242e74f9f2e49d5bb62a1",
+  "lastNetWorth": "936125.06",
+  "ledger": "a34c037e1bcb95c8c82925a0dac0537e72dfe9b9fabe1c7fc9e87bfd6a083d5f",
+  "rowCount": 168,
+  "rows": "3bc4b57f7fb411d71f7c62169a2c18c30b87f32fa374533e9b92ff64ef7b9b71",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/SaleItem.test_validation_6d52bf1f": {
+  "error": {
+   "message": "item House mortgage: starts after its property is sold",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/SaleItem.test_validation_c9142444": {
+  "error": {
+   "message": "item Sell: refers to unknown property 'nope'",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/SaleItem.test_validation_f12add1a": {
+  "error": {
+   "message": "item 4: improvementDate must be before the sale",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/SaleItem.test_validation_f59b428e": {
+  "error": {
+   "message": "item Sell: property 'house' is sold more than once",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/SalePrice.test_blank_price_sells_at_value_f6a2f119": {
+  "holdings": "cfb3cf59c94f24f737a196427cdf5f290016fff49cf242e74f9f2e49d5bb62a1",
+  "lastNetWorth": "936125.06",
+  "ledger": "a34c037e1bcb95c8c82925a0dac0537e72dfe9b9fabe1c7fc9e87bfd6a083d5f",
+  "rowCount": 168,
+  "rows": "3bc4b57f7fb411d71f7c62169a2c18c30b87f32fa374533e9b92ff64ef7b9b71",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/SalePrice.test_price_replaces_the_value_95e7e6a5": {
+  "holdings": "9b7dd7607ae9973dd0589f1d905b25a814442435d07d6c1a07c87bb5f046e29c",
+  "lastNetWorth": "807305.34",
+  "ledger": "21381a94a9e9c21fdfd0efd028d228f7954ae58a00c81de016aa1cf00c4eb62e",
+  "rowCount": 168,
+  "rows": "ff91237685c4f03ff8fb5c15f4bce59b74e182ff1db4c77746d4cafb8a571ba0",
+  "tax": "cae85eed4780ee97cbcbbe6e0de6b28f48df732ecaa3b388523c46994c03e840"
+ },
+ "tests/VehicleMaintenance.test_flat_without_increase_7bbedac1": {
+  "holdings": "96933d30ed747a2825e0216a770155502f3bc085cdb28dde3cb01ae23a4db23f",
+  "lastNetWorth": "2467083.19",
+  "ledger": "42fb9ef9cca16e370a79f1812d1d30bebcfbcf8c25bb82e121233916a05916f1",
+  "rowCount": 300,
+  "rows": "6d2503360b63f04051631b14a5cc47d7aa415519cde387e86d28588838549584",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/VehicleMaintenance.test_rises_yearly_on_the_purchase_anniversary_6ea1676d": {
+  "holdings": "4147ca273b55c17421dad1a918371148ac0ce25ca37b32a62c392515ebfb4c2f",
+  "lastNetWorth": "2353765.63",
+  "ledger": "31e77d723b38c1106dde75a9a0818dc381afee5bb9fc1cb351ad75880b2163bd",
+  "rowCount": 300,
+  "rows": "d7722ec188641584a8f6df7b5e8dd2019b2ffc3d1f8828a468677db87ec3f78b",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/VehicleMaintenance.test_validation_and_form_4b7c4dc0": {
+  "error": {
+   "message": "item Car maintenance: indexRate must be a fraction between -1 and 1",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/VehicleMaintenance.test_validation_and_form_e2a5a4a8": {
+  "holdings": "38ded7c1adf2608025bbacf899bd2a90c8ea8934845b577f8257ad0e6eb308d3",
+  "lastNetWorth": "2353765.63",
+  "ledger": "4a0132b1dd2076b697a2637cf2f0c6026e549a6af3ab419f3d1fa1eef4df8701",
+  "rowCount": 300,
+  "rows": "d7722ec188641584a8f6df7b5e8dd2019b2ffc3d1f8828a468677db87ec3f78b",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/VehicleSale.test_proceeds_less_selling_cost_then_nothing_824c775b": {
+  "holdings": "8dd84a70c798fb44324d00548608554e9c6eb57fe4a5d1be10273fad699bd3c4",
+  "lastNetWorth": "2526289.27",
+  "ledger": "cbc85b02c52faac6145f412c5af358964d4e57cad8ac9dec9e35addc0c424ae9",
+  "rowCount": 300,
+  "rows": "143dbb2ae49f8a695c8da37c7238539b6e7a3cdc988f67a17ac0d319c7308781",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/VehicleSale.test_trade_in_and_replace_in_the_same_month_e0a70fe8": {
+  "holdings": "872fb38ae1531de82397f71c46fc51680c91d1eec4277a5c8f84db0b8e0aed2e",
+  "lastNetWorth": "2456664.35",
+  "ledger": "a8c7310470916c9722e838dfa0ac46731a6cb627bbc05fd282ad4246eae23fc7",
+  "rowCount": 300,
+  "rows": "39ee8f66f96cff47799667b272168571502b0a4e7cc146c73c7997ae992b001e",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/VehicleSale.test_validation_and_form_a869620b": {
+  "holdings": "b7a945c47719b85f46dacca0c0dff9e5da45b12db2f228ec0c808261bd36214e",
+  "lastNetWorth": "2523214.63",
+  "ledger": "7d3fdf25fb82992860f41718854788ad32583edf7bdd5fb4e5472706dcfafcb4",
+  "rowCount": 300,
+  "rows": "d2409407279f9616f5231266432f16246de6b9db68bd8687171bea0ba2f1b143",
+  "tax": "e93301341a1c4cf4905a56100230d4b2111077845f11685d087e51101fea04bd"
+ },
+ "tests/VehicleSale.test_validation_and_form_e075a8cf": {
+  "error": {
+   "message": "item Trade in: saleDate must be after the purchase and within the horizon",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/WithdrawalMethodMessages.test_method_and_fields_must_agree_bf5621a5": {
+  "error": {
+   "message": "item Pension draw: method is 'amount' (a fixed amount) but no amount is given. To withdraw a percentage of the balance, choose method 'percent'.",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/WithdrawalMethodMessages.test_method_and_fields_must_agree_c9ee64e7": {
+  "error": {
+   "message": "item Pension draw: method is 'percent' but no annualRate is given. To withdraw a fixed amount, choose method 'amount'.",
+   "stage": "validate",
+   "type": "ValueError"
+  }
+ },
+ "tests/WithdrawalMethodMessages.test_percent_from_the_form_29e5c34b": {
+  "holdings": "1ba98b74d7a28966f13529b1ec401c581631c2266610f3f05c249df8f3d90fe1",
+  "lastNetWorth": "160502.54",
+  "ledger": "aa596de78dce348704f5c8e2f1dc5abb36e2682ebab6ca462ef2b5405e8ed70c",
+  "rowCount": 120,
+  "rows": "4acdd8b6619e5d07aa9c5f05010b6f68c51f91b2135cf5cc362e379502006692",
+  "tax": "54f4c7a653b16c5c68b57618b78e80070226798526158261b49109372381cb49"
+ }
+}

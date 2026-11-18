@@ -1,0 +1,12 @@
+<h1 id="adr-0002-personal-tool-planning-for-a-single-economic-unit">ADR-0002: Personal tool planning for a single economic unit</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>We need to decide who the system serves, since that drives auth, tenancy and data ownership.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>The system is a <strong>personal planning tool</strong>: no multi-user support, no tenancy, no auth.</li><li>Calculations are done for a <strong>single economic unit</strong>: an individual or an entire family treated as one unit. All assets, liabilities, incomes and expenses belong to that unit.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Self-hosted distribution for others: not a goal now.</li><li>Hosted multi-user product or advisor tool: out of scope.</li><li>Modelling individual household members separately: rejected for now (see Consequences).</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>The domain model needs no Person/Household hierarchy; the root is one economic unit.</li><li><strong>Watch item:</strong> some Canadian rules are per individual (TFSA/RRSP contribution room, pension income splitting). Under simple tax modelling (ADR-0004) this is acceptable; if modelling ever needs per-person rules, this ADR will need to be superseded.</li></ul>
+<h2 id="amendment-2026-11-11-persons-inside-the-economic-unit-adr-0061">Amendment (2026-11-11): persons inside the economic unit (ADR-0061)</h2>
+<p>The watch item is triggered: a second earner needs per-person rules. This ADR is not superseded. The household stays one economic unit for money: cash, assets, liabilities, expenses and net worth are shared, and results stay household-level. Inside it, <code>person</code> items own income, accounts, pensions, contribution room and a retirement date, and are taxed separately (ADR-0061). A file without persons has one implicit person.</p>

@@ -1,0 +1,23 @@
+<h1>Engine pipeline (ADR-0010, ADR-0027, ADR-0028)</h1><p><code>diagrams/01-engine-pipeline.mmd</code></p><figure class="diagram"><a href="/static/docs/diagrams/24d8796ca598d298.svg" target="_blank"><img src="/static/docs/diagrams/24d8796ca598d298.svg" alt="diagrams/01-engine-pipeline.mmd"></a></figure><details><summary>Mermaid source</summary><pre><code>---
+title: Engine pipeline (ADR-0010, ADR-0027, ADR-0028)
+---
+flowchart LR
+    IN[/&quot;ScenarioSet input (JSON)\nscenarios + set-level goals&quot;/] --&gt; TL1
+
+    subgraph TL1[&quot;Whole-timeline stages (per scenario)&quot;]
+        S1[&quot;Calendar\nmonthly periods\nshared horizon&quot;] --&gt; S2[&quot;Event placement\nexpand generators,\nplace events and cash flows&quot;]
+    end
+
+    TL1 --&gt; STEP
+
+    subgraph STEP[&quot;Monthly stepping stage: all scenarios in lockstep, for each month M&quot;]
+        direction TB
+        P1[&quot;per scenario: steps 1-8\n(ADR-0018)&quot;] --&gt; P2[&quot;per scenario:\nupdate tallies&quot;]
+        P2 --&gt; P3[&quot;scenario-level goals&quot;]
+        P3 --&gt; P4[&quot;set-level goals\n(read tallies across scenarios)&quot;]
+        P4 -. &quot;next month&quot; .-&gt; P1
+    end
+
+    STEP --&gt; S6[&quot;Result assembly\nper-scenario results, goal outcomes,\ncomparison&quot;]
+    S6 --&gt; OUT[/&quot;ScenarioSet result (JSON)&quot;/]
+</code></pre></details>

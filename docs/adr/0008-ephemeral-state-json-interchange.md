@@ -29,3 +29,9 @@ pass data between components, possibly over a network.
 - Every exported document and interchange payload carries an explicit **schema version**.
 - The versioning *strategy* (version format, compatibility rules, migration of old
   files) is still open. See open-questions Q-07.
+
+## Amendment (2026-11-15): the browser tab keeps the working scenario
+- The web front-end keeps the scenario in the tab's `sessionStorage` (ADR-0069): it
+  survives a refresh, not closing the tab. This is not persistence across sessions;
+  saving a file stays explicit, and the page warns before a tab with unsaved changes is
+  closed. `localStorage` (kept across sessions) stays rejected.

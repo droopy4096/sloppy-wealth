@@ -77,3 +77,10 @@ one item that triggers them all.
 - A `OneOffTransfer` (ADR-0025) may set **`atRetirement`** instead of a date (same rules
   as a sale at retirement), e.g. moving sale proceeds into an RRSP when retiring.
 - A transfer into a tax-deferred account is a deduction as before (ADR-0048).
+
+## Amendment (2026-11-11): one retirement event per person (ADR-0061)
+"At most one" becomes at most one per person; the retirement event has an `owner`.
+Owned items tied to retirement (salary end, pension start, withdrawal start) follow
+their owner's retirement. Household items tied to retirement (sale, payoff, transfer,
+expense end) name the person with `retirementOf` (blank = the first person). Each
+person's tax rate switches at their own retirement.

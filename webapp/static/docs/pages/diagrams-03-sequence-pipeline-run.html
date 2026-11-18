@@ -1,0 +1,33 @@
+<h1>Pipeline run, two-houses scenario (ADR-0010)</h1><p><code>diagrams/03-sequence-pipeline-run.mmd</code></p><figure class="diagram"><a href="/static/docs/diagrams/970557fc30192cb6.svg" target="_blank"><img src="/static/docs/diagrams/970557fc30192cb6.svg" alt="diagrams/03-sequence-pipeline-run.mmd"></a></figure><details><summary>Mermaid source</summary><pre><code>---
+title: Pipeline run, two-houses scenario (ADR-0010)
+---
+sequenceDiagram
+    autonumber
+    actor C as Caller (controller / CLI / lambda)
+    participant E as Engine
+    participant CAL as CalendarStage
+    participant EVP as EventPlacementStage
+    participant MS as MonthlySteppingStage
+    participant GO as GoalObservationStage
+    participant RA as ResultAssemblyStage
+
+    C-&gt;&gt;E: run(Scenario JSON)
+    E-&gt;&gt;E: validate schemaVersion, resolve TaxRules(jurisdiction = CA)
+    E-&gt;&gt;CAL: apply(state0)
+    CAL--&gt;&gt;E: state1 (+ periods 2026-11 to 2055-03, 341 months)
+    E-&gt;&gt;EVP: apply(state1)
+    Note over EVP: expand EventGenerators (e.g. salary raises) into Events.&lt;br/&gt;Place Events and CashFlows on the periods they touch.&lt;br/&gt;e.g. 2034-05: Sale(H1), Sale(H2), 2037-03: salary ends, pension draw starts
+    EVP--&gt;&gt;E: state2 (+ timeline of scheduled items)
+    E-&gt;&gt;MS: apply(state2)
+    loop each period P from 2026-11 to 2055-03
+        MS-&gt;&gt;MS: step(P) reads closed P-1 (see 04-sequence-month-step)
+    end
+    MS--&gt;&gt;E: state3 (+ closed periods: balances, movements, shortfalls)
+    E-&gt;&gt;GO: apply(state3)
+    Note over GO: G1 MAINTAIN bank SHORTFALL = 0 gives &quot;held throughout&quot; or first violated P.&lt;br/&gt;G2 REACH M1 BALANCE = 0 gives first met P (here: settled by sale 2034-05)
+    GO--&gt;&gt;E: state4 (+ goal observations)
+    E-&gt;&gt;RA: apply(state4)
+    Note over RA: net worth per period (nominal, and real deflated to 2026-11)
+    RA--&gt;&gt;E: state5 = ProjectionResult
+    E--&gt;&gt;C: ProjectionResult JSON
+</code></pre></details>

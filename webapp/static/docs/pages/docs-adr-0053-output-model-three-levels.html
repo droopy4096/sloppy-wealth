@@ -1,0 +1,10 @@
+<h1 id="adr-0053-the-result-has-three-levels-main-table-per-holding-detail-movement-ledger">ADR-0053: The result has three levels: main table, per-holding detail, movement ledger</h1>
+<ul><li><strong>Status:</strong> Accepted, provisional: to be reviewed once real results are inspected</li><li><strong>Date:</strong> 2026-11-08</li><li><strong>Relates to:</strong> ADR-0028 (scenario sets), ADR-0027 (tallies), ADR-0050 (columns), ADR-0040 (applied defaults); diagram <code>05-output-model.mmd</code></li></ul>
+<h2 id="context">Context</h2>
+<p>The PoC showed only totals, so a user could not check whether a mortgage principal was falling. Tag-based tallies and goals also need the individual money movements.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>A run returns a <strong>SetResult</strong> with one <strong>ScenarioResult</strong> per scenario and the set-level goal results.</li><li>Each ScenarioResult states the settings that shape its numbers (base date, inflation, income mode) and the <strong>defaults applied</strong> to omitted fields.</li><li>It has three levels of detail:<ol><li><strong>PeriodRow</strong>: the main table (ADR-0050) plus liquidation net worth; any metric can be shown in base-date dollars.</li><li><strong>HoldingSeries</strong>: per holding and month: opening, closing, cost basis; for loans, interest, principal paid and the current rate.</li><li><strong>Movement</strong> ledger: every money movement with kind, from, to, amount, source item and tags. Tag sums are computed from it, and any figure can be traced to it.</li></ol></li><li>Tally series, goal results (status and first met/violated period) and shortfalls (period, account, amount, cause) complete the result.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>No ledger, tags summed directly into tallies: smaller, but numbers cannot be traced.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>The ledger is the bulk of the result (about 15–30 movements a month over 400+ months); views may request only the levels they need.</li><li>To be reviewed after the PoC produces these levels.</li></ul>

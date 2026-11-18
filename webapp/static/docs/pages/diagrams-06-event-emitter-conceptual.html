@@ -1,0 +1,209 @@
+<h1>Event-emitter engine, conceptual class model (DRAFT v0.2, poc/state-machine, D1-D5, D-E1..D-E4)</h1><p><code>diagrams/06-event-emitter-conceptual.mmd</code></p><figure class="diagram"><a href="/static/docs/diagrams/33429f82c9cefd3e.svg" target="_blank"><img src="/static/docs/diagrams/33429f82c9cefd3e.svg" alt="diagrams/06-event-emitter-conceptual.mmd"></a></figure><details><summary>Mermaid source</summary><pre><code>---
+title: Event-emitter engine, conceptual class model (DRAFT v0.2, poc/state-machine, D1-D5, D-E1..D-E4)
+---
+classDiagram
+    direction LR
+
+    namespace Input {
+        class Scenario {
+                &lt;&lt;input&gt;&gt;
+                horizon, settings
+                retirement, tax rates, inflation, base date
+            }
+        class ItemSpec {
+                &lt;&lt;input: one form input&gt;&gt;
+                type, id, fields
+                host : ItemSpec [0..1] (modifier, D-E1)
+            }
+        class Validator {
+                &lt;&lt;pure function&gt;&gt;
+                validate(Scenario)
+            }
+    }
+
+    namespace Build {
+        class EmitterFactory {
+                &lt;&lt;registry: @item_type, one per item type&gt;&gt;
+                factory(item, ctx) Emitter[*]
+            }
+        class Emitter {
+                &lt;&lt;abstract&gt;&gt;
+                order : clock.Order number, class default, overridable, D-E2
+                ordinal : holding slot or item index (tie-break)
+                sub : int (host and modifiers at one position)
+                source : item id
+                schedule : Schedule
+                due(month) bool
+                emit(month, Household) Event[*]
+            }
+        class Schedule {
+                &lt;&lt;value&gt;&gt;
+                initial | one-shot | window | anniversary | every month
+                may be anchored to retirement
+            }
+        class InitialEmitter {
+                carry-in, account at start, pension creation
+                negative order: once before month 1
+            }
+        class OneShotEmitter {
+                purchase, opening, transfer, improvement,
+                market adjustment
+            }
+        class RecurringEmitter {
+                income, expense, contribution, withdrawal,
+                loan servicing, growth, maintenance, pension
+            }
+        class ModifierEmitter {
+                renewal, extra payment, lump sum, sale
+                acts at its host&#x27;s position (D-E1)
+            }
+        class ScenarioEmitter {
+                retirement, tax step, results recorder
+            }
+    }
+
+    namespace Run {
+        class ScenarioRunner {
+                &lt;&lt;the loop&gt;&gt;
+                sorts emitters by key = order, ordinal, sub, D-E2
+                INITIAL step once, then for each month:
+                ask each due emitter in key order,
+                apply its events at once
+                registers Emitters only
+            }
+        class Event {
+                &lt;&lt;abstract&gt;&gt;
+                key : order, ordinal, sub
+                source : ItemSpec
+                apply(Household) Event[*] (follow-ups, D-E3)
+            }
+        class LifecycleEvent {
+                creates or closes an Aggregate (D1)
+                purchase, loan advance, opening, sale, payoff
+            }
+        class FlowEvent {
+                moves money
+                income, expense, payment, prepayment, contribution,
+                withdrawal, transfer, maintenance, improvement, penalty
+            }
+        class ValuationEvent {
+                changes a value, no cash
+                growth, interest, revaluation, market adjustment
+            }
+        class StateEvent {
+                changes household state
+                retirement, renewal, tax step
+            }
+    }
+
+    namespace State {
+        class Household {
+                &lt;&lt;main object&gt;&gt;
+                month, retired, covered mode
+                move(kind, from, to, amount, source)
+            }
+        class Aggregate {
+                &lt;&lt;abstract holding&gt;&gt;
+                id, name, kind, balance
+                lifecycle state
+            }
+        class Cash
+        class Asset {
+                RealEstate, Vehicle
+            }
+        class Liability {
+                Mortgage (loan)
+                secured by an Asset
+            }
+        class Account {
+                InvestmentAccount: RRSP, TFSA, non-registered
+            }
+        class Entitlement {
+                Pension (guaranteed)
+            }
+        class Rule {
+                &lt;&lt;abstract, stateless&gt;&gt;
+                tax, indexing, compounding, amortization,
+                investment income, withdrawal tax,
+                deduction, capital gains, pension value
+            }
+        class TaxState {
+                taxable, deductions, own-rate tax,
+                carry-forward pool, monthly detail
+            }
+        class Ledger {
+                Movement[*]: every money change
+            }
+    }
+
+    namespace Output {
+        class EventLog {
+                every applied Event (D-E4)
+                month, key, emitter, event, kind,
+                source, cause, ledger range
+            }
+        class ResultAssembler {
+                Recorder (CLOSE) + assemble
+                rows, holdings detail, ledger, tax, events
+            }
+        class EngineAPI {
+                &lt;&lt;facade, parity with webapp/engine.py&gt;&gt;
+                validate, run, run_detailed
+            }
+        class App {
+                &lt;&lt;Flask UI&gt;&gt;
+                form: one input per emitter,
+                modifiers grouped under host
+            }
+    }
+
+    %% ---------- Relationships ----------
+    Scenario &quot;1&quot; *-- &quot;*&quot; ItemSpec
+    ItemSpec --&gt; ItemSpec : modifies host
+    Validator ..&gt; Scenario : checks
+
+    EmitterFactory ..&gt; ItemSpec : reads
+    EmitterFactory ..&gt; Emitter : builds 1..n per item
+    Emitter --&gt; Schedule
+    Emitter ..&gt; Rule : decides with
+    Emitter &lt;|-- InitialEmitter
+    Emitter &lt;|-- OneShotEmitter
+    Emitter &lt;|-- RecurringEmitter
+    Emitter &lt;|-- ModifierEmitter
+    Emitter &lt;|-- ScenarioEmitter
+    ModifierEmitter --&gt; Emitter : host
+
+    ScenarioRunner &quot;1&quot; o-- &quot;*&quot; Emitter : sorted by order
+    ScenarioRunner --&gt; Household : steps month by month
+    ScenarioRunner ..&gt; Event : applies
+    ScenarioRunner --&gt; EventLog : records
+    Emitter ..&gt; Event : emits
+
+    Event &lt;|-- LifecycleEvent
+    Event &lt;|-- FlowEvent
+    Event &lt;|-- ValuationEvent
+    Event &lt;|-- StateEvent
+    Event ..&gt; Household : mutates
+    Event ..&gt; Event : follow-ups
+
+    Household &quot;1&quot; *-- &quot;*&quot; Aggregate : by holding slot
+    Household &quot;1&quot; *-- &quot;1&quot; Ledger
+    Household &quot;1&quot; *-- &quot;1&quot; TaxState
+    Aggregate &lt;|-- Cash
+    Aggregate &lt;|-- Asset
+    Aggregate &lt;|-- Liability
+    Aggregate &lt;|-- Account
+    Aggregate &lt;|-- Entitlement
+    Aggregate --&gt; Rule : references
+    Liability --&gt; Asset : secured by
+    StateEvent ..&gt; TaxState : tax step
+
+    ResultAssembler ..&gt; Household : reads
+    ResultAssembler ..&gt; EventLog : reads
+    EngineAPI ..&gt; Validator
+    EngineAPI ..&gt; EmitterFactory
+    EngineAPI ..&gt; ScenarioRunner
+    EngineAPI ..&gt; ResultAssembler
+    App ..&gt; EngineAPI : calls
+    App ..&gt; Scenario : edits
+</code></pre></details>

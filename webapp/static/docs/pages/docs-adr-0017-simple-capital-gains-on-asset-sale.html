@@ -1,0 +1,18 @@
+<h1 id="adr-0017-a-simple-capital-gains-rule-on-asset-sales">ADR-0017: A simple capital gains rule on asset sales</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>Selling an asset that has appreciated, such as a second property, is taxable in Canada, and leaving that out overstates the proceeds. ADR-0004 covered only the tax treatment of accounts.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>The tax-rules interface (ADR-0004) gains a rule for <strong>asset sales</strong>:<ul><li>capital gain = sale price − cost basis</li><li>taxable gain = capital gain × <strong>inclusion rate</strong> (from the jurisdiction's rules)</li><li>tax = taxable gain × the scenario's <strong>effective tax rate</strong> (an assumption, as a rate series)</li></ul></li><li>RealEstate has a <strong>principal residence</strong> flag. A sale of a principal residence is exempt.</li><li>A capital loss produces no tax and no credit (simplification).</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Scenarios need an <strong>effective tax rate</strong> assumption. It is also the natural rate for other simple tax effects (taxable account income, RRSP withdrawals). See Q-09.</li><li>Timing simplification: the tax is deducted <strong>at the sale</strong>, from the proceeds, instead of at the next tax filing.</li><li>Only one property should be marked as principal residence at a time. This is a validation rule, not enforced by the engine.</li></ul>
+<h2 id="amendment-2026-11-04-one-flat-rate">Amendment (2026-11-04): one flat rate</h2>
+<ul><li>A <strong>single effective tax rate</strong> (rate series) applies to <em>every</em> taxable effect in the simple tax model: taxable capital gains, income earned in taxable accounts, and withdrawals from tax-deferred accounts. There are no separate rates per effect.</li></ul>
+<h2 id="amendment-2026-11-09-taxable-account-income">Amendment (2026-11-09): taxable-account income</h2>
+<ul><li>"Income earned in taxable accounts" now means the account's <strong>income yield</strong> only. Capital growth in a TAXABLE account is deferred and taxed at the inclusion rate when withdrawn (ADR-0054).</li></ul>
+<h2 id="amendment-2026-11-09-per-sale-tax-rate-c-p6">Amendment (2026-11-09): per-sale tax rate (C-P6)</h2>
+<ul><li><code>SaleEvent</code> gains an optional <strong><code>taxRate</code></strong>: the rate applied to that sale's taxable gain instead of the effective rate. Default: the scenario's effective rate. Same pattern as the per-account withdrawal rate (ADR-0035).</li><li>Reason: a large one-off gain lands in the top brackets (about 53.5% in Ontario); the flat rate understates it.</li></ul>
+<h2 id="amendment-2026-11-09-partial-exemption-by-designated-years-c-p13">Amendment (2026-11-09): partial exemption by designated years (C-P13)</h2>
+<ul><li>The principal-residence flag is the initial designation only. The designation moves with <code>ResidenceSwitchEvent</code> (ADR-0056); a sale is exempt in the share (1 + designated years) ÷ owned years, capped at 1.</li></ul>
+<h2 id="amendment-2026-11-11-tax-per-person-adr-0061">Amendment (2026-11-11): tax per person (ADR-0061)</h2>
+<p>Taxable income is accumulated per person, each with their own flat rate (person's <code>effectiveTaxRate</code> / <code>retirementTaxRate</code>, default the scenario's). Investment income of an account is taxed to the account's owner. Gains on household assets (properties, vehicles) use the sale's <code>taxRate</code> or the scenario rate and are charged to the first person (assets have no owner). Still one flat rate per person, no brackets.</p>

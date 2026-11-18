@@ -1,0 +1,8 @@
+<h1 id="adr-0001-record-architecture-decisions-and-diagrams-as-text">ADR-0001: Record architecture decisions and diagrams as text</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>The project is in a planning phase. The output is blueprints (not code): decisions and diagrams that describe the intended shape of the system. These need to be versionable, diffable and reviewable.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>Decisions are recorded as ADRs in <code>docs/adr/NNNN-kebab-title.md</code> using <code>0000-template.md</code>.</li><li>Diagrams (class, sequence, state, mindmap, etc.) are written in Mermaid and stored in <code>diagrams/*.mmd</code>.</li><li>ADRs are never rewritten after acceptance; a changed decision gets a new ADR that supersedes the old one.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Everything lives in plain text and can go under git.</li><li>Diagrams render in GitHub/GitLab/most IDEs; layout control is limited compared to dedicated modelling tools.</li></ul>

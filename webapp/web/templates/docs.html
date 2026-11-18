@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title if page else "Documentation" }} - Wealth planner PoC{% endblock %}
+{% block content %}
+<style>
+  body { max-width: 90rem; }
+  .docs { display: flex; gap: 2rem; align-items: flex-start; }
+  .docs aside { flex: 0 0 17rem; font-size: .9rem; position: sticky; top: 1rem;
+                max-height: 95vh; overflow-y: auto; }
+  .docs aside h3 { font-size: .95rem; margin: 1rem 0 .3rem; }
+  .docs aside ul { list-style: none; padding: 0; margin: 0; }
+  .docs aside li { margin: .15rem 0; }
+  .docs aside a.current { font-weight: bold; }
+  .docs article { flex: 1; min-width: 0; line-height: 1.45; }
+  .docs article pre { background: #f6f6f6; padding: .5rem; overflow-x: auto; }
+  .docs article code { background: #f6f6f6; padding: 0 .2rem; }
+  .docs article table { margin: .5rem 0; }
+  .docs article blockquote { border-left: 3px solid #ccc; margin-left: 0; padding-left: 1rem; }
+  .docs figure.diagram { margin: 1rem 0; overflow-x: auto; }
+  .docs figure.diagram img { max-width: 100%; height: auto; border: 1px solid #eee; }
+  .docs .source { color: #777; font-size: .85rem; }
+</style>
+<div class="docs">
+  <aside>
+    {% for section in sections %}
+    <h3>{{ section.title }}</h3>
+    <ul>
+      {% for p in section.pages %}
+      <li><a href="{{ url_for('web.docs', slug=p.slug) }}"{% if page and p.slug == page.slug %} class="current"{% endif %}>{{ p.title }}</a></li>
+      {% endfor %}
+    </ul>
+    {% endfor %}
+  </aside>
+  <article>
+    {% if page %}<p class="source">{{ page.path }} &middot; click a diagram to open it full size</p>{% endif %}
+    {{ body }}
+  </article>
+</div>
+{% endblock %}

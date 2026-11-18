@@ -1,0 +1,54 @@
+<h1 id="poc-review-what-the-python-poc-changed-in-the-planning-2026-11-07">PoC review: what the Python PoC changed in the planning (2026-11-07)</h1>
+<p>Scope: branch <code>poc/python-flask</code> (21 commits, 69734e3..049f16b), compared with the ADRs and the domain model on <code>main</code> (v0.16).</p>
+<h2 id="1-confirmed-by-the-poc-no-change-needed">1. Confirmed by the PoC (no change needed)</h2>
+<ul><li>Month order: income first, then events, then debits, then growth on opening balances (ADR-0018). No false shortfalls on payday.</li><li>Financed purchase (ADR-0025), mortgage secured by a property (ADR-0024), sale settles the secured loans (ADR-0034), selling costs (ADR-0031).</li><li>Derived loan payments; prepayments shorten the loan, the payment stays (ADR-0029).</li><li>Shared horizon for comparisons (ADR-0028).</li><li>Minimal input and crude modelling (ADR-0040): every PoC scenario ran with a handful of items.</li><li>Letting cash go negative was a useful <strong>diagnostic</strong>: it exposed the 2021 funding gap in the baseline. This supports reporting shortfalls with an amount and period (ADR-0015).</li></ul>
+<h2 id="2-decisions-already-recorded-from-the-poc">2. Decisions already recorded from the PoC</h2>
+<table>
+<tr><th>ADR</th><th>Change</th></tr>
+<tr><td>0013 (amended twice)</td><td>A cash-flow amount is in dollars of its own start date; real values use a named, settable <strong>base date</strong></td></tr>
+<tr><td>0028 (amended)</td><td>Scenarios may use different inflation rates; comparisons display them</td></tr>
+<tr><td>0042</td><td>Deferred</td></tr>
+<tr><td>0043 (new)</td><td>Mortgage renewal and lender switch; <code>MortgageTerm.amortizationMonths</code></td></tr>
+<tr><td>0044 (new, amended)</td><td>Income-less mode; lump-sum <code>paidFrom</code></td></tr>
+</table>
+<h2 id="3-poc-behaviour-not-yet-in-the-planning">3. PoC behaviour not yet in the planning</h2>
+<table>
+<tr><th>#</th><th>PoC behaviour</th><th>Planning impact</th><th>Proposal</th></tr>
+<tr><td>P1</td><td>Rates are fractions in JSON, percentages in the UI; implausible rates rejected</td><td>Not stated anywhere</td><td>New ADR: rate representation and plausibility validation (extends ADR-0040's validation)</td></tr>
+<tr><td>P2</td><td>The last scheduled payment clears the rounding remainder</td><td>ADR-0029 only caps overpayment</td><td>Amend ADR-0029 (ADR-0043 already states it for renewals)</td></tr>
+<tr><td>P3</td><td>First loan payment in the month after the advance</td><td>Unstated</td><td>Amend ADR-0029: default next month</td></tr>
+<tr><td>P4</td><td>Income entered <strong>gross</strong> with <code>taxable</code>; the form defaults to taxable; tax withheld as income arrives</td><td>ADR-0020 says net by default, taxed in step 7</td><td>Keep JSON default false (neutral, ADR-0040) and let authoring default to taxable; tax step timing stays (same result monthly)</td></tr>
+<tr><td>P5</td><td>Amounts per month or <strong>per year</strong> stored in the JSON (<code>per</code>)</td><td>ADR-0021: no frequency attribute, authoring converts</td><td>Decide: amend ADR-0021 (engine accepts <code>per</code>), or keep it in authoring and store monthly</td></tr>
+<tr><td>P6</td><td>Indexed amounts step up <strong>once a year on the anniversary</strong> of the item start</td><td>ADR-0013 does not say</td><td>Amend ADR-0013: annual step on the anniversary (default)</td></tr>
+<tr><td>P7</td><td>Property <strong>market value ≠ price</strong> (house built for 366k, worth 550k)</td><td>Model has price (cost) and value but no event that sets value ≠ cost at purchase</td><td>Purchase sets cost basis = price; a <code>Revaluation</code> (ADR-0033) in the same period sets the value. Matters for capital gains on a non-principal residence (cost basis 366k, not 550k)</td></tr>
+<tr><td>P8</td><td>Construction modelled as a second property bought with the mortgage</td><td>No "capital improvement" concept</td><td>Watch item: an improvement event (adds to value and cost basis), or keep the PoC pattern</td></tr>
+<tr><td>P9</td><td>Scenario settings: <code>incomeMode</code>, <code>dollarsOf</code>, inflation, tax rate</td><td>Scenario class lacks incomeMode and baseDate</td><td>Domain model: Scenario +incomeMode, +baseDate</td></tr>
+<tr><td>P10</td><td>Output columns: cash, assets, debts, <strong>assets net worth</strong> (assets − debts), net worth, real columns</td><td>No output model yet</td><td>Output model (next diagram): per-period rows with nominal and real metrics, labelled with the base date; "assets net worth" = everything except the operating account, minus liabilities</td></tr>
+<tr><td>P11</td><td>An unlinked mortgage survives a property sale</td><td>Consistent with <code>securedBy [0..1]</code></td><td>None</td></tr>
+<tr><td>P12</td><td>Early closure penalty not applied</td><td>Formula undefined (ADR-0043)</td><td>Open question</td></tr>
+</table>
+<h2 id="4-gaps-registered-funds-and-defined-benefit-pensions">4. Gaps: registered funds and defined-benefit pensions</h2>
+<h3 id="rrsp-tfsa-and-non-registered-investments">RRSP / TFSA (and non-registered investments)</h3>
+<p>In the model these are <strong>Accounts</strong> (ADR-0011) with a tax treatment (TFSA = tax-free, RRSP = tax-deferred), a return rate, an optional withdrawal tax rate (ADR-0035), contributions and withdrawals as cash flows, even drawdown (ADR-0039) and sweeps (ADR-0030). Liquidation net worth already deducts the tax embedded in RRSP balances (ADR-0031). Missing:</p>
+<table>
+<tr><th>#</th><th>Gap</th><th>Notes</th></tr>
+<tr><td>R1</td><td><strong>RRSP contribution deduction</strong>: contributions reduce taxable income (a refund)</td><td>Not modelled anywhere. With one flat rate: deduction = contribution × rate. Options: same month (simplest), or as an annual refund</td></tr>
+<tr><td>R2</td><td><strong>Withdrawal as a rate</strong> (e.g. 4% a year of the balance)</td><td>Only fixed amounts and even drawdown exist. Needs a percentage-of-balance withdrawal, recalculated yearly or monthly</td></tr>
+<tr><td>R3</td><td><strong>Contribution level</strong> as an amount, possibly indexed, with an end date</td><td>Already a CashFlow operating → account. Needs a contribution form in the authoring tool only</td></tr>
+<tr><td>R4</td><td><strong>Where they show in the output</strong> ("normally listed as assets")</td><td>In the model they are accounts, not assets. Output should group them as investments/registered funds within assets net worth</td></tr>
+<tr><td>R5</td><td>Employer matching (group RRSP), contribution room</td><td>Room is per person (Q-06, watch item); matching is a second cash flow from outside</td></tr>
+<tr><td>R6</td><td><strong>Interaction with income-less mode</strong> (ADR-0044)</td><td>Are contributions "covered from outside" (they still land in the account) or skipped? Withdrawals are income: ignored or kept?</td></tr>
+<tr><td>R7</td><td>RRIF minimums</td><td>Q-13, watch item</td></tr>
+</table>
+<h3 id="defined-benefit-pension-guaranteed-until-death-inflation-indexed">Defined-benefit pension (guaranteed until death, inflation-indexed)</h3>
+<p>ADR-0036: an income cash flow from the pension start to the horizon end (death), inflation-indexed, taxable, <strong>no value in net worth</strong>. The PoC can already express it as an income item (indexing = inflation, taxable). Missing or to decide:</p>
+<table>
+<tr><th>#</th><th>Gap</th><th>Notes</th></tr>
+<tr><td>D1</td><td>A dedicated <strong>pension type</strong> in authoring (start date, amount, indexing; end = horizon)</td><td>Authoring only; the engine needs nothing new</td></tr>
+<tr><td>D2</td><td><strong>Value in net worth</strong> (commuted value)</td><td>Q-14. Without it, "assets net worth" understates someone relying on a pension</td></tr>
+<tr><td>D3</td><td><strong>Income-less mode ignores it</strong> (ADR-0044 ignores all income)</td><td>A retirement scenario in that mode would drop the pension. Needs a rule: e.g. income-less mode ignores employment income only</td></tr>
+<tr><td>D4</td><td>Member contributions while working, bridge benefit to 65, survivor benefit</td><td>Contributions are an expense or reduce free income; bridge = a second, ending income flow; survivor benefit out of scope (single economic unit, ADR-0002)</td></tr>
+<tr><td>D5</td><td>Partial indexing (e.g. CPI capped at 2%)</td><td><code>CustomRate</code> covers a fixed partial rate; a cap would need a new rate generator (Q-11 CompositeRate)</td></tr>
+</table>
+<h2 id="5-suggested-order">5. Suggested order</h2>
+<ol><li>Decide P1–P6 (small amendments) and P7 (market value via Revaluation).</li><li>RRSP/TFSA: R1, R2, R4, R6.</li><li>Pension: D2, D3.</li><li>Output model class diagram (covers P10, R4).</li><li>Add accounts (RRSP/TFSA with contributions and withdrawals) and pensions to the PoC.</li></ol>

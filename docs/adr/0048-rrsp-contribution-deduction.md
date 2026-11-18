@@ -72,3 +72,9 @@ would have paid about $60k.
 - Consequence: salary entered after tax gets the benefit of its contributions only
   later, against taxable retirement income, not as yearly refunds. Authoring defaults
   salaries to before-tax (ADR-0020), so this mainly affects hand-written JSON.
+
+## Amendment (2026-11-11): deductions and the pool are per person (ADR-0061)
+An RRSP contribution reduces only the taxable income of the person whose room it uses:
+the account's owner, or its `contributor` for a spousal RRSP. Each person has their own
+carried-forward pool; unused deductions never move between persons (Canada has no joint
+filing).

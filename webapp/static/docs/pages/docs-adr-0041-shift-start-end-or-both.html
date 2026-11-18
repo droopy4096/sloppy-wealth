@@ -1,0 +1,8 @@
+<h1 id="adr-0041-time-shifts-move-the-start-the-end-or-both">ADR-0041: Time shifts move the start, the end, or both</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-05</li><li><strong>Amends:</strong> ADR-0007 (time-shift tooling), ADR-0038 (variant sweeps)</li></ul>
+<h2 id="context">Context</h2>
+<p>In a retirement sweep, the exit plan (sale, pension, drawdowns) moves as a whole, but the working-life cash flows (income, contributions) only need their <strong>end</strong> moved to the new retirement date.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>Each selection in a shift (by tag or by object) has a mode: <strong>START | END | BOTH</strong> (default BOTH).<ul><li>BOTH moves every date of the object (start, end, event date, segment boundaries).</li><li>START or END moves only that bound of objects that have a start and an end (cash flows, goal active windows). On events (a single date), START and END both mean the event date.</li></ul></li><li>A variant sweep combines selections, e.g. <code>exit</code> with BOTH and <code>work</code> with END.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Shifting a start past its end, or an end before its start, is a validation error in the authoring tooling.</li></ul>

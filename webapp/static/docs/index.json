@@ -1,0 +1,554 @@
+{
+ "sections": [
+  {
+   "title": "Start here",
+   "pages": [
+    {
+     "slug": "readme",
+     "title": "Sloppy Wealth",
+     "path": "README.md"
+    },
+    {
+     "slug": "claude",
+     "title": "Working on this repository (for developers and AI agents)",
+     "path": "CLAUDE.md"
+    },
+    {
+     "slug": "docs-implementation-status",
+     "title": "Implementation status: planning decisions vs the PoC",
+     "path": "docs/IMPLEMENTATION_STATUS.md"
+    }
+   ]
+  },
+  {
+   "title": "Planning",
+   "pages": [
+    {
+     "slug": "docs-glossary",
+     "title": "Glossary (draft)",
+     "path": "docs/glossary.md"
+    },
+    {
+     "slug": "docs-open-questions",
+     "title": "Open questions",
+     "path": "docs/open-questions.md"
+    },
+    {
+     "slug": "docs-scenarios-complex-retirement-readiness",
+     "title": "Scenario: retirement readiness after selling one property",
+     "path": "docs/scenarios/complex-retirement-readiness.md"
+    },
+    {
+     "slug": "docs-scenarios-rent-vs-buy",
+     "title": "Scenario set: rent vs buy",
+     "path": "docs/scenarios/rent-vs-buy.md"
+    },
+    {
+     "slug": "docs-scenarios-retirement-income-sources",
+     "title": "Scenario: retirement income sources (RRSP drawdown vs guaranteed pension)",
+     "path": "docs/scenarios/retirement-income-sources.md"
+    },
+    {
+     "slug": "docs-scenarios-two-houses-retirement",
+     "title": "Walkthrough scenario: two houses to retirement fund",
+     "path": "docs/scenarios/two-houses-retirement.md"
+    },
+    {
+     "slug": "docs-scenarios-vehicle-ownership",
+     "title": "Scenario set: vehicle ownership (new vs lease vs used)",
+     "path": "docs/scenarios/vehicle-ownership.md"
+    },
+    {
+     "slug": "docs-poc-review-2026-11-07",
+     "title": "PoC review: what the Python PoC changed in the planning (2026-11-07)",
+     "path": "docs/poc-review-2026-11-07.md"
+    }
+   ]
+  },
+  {
+   "title": "Review",
+   "pages": [
+    {
+     "slug": "critique",
+     "title": "Adversarial review: planning (main) and PoC (poc/python-flask)",
+     "path": "CRITIQUE.md"
+    },
+    {
+     "slug": "critique-responses",
+     "title": "Responses to CRITIQUE.md",
+     "path": "CRITIQUE_RESPONSES.md"
+    }
+   ]
+  },
+  {
+   "title": "Architecture decisions",
+   "pages": [
+    {
+     "slug": "docs-adr-0000-template",
+     "title": "ADR-NNNN: <Title>",
+     "path": "docs/adr/0000-template.md"
+    },
+    {
+     "slug": "docs-adr-0001-record-architecture-decisions",
+     "title": "ADR-0001: Record architecture decisions and diagrams as text",
+     "path": "docs/adr/0001-record-architecture-decisions.md"
+    },
+    {
+     "slug": "docs-adr-0002-personal-tool-single-economic-unit",
+     "title": "ADR-0002: Personal tool planning for a single economic unit",
+     "path": "docs/adr/0002-personal-tool-single-economic-unit.md"
+    },
+    {
+     "slug": "docs-adr-0003-engine-as-platform-agnostic-core",
+     "title": "ADR-0003: The engine is a platform-agnostic core; everything else is an adapter",
+     "path": "docs/adr/0003-engine-as-platform-agnostic-core.md"
+    },
+    {
+     "slug": "docs-adr-0004-tax-rules-behind-jurisdiction-seam",
+     "title": "ADR-0004: Simple, static tax rules behind a jurisdiction seam; Canada first",
+     "path": "docs/adr/0004-tax-rules-behind-jurisdiction-seam.md"
+    },
+    {
+     "slug": "docs-adr-0005-deterministic-time-varying-rates",
+     "title": "ADR-0005: Deterministic projections with time-varying rate series",
+     "path": "docs/adr/0005-deterministic-time-varying-rates.md"
+    },
+    {
+     "slug": "docs-adr-0006-scenarios-goals-and-comparable-results",
+     "title": "ADR-0006: Scenarios, goals and comparable projection results as the core concepts",
+     "path": "docs/adr/0006-scenarios-goals-and-comparable-results.md"
+    },
+    {
+     "slug": "docs-adr-0007-monthly-calendar-time-independent-events",
+     "title": "ADR-0007: Monthly time model on real dates with independent, shiftable events",
+     "path": "docs/adr/0007-monthly-calendar-time-independent-events.md"
+    },
+    {
+     "slug": "docs-adr-0008-ephemeral-state-json-interchange",
+     "title": "ADR-0008: Ephemeral state; JSON as the save and interchange format",
+     "path": "docs/adr/0008-ephemeral-state-json-interchange.md"
+    },
+    {
+     "slug": "docs-adr-0009-decimal-money",
+     "title": "ADR-0009: Decimal representation of money",
+     "path": "docs/adr/0009-decimal-money.md"
+    },
+    {
+     "slug": "docs-adr-0010-engine-as-staged-state-pipeline",
+     "title": "ADR-0010: The engine is a pipeline of pure stages, with one monthly stepping stage",
+     "path": "docs/adr/0010-engine-as-staged-state-pipeline.md"
+    },
+    {
+     "slug": "docs-adr-0011-holding-hierarchy",
+     "title": "ADR-0011: Accounts, assets and liabilities share a common Holding base",
+     "path": "docs/adr/0011-holding-hierarchy.md"
+    },
+    {
+     "slug": "docs-adr-0012-events-cash-flows-event-generators",
+     "title": "ADR-0012: One-off events, recurring cash flows, and event generators",
+     "path": "docs/adr/0012-events-cash-flows-event-generators.md"
+    },
+    {
+     "slug": "docs-adr-0013-cash-flow-indexing-and-real-values",
+     "title": "ADR-0013: Per-cash-flow indexing, with nominal and real reporting",
+     "path": "docs/adr/0013-cash-flow-indexing-and-real-values.md"
+    },
+    {
+     "slug": "docs-adr-0014-global-and-local-goals",
+     "title": "ADR-0014: Global and local goals",
+     "path": "docs/adr/0014-global-and-local-goals.md"
+    },
+    {
+     "slug": "docs-adr-0015-insufficient-funds-shortfall",
+     "title": "ADR-0015: Debits are capped at available funds, and the unpaid part is a shortfall",
+     "path": "docs/adr/0015-insufficient-funds-shortfall.md"
+    },
+    {
+     "slug": "docs-adr-0016-reference-birth-date-and-ages",
+     "title": "ADR-0016: A reference birth date, with ages as a way of entering dates",
+     "path": "docs/adr/0016-reference-birth-date-and-ages.md"
+    },
+    {
+     "slug": "docs-adr-0017-simple-capital-gains-on-asset-sale",
+     "title": "ADR-0017: A simple capital gains rule on asset sales",
+     "path": "docs/adr/0017-simple-capital-gains-on-asset-sale.md"
+    },
+    {
+     "slug": "docs-adr-0018-order-of-steps-within-a-month",
+     "title": "ADR-0018: Order of steps within a month",
+     "path": "docs/adr/0018-order-of-steps-within-a-month.md"
+    },
+    {
+     "slug": "docs-adr-0019-rate-generators-and-compounding",
+     "title": "ADR-0019: Rates come from rate generators; each holding declares its compounding",
+     "path": "docs/adr/0019-rate-generators-and-compounding.md"
+    },
+    {
+     "slug": "docs-adr-0020-net-income-with-taxable-flag",
+     "title": "ADR-0020: Income is entered net, with an optional taxable flag",
+     "path": "docs/adr/0020-net-income-with-taxable-flag.md"
+    },
+    {
+     "slug": "docs-adr-0021-cash-flows-are-monthly",
+     "title": "ADR-0021: Cash flows are monthly; annual amounts are spread evenly",
+     "path": "docs/adr/0021-cash-flows-are-monthly.md"
+    },
+    {
+     "slug": "docs-adr-0022-variable-cost-basis-is-acquisition-price",
+     "title": "ADR-0022: A variable cost is a percentage of the asset's acquisition price",
+     "path": "docs/adr/0022-variable-cost-basis-is-acquisition-price.md"
+    },
+    {
+     "slug": "docs-adr-0023-tags-for-grouping-attribution-and-shifting",
+     "title": "ADR-0023: Tags group scenario objects for attribution and time shifting",
+     "path": "docs/adr/0023-tags-for-grouping-attribution-and-shifting.md"
+    },
+    {
+     "slug": "docs-adr-0024-generic-loan-liability",
+     "title": "ADR-0024: A generic Loan liability, with Mortgage as a specialisation",
+     "path": "docs/adr/0024-generic-loan-liability.md"
+    },
+    {
+     "slug": "docs-adr-0025-one-off-transfer-and-financed-purchase",
+     "title": "ADR-0025: Generic one-off transfers, and purchases financed by a loan",
+     "path": "docs/adr/0025-one-off-transfer-and-financed-purchase.md"
+    },
+    {
+     "slug": "docs-adr-0026-holdings-can-exist-without-being-owned",
+     "title": "ADR-0026: A holding can exist without being owned (lease, then buyout)",
+     "path": "docs/adr/0026-holdings-can-exist-without-being-owned.md"
+    },
+    {
+     "slug": "docs-adr-0027-tallies-and-monthly-goal-evaluation",
+     "title": "ADR-0027: Tallies, and goals evaluated every month by the stepping stage",
+     "path": "docs/adr/0027-tallies-and-monthly-goal-evaluation.md"
+    },
+    {
+     "slug": "docs-adr-0028-scenario-sets-run-in-lockstep",
+     "title": "ADR-0028: Scenarios are run in lockstep as a scenario set",
+     "path": "docs/adr/0028-scenario-sets-run-in-lockstep.md"
+    },
+    {
+     "slug": "docs-adr-0029-loan-payments-derived-by-engine",
+     "title": "ADR-0029: The engine derives scheduled loan payments",
+     "path": "docs/adr/0029-loan-payments-derived-by-engine.md"
+    },
+    {
+     "slug": "docs-adr-0030-surplus-cash-sweep-rules",
+     "title": "ADR-0030: Sweep rules move surplus cash into investment accounts",
+     "path": "docs/adr/0030-surplus-cash-sweep-rules.md"
+    },
+    {
+     "slug": "docs-adr-0031-selling-costs-and-liquidation-net-worth",
+     "title": "ADR-0031: Selling costs, and a liquidation-adjusted net worth",
+     "path": "docs/adr/0031-selling-costs-and-liquidation-net-worth.md"
+    },
+    {
+     "slug": "docs-adr-0032-scenario-composition-is-an-authoring-concern",
+     "title": "ADR-0032: Composing scenarios from a base is the authoring tool's concern",
+     "path": "docs/adr/0032-scenario-composition-is-an-authoring-concern.md"
+    },
+    {
+     "slug": "docs-adr-0033-revaluation-event",
+     "title": "ADR-0033: Revaluation events for sudden changes in value",
+     "path": "docs/adr/0033-revaluation-event.md"
+    },
+    {
+     "slug": "docs-adr-0034-negative-equity-settlement",
+     "title": "ADR-0034: Settling a sale when proceeds do not cover the secured loans",
+     "path": "docs/adr/0034-negative-equity-settlement.md"
+    },
+    {
+     "slug": "docs-adr-0035-tax-deferred-withdrawals-and-tax-payment",
+     "title": "ADR-0035: Taxing tax-deferred withdrawals, and which account pays tax",
+     "path": "docs/adr/0035-tax-deferred-withdrawals-and-tax-payment.md"
+    },
+    {
+     "slug": "docs-adr-0036-pensions-as-guaranteed-income-flows",
+     "title": "ADR-0036: Guaranteed pensions are income cash flows; RRIF rules are not modelled",
+     "path": "docs/adr/0036-pensions-as-guaranteed-income-flows.md"
+    },
+    {
+     "slug": "docs-adr-0037-period-tallies-and-goal-active-window",
+     "title": "ADR-0037: Tallies per period, and goals with an active window",
+     "path": "docs/adr/0037-period-tallies-and-goal-active-window.md"
+    },
+    {
+     "slug": "docs-adr-0038-variant-sweeps-in-authoring-tooling",
+     "title": "ADR-0038: \"When does it become possible?\" is answered by variant sweeps in authoring tooling",
+     "path": "docs/adr/0038-variant-sweeps-in-authoring-tooling.md"
+    },
+    {
+     "slug": "docs-adr-0039-even-drawdown-cash-flows",
+     "title": "ADR-0039: Even drawdown of a pot over the remaining lifetime",
+     "path": "docs/adr/0039-even-drawdown-cash-flows.md"
+    },
+    {
+     "slug": "docs-adr-0040-minimal-input-and-neutral-defaults",
+     "title": "ADR-0040: The engine must work with minimal input, using neutral defaults",
+     "path": "docs/adr/0040-minimal-input-and-neutral-defaults.md"
+    },
+    {
+     "slug": "docs-adr-0041-shift-start-end-or-both",
+     "title": "ADR-0041: Time shifts move the start, the end, or both",
+     "path": "docs/adr/0041-shift-start-end-or-both.md"
+    },
+    {
+     "slug": "docs-adr-0042-free-income-net-of-modelled-payments",
+     "title": "ADR-0042: Free income can be declared net of payments the engine models",
+     "path": "docs/adr/0042-free-income-net-of-modelled-payments.md"
+    },
+    {
+     "slug": "docs-adr-0043-mortgage-renewal-and-lender-switch",
+     "title": "ADR-0043: Mortgage renewal and switching lenders at a term boundary",
+     "path": "docs/adr/0043-mortgage-renewal-and-lender-switch.md"
+    },
+    {
+     "slug": "docs-adr-0044-income-less-mode-expenses-covered",
+     "title": "ADR-0044: Income-less mode, where expenses are assumed covered",
+     "path": "docs/adr/0044-income-less-mode-expenses-covered.md"
+    },
+    {
+     "slug": "docs-adr-0045-rate-representation-and-plausibility",
+     "title": "ADR-0045: Rates are fractions in JSON, percentages in the UI, and are range-checked",
+     "path": "docs/adr/0045-rate-representation-and-plausibility.md"
+    },
+    {
+     "slug": "docs-adr-0046-improvement-event",
+     "title": "ADR-0046: Improvements (construction, renovation) are events on an existing asset",
+     "path": "docs/adr/0046-improvement-event.md"
+    },
+    {
+     "slug": "docs-adr-0047-early-closure-penalty-is-a-manual-amount",
+     "title": "ADR-0047: The early closure penalty is a manual amount",
+     "path": "docs/adr/0047-early-closure-penalty-is-a-manual-amount.md"
+    },
+    {
+     "slug": "docs-adr-0048-rrsp-contribution-deduction",
+     "title": "ADR-0048: Contributions to tax-deferred accounts are deducted in the same month",
+     "path": "docs/adr/0048-rrsp-contribution-deduction.md"
+    },
+    {
+     "slug": "docs-adr-0049-percentage-of-balance-withdrawal",
+     "title": "ADR-0049: Withdrawal as a percentage of the balance, reset yearly",
+     "path": "docs/adr/0049-percentage-of-balance-withdrawal.md"
+    },
+    {
+     "slug": "docs-adr-0050-result-columns-and-assets-net-worth",
+     "title": "ADR-0050: Result columns group holdings as cash, investments, property, debts",
+     "path": "docs/adr/0050-result-columns-and-assets-net-worth.md"
+    },
+    {
+     "slug": "docs-adr-0051-contributions-and-employer-match",
+     "title": "ADR-0051: Contributions are cash flows into an account, with an optional employer match",
+     "path": "docs/adr/0051-contributions-and-employer-match.md"
+    },
+    {
+     "slug": "docs-adr-0052-pension-value-in-net-worth-and-retirement-date",
+     "title": "ADR-0052: A guaranteed pension has a value in net worth; scenarios have a retirement date",
+     "path": "docs/adr/0052-pension-value-in-net-worth-and-retirement-date.md"
+    },
+    {
+     "slug": "docs-adr-0053-output-model-three-levels",
+     "title": "ADR-0053: The result has three levels: main table, per-holding detail, movement ledger",
+     "path": "docs/adr/0053-output-model-three-levels.md"
+    },
+    {
+     "slug": "docs-adr-0054-taxable-account-return-split-and-deferred-gains",
+     "title": "ADR-0054: Taxable-account returns split into taxed income and deferred capital growth",
+     "path": "docs/adr/0054-taxable-account-return-split-and-deferred-gains.md"
+    },
+    {
+     "slug": "docs-adr-0055-oas-clawback-gis-and-splitting-not-modelled",
+     "title": "ADR-0055: OAS clawback, GIS and pension income splitting are not modelled",
+     "path": "docs/adr/0055-oas-clawback-gis-and-splitting-not-modelled.md"
+    },
+    {
+     "slug": "docs-adr-0056-residence-switch-event",
+     "title": "ADR-0056: ResidenceSwitchEvent moves the principal-residence designation",
+     "path": "docs/adr/0056-residence-switch-event.md"
+    },
+    {
+     "slug": "docs-adr-0057-account-opening-balance-source",
+     "title": "ADR-0057: Source of an account's opening balance",
+     "path": "docs/adr/0057-account-opening-balance-source.md"
+    },
+    {
+     "slug": "docs-adr-0058-holdings-that-start-before-the-horizon",
+     "title": "ADR-0058: Assets and loans that start before the horizon",
+     "path": "docs/adr/0058-holdings-that-start-before-the-horizon.md"
+    },
+    {
+     "slug": "docs-adr-0059-retirement-event-and-retirement-tax-rate",
+     "title": "ADR-0059: A RetirementEvent triggers everything tied to retirement, including the tax rate",
+     "path": "docs/adr/0059-retirement-event-and-retirement-tax-rate.md"
+    },
+    {
+     "slug": "docs-adr-0060-contribution-room-limits",
+     "title": "ADR-0060: RRSP and TFSA contribution room limits",
+     "path": "docs/adr/0060-contribution-room-limits.md"
+    },
+    {
+     "slug": "docs-adr-0061-second-earner-persons",
+     "title": "ADR-0061: Second earner \u2014 persons in the household",
+     "path": "docs/adr/0061-second-earner-persons.md"
+    },
+    {
+     "slug": "docs-adr-0062-cash-flow-adjustment",
+     "title": "ADR-0062: Adjustment of a cash flow's amount (CashFlowAdjustment)",
+     "path": "docs/adr/0062-cash-flow-adjustment.md"
+    },
+    {
+     "slug": "docs-adr-0063-cash-balance-reconciliation",
+     "title": "ADR-0063: Cash balance reconciliation item",
+     "path": "docs/adr/0063-cash-balance-reconciliation.md"
+    },
+    {
+     "slug": "docs-adr-0064-item-enabled-switch",
+     "title": "ADR-0064: Item on/off switch (enabled)",
+     "path": "docs/adr/0064-item-enabled-switch.md"
+    },
+    {
+     "slug": "docs-adr-0065-triggers",
+     "title": "ADR-0065: Triggers instead of \"at retirement\" fields",
+     "path": "docs/adr/0065-triggers.md"
+    },
+    {
+     "slug": "docs-adr-0066-timeline-view",
+     "title": "ADR-0066: Timeline view of a scenario",
+     "path": "docs/adr/0066-timeline-view.md"
+    },
+    {
+     "slug": "docs-adr-0067-associated-items",
+     "title": "ADR-0067: Associated expenses and costs (items that live with a parent)",
+     "path": "docs/adr/0067-associated-items.md"
+    },
+    {
+     "slug": "docs-adr-0068-associated-income",
+     "title": "ADR-0068: Associated income (income that lives with an income or a pension)",
+     "path": "docs/adr/0068-associated-income.md"
+    },
+    {
+     "slug": "docs-adr-0069-stateless-server-state-in-browser",
+     "title": "ADR-0069: Stateless server; the scenario lives in the browser",
+     "path": "docs/adr/0069-stateless-server-state-in-browser.md"
+    },
+    {
+     "slug": "docs-adr-0070-builder-cards",
+     "title": "ADR-0070: The builder as cards, by person and category",
+     "path": "docs/adr/0070-builder-cards.md"
+    },
+    {
+     "slug": "docs-adr-0071-tax-jurisdictions-as-plugins",
+     "title": "ADR-0071: Tax jurisdictions as plug-in packages; the US next to Canada",
+     "path": "docs/adr/0071-tax-jurisdictions-as-plugins.md"
+    },
+    {
+     "slug": "docs-adr-0072-resp-with-cesg",
+     "title": "ADR-0072: RESP accounts with the Canada Education Savings Grant (Canada)",
+     "path": "docs/adr/0072-resp-with-cesg.md"
+    },
+    {
+     "slug": "docs-adr-0073-property-break-even",
+     "title": "ADR-0073: Property break-even and rent equivalent",
+     "path": "docs/adr/0073-property-break-even.md"
+    },
+    {
+     "slug": "docs-adr-0074-vehicle-cost-of-ownership",
+     "title": "ADR-0074: Vehicle cost of ownership per month",
+     "path": "docs/adr/0074-vehicle-cost-of-ownership.md"
+    }
+   ]
+  },
+  {
+   "title": "Diagrams",
+   "pages": [
+    {
+     "slug": "diagrams-00-feature-mindmap",
+     "title": "00-feature-mindmap.mmd",
+     "path": "diagrams/00-feature-mindmap.mmd"
+    },
+    {
+     "slug": "diagrams-01-engine-pipeline",
+     "title": "Engine pipeline (ADR-0010, ADR-0027, ADR-0028)",
+     "path": "diagrams/01-engine-pipeline.mmd"
+    },
+    {
+     "slug": "diagrams-02-scenario-domain-model",
+     "title": "ScenarioSet input, conceptual domain model (DRAFT v0.56)",
+     "path": "diagrams/02-scenario-domain-model.mmd"
+    },
+    {
+     "slug": "diagrams-03-sequence-pipeline-run",
+     "title": "Pipeline run, two-houses scenario (ADR-0010)",
+     "path": "diagrams/03-sequence-pipeline-run.mmd"
+    },
+    {
+     "slug": "diagrams-04-sequence-month-step",
+     "title": "One month step (ADR-0018 revision 2, Accepted)",
+     "path": "diagrams/04-sequence-month-step.mmd"
+    },
+    {
+     "slug": "diagrams-05-output-model",
+     "title": "Projection result, output model (DRAFT v0.1)",
+     "path": "diagrams/05-output-model.mmd"
+    },
+    {
+     "slug": "diagrams-06-event-emitter-conceptual",
+     "title": "Event-emitter engine, conceptual class model (DRAFT v0.2, poc/state-machine, D1-D5, D-E1..D-E4)",
+     "path": "diagrams/06-event-emitter-conceptual.mmd"
+    }
+   ]
+  },
+  {
+   "title": "PoC (iterations, spec)",
+   "pages": [
+    {
+     "slug": "webapp-readme",
+     "title": "Wealth planner: Python PoC",
+     "path": "webapp/README.md"
+    },
+    {
+     "slug": "webapp-spec",
+     "title": "Python PoC: shared spec",
+     "path": "webapp/SPEC.md"
+    }
+   ]
+  },
+  {
+   "title": "PoC iteration 2: event emitters",
+   "pages": [
+    {
+     "slug": "webapp-state-machine-readme",
+     "title": "PoC iteration 2: event-emitter state machine",
+     "path": "webapp/state_machine/README.md"
+    },
+    {
+     "slug": "webapp-state-machine-decisions",
+     "title": "State-machine re-implementation: coordinator decisions",
+     "path": "webapp/state_machine/DECISIONS.md"
+    },
+    {
+     "slug": "webapp-state-machine-feasibility",
+     "title": "State-machine engine: feasibility report",
+     "path": "webapp/state_machine/FEASIBILITY.md"
+    },
+    {
+     "slug": "webapp-state-machine-emitters-feasibility",
+     "title": "Event emitters: feasibility (branch poc/state-machine)",
+     "path": "webapp/state_machine/EMITTERS_FEASIBILITY.md"
+    },
+    {
+     "slug": "webapp-state-machine-objects",
+     "title": "Object inventory of the reference engine (webapp/engine.py)",
+     "path": "webapp/state_machine/OBJECTS.md"
+    },
+    {
+     "slug": "webapp-state-machine-interfaces",
+     "title": "State-machine engine: interfaces (WP1\u2013WP9, emitter model E0\u2013E7)",
+     "path": "webapp/state_machine/INTERFACES.md"
+    }
+   ]
+  }
+ ]
+}

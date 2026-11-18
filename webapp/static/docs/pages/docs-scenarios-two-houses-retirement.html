@@ -1,0 +1,28 @@
+<h1 id="walkthrough-scenario-two-houses-to-retirement-fund">Walkthrough scenario: two houses to retirement fund</h1>
+<p>Used to test the domain model and pipeline end to end. The numbers are illustrative; ⚠ marks assumptions to confirm.</p>
+<h2 id="facts-from-the-user">Facts (from the user)</h2>
+<ul><li>Owns two houses today, each with a mortgage and an appreciation rate.</li><li>Sells both in 10 years. The proceeds go to the bank account, which becomes the retirement fund (finite).</li><li>Retires at 60, plans until 80. Question: does the fund cover the expected pension draw?</li></ul>
+<h2 id="the-scenario-in-model-terms">The scenario in model terms</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Details</th></tr>
+<tr><td>Economic unit</td><td><code>EconomicUnit</code></td><td>reference birth date ⚠ 1975-03</td></tr>
+<tr><td>Horizon</td><td><code>Horizon</code></td><td>2026-11 to 2055-03 (age 80)</td></tr>
+<tr><td>Inflation</td><td><code>RateSeries</code></td><td>⚠ 2.5%</td></tr>
+<tr><td>Effective tax rate</td><td><code>RateSeries</code></td><td>⚠ 30%</td></tr>
+<tr><td>Bank</td><td><code>Account</code> (TAXABLE)</td><td>opening ⚠ $15k, return ⚠ 2%</td></tr>
+<tr><td>H1</td><td><code>RealEstate</code>, principalResidence = <strong>true</strong></td><td>value / cost basis ⚠, appreciation ⚠ 3%</td></tr>
+<tr><td>H2</td><td><code>RealEstate</code>, principalResidence = false</td><td>value / cost basis ⚠, appreciation ⚠ 3%</td></tr>
+<tr><td>M1, M2</td><td><code>Mortgage</code> securedBy H1, H2</td><td>rate, amortisation, term, penalty rule ⚠</td></tr>
+<tr><td>Mortgage payments</td><td>derived by the engine, paymentFrom = bank (ADR-0029)</td><td></td></tr>
+<tr><td>H1, H2 costs</td><td><code>FixedCost</code> (property tax, insurance), <code>VariableCost</code> (maintenance % of value)</td><td></td></tr>
+<tr><td>Salary (net, take-home)</td><td><code>CashFlow</code> → bank</td><td>until 2037-03, CustomRate or generator for raises ⚠</td></tr>
+<tr><td>Living expenses</td><td><code>CashFlow</code> bank → (outside)</td><td>InflationIndexed, whole horizon ⚠</td></tr>
+<tr><td>H2 rental income</td><td><code>CashFlow</code> → bank, taxable = true</td><td>possible; included as an option</td></tr>
+<tr><td>Sale of H1, H2</td><td>2 × <code>SaleEvent</code> at 2034-05</td><td>proceeds → bank</td></tr>
+<tr><td>Retirement</td><td>salary ends 2037-03</td><td></td></tr>
+<tr><td>Pension draw</td><td><code>CashFlow</code> bank → (outside)</td><td>$2.5k/month, InflationIndexed, 2037-03 to 2055-03</td></tr>
+<tr><td>Goal G1</td><td><code>LocalGoal</code> MAINTAIN on bank: SHORTFALL = 0</td><td>"the fund lasts until 80"</td></tr>
+<tr><td>Goal G2</td><td><code>LocalGoal</code> REACH on M1: BALANCE = 0</td><td>"mortgage paid off" (optional)</td></tr>
+</table>
+<h2 id="what-the-walkthrough-shows">What the walkthrough shows</h2>
+<ul><li><code>SaleEvent</code> needs <code>proceedsTo : Account</code> (and <code>PurchaseEvent</code> needs <code>paidFrom</code>). Added to the class diagram, v0.3.</li><li>A sale triggers a <strong>settlement</strong>: pay off the secured mortgage (+ early closure penalty), capital gains tax (H2 only), remainder to the bank, and the property's costs and mortgage payments stop.</li><li>The order of steps within a month (Q-08) is decided in ADR-0018.</li><li>Income is entered net by default; taxable income (e.g. rent) is flagged (ADR-0020).</li></ul>

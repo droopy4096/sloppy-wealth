@@ -1,0 +1,12 @@
+<h1 id="adr-0026-a-holding-can-exist-without-being-owned-lease-then-buyout">ADR-0026: A holding can exist without being owned (lease, then buyout)</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>For a lease, the buyout price at the end should follow from the vehicle's depreciation (MSRP depreciated to the lease end), not from a hand-entered number.</p>
+<h2 id="decision">Decision</h2>
+<ul><li><code>Holding</code> gains <strong><code>owned : bool</code></strong> (default true).</li><li>A holding that is not owned is still projected (its value follows its value rate each month), but it:<ul><li>is <strong>excluded from net worth</strong> and from global goals,</li><li>carries <strong>no costs</strong> and cannot be sold.</li></ul></li><li>A <code>PurchaseEvent</code> on an existing holding that is not owned <strong>transfers ownership</strong>. Its price defaults to the holding's <strong>current projected value</strong> in that period. From then on the holding is owned and counts normally.</li><li>If the lease ends without a buyout, nothing more is needed: the vehicle that is not owned remains excluded.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>A price derived by a formula on the buyout event: a one-off concept used by a single case.</li><li>A hand-entered residual value: drifts when the depreciation assumption changes.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li><code>PurchaseEvent.price</code> becomes optional: required for a new holding, defaulting to current value for one that is not owned.</li><li>Lease-related costs (payments, maintenance) are modelled as cash flows tagged with the lease, not as costs of the holding.</li></ul>
+<h2 id="amendment-2026-11-04-reset-on-ownership-transfer">Amendment (2026-11-04): reset on ownership transfer</h2>
+<ul><li>When a purchase transfers ownership of a holding that was not owned, the holding's <strong>acquisition price and cost basis are reset to the buyout price</strong>. From then on, variable costs (ADR-0022) and capital gains (ADR-0017) are based on what was actually paid, the same as buying a used vehicle.</li></ul>

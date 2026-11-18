@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Wealth planner PoC{% endblock %}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 1.5rem; max-width: 70rem; }
+    nav { margin-bottom: 1rem; padding-bottom: .5rem; border-bottom: 1px solid #ccc; }
+    nav a { margin-right: 1rem; }
+    nav a.jurisdiction { text-decoration: none; font-weight: 600; color: #333;
+      background: #e8eef7; border: 1px solid #b8c7de; border-radius: 4px;
+      padding: .1rem .5rem; }
+    nav a.jurisdiction:empty { display: none; }
+    table { border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: .25rem .5rem; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .neg { color: #c00; }
+    .flash { background: #fee; border: 1px solid #c00; padding: .5rem; margin-bottom: 1rem; }
+    fieldset { margin-bottom: 1rem; }
+    label { display: inline-block; margin: .2rem .8rem .2rem 0; }
+    tr.modifier td { background: #f6f6f6; }
+    tr.modifier td:nth-child(4) { padding-left: 1.5rem; }
+    tr.off td { color: #999; }
+    tr.modifier td.trigger { padding-left: 3rem; }
+    tr:target td { background: #ffc; }
+    .muted { color: #777; }
+    /* Builder cards (ADR-0070): nested cards, a shade lighter at each level. */
+    details.section { margin: 1rem 0; padding: .5rem .8rem .6rem; background: #ececf0;
+                      border: 1px solid #b8b8c0; border-radius: 10px;
+                      box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+    details.section > summary h2, details.category > summary h3 { display: inline; }
+    details.section > summary h2 { font-size: 1.35rem; }
+    details.category { margin: .6rem 0; padding: .4rem .7rem .5rem; background: #f6f6f8;
+                       border: 1px solid #cfcfd6; border-radius: 8px; }
+    details.category > summary h3 { font-size: 1.05rem; }
+    details > summary { cursor: pointer; }
+    .cards { display: flex; flex-wrap: wrap; gap: .6rem; margin: .4rem 0; align-items: flex-start; }
+    details.card { border: 1px solid #c8c8d0; border-radius: 6px; padding: .4rem .6rem;
+                   min-width: 15rem; max-width: 100%; background: #fff;
+                   box-shadow: 0 1px 2px rgba(0, 0, 0, .06); }
+    details.card[open] { flex-basis: 100%; }
+    details.card.head { margin: .4rem 0; background: #f4f5fb; border-color: #c4c7d8; }
+    details.card.off, tr.off td { color: #999; }
+    .estimate { color: #888; font-variant-numeric: tabular-nums; }
+    table.rows { margin: .3rem 0; background: #fff; }
+    table.rows td { vertical-align: top; }
+    table.rows td.details { font-size: .85em; color: #444; }
+    tr.depth2 td.name { padding-left: 1.4rem; } tr.depth3 td.name { padding-left: 2.8rem; }
+    tr.depth4 td.name { padding-left: 4.2rem; }
+    form.inline { display: inline; }
+    table.flat td.details { font-size: .85em; color: #444; }
+    table.flat td:nth-child(2) { white-space: nowrap; }
+    .adders button { margin-right: .3rem; }
+    fieldset.add-groups .adders { margin: .25rem 0; }
+    fieldset.add-groups .adders > span { display: inline-block; min-width: 13rem; }
+    .own { font-size: .9em; }
+    /* Icons (ADR-0070 amendment): add blue, edit green, delete red. */
+    .card-icons { float: right; margin-left: .5rem; }
+    button.icon, a.icon { display: inline-flex; box-sizing: border-box; align-items: center; justify-content: center;
+                  width: 1.275rem; height: 1.275rem; padding: 0; margin-left: .15rem;
+                  border-radius: 5px; cursor: pointer; vertical-align: middle; }
+    button.icon.add { background: #e8f0fe; color: #1a56b0; border: 1px solid #7aa5e8; }
+    button.icon.edit { background: #e6f4ea; color: #1e7e34; border: 1px solid #8ccf9f; }
+    button.icon.delete { background: #fdecea; color: #b3261e; border: 1px solid #e59a95;
+                         padding: 0; }
+    a.icon.chart { background: #f3eefc; color: #6a3fb5; border: 1px solid #b9a2e3;
+                   text-decoration: none; }
+    button.icon:hover, a.icon:hover { filter: brightness(.94); }
+    .actions { white-space: nowrap; }
+    tr.edit-row td { background: #f3faf5; }
+    .flash-adders { outline: 2px solid #7aa5e8; border-radius: 4px; }
+    form.edit-form button[type=submit] { background: #e6f4ea; color: #1e7e34;
+      border: 1px solid #8ccf9f; border-radius: 4px; padding: .1rem .6rem; cursor: pointer; }
+    form.edit-form { border-left: 3px solid #8ccf9f; padding-left: .5rem; }
+    /* On/off checkmark (ADR-0070 amendment): green tick when on, empty grey box when off. */
+    input.check { appearance: none; -webkit-appearance: none; width: 1.05rem; height: 1.05rem;
+                  margin: 0 .35rem 0 .1rem; vertical-align: -.18rem; cursor: pointer;
+                  border: 2px solid #a8a8b0; border-radius: 4px; background: #fff; }
+    input.check:checked { border-color: #2e8b47; background: #2e8b47 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/></svg>") center / 90% no-repeat; }
+    input.check:hover { border-color: #2e8b47; }
+    input.check:focus-visible { outline: 2px solid #7aa5e8; outline-offset: 1px; }
+    /* Add: blue; delete: red. */
+    button.add-kind, form.add-form button[type=submit] {
+      background: #e8f0fe; color: #1a56b0; border: 1px solid #7aa5e8; border-radius: 4px;
+      padding: .1rem .5rem; cursor: pointer; }
+    button.add-kind:hover, form.add-form button[type=submit]:hover { background: #d2e3fc; }
+    button.delete { background: #fdecea; color: #b3261e; border: 1px solid #e59a95;
+                    border-radius: 4px; padding: .1rem .5rem; cursor: pointer; }
+    button.delete:hover { background: #fadbd8; }
+    .play { display: inline-block; font-size: 1.2rem; font-weight: bold; padding: .5rem 1rem;
+            background: #2a6; color: #fff; text-decoration: none; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a id="jurisdiction-name" class="jurisdiction" href="{{ url_for('web.builder') }}#settings" title="the scenario's jurisdiction: tax rules, account types and limits (ADR-0071); change it in the Scenario settings, or start a new scenario">{% if jurisdiction is defined and jurisdiction and not shell %}{{ jurisdiction.name }}{% endif %}</a>
+    <a href="{{ url_for('web.new') }}" title="start an empty scenario, choosing its jurisdiction">New</a>
+    <a href="{{ url_for('web.builder') }}">Builder</a>
+    <a href="{{ url_for('web.flat') }}">Builder (flat)</a>
+    <a href="{{ url_for('web.timeline_page') }}">Timeline</a>
+    <a href="{{ url_for('web.run') }}">Run</a>
+    <a href="#save" data-save title="download the scenario as a JSON file">Save</a>
+    <a href="{{ url_for('web.load') }}">Load</a>
+    <a href="{{ url_for('web.compare') }}">Compare</a>
+    <a href="{{ url_for('web.docs') }}">Documentation</a>
+    {% block nav_extra %}{% endblock %}
+  </nav>
+  {# The scenario lives in the browser tab (sessionStorage, ADR-0069): a page without
+     content (shell) is filled in by web.js, which posts the stored scenario. #}
+  <main{% if shell %} data-shell{% endif %}{% if refused %} data-refused{% endif %}{% if jurisdiction is defined and jurisdiction and not shell %} data-jurisdiction="{{ jurisdiction.name }}"{% endif %}>
+  {% if shell %}<p class="muted">Loading&hellip;</p><noscript><p>This page needs JavaScript: the scenario is kept in the browser tab.</p></noscript>{% endif %}
+  {% for message in messages or [] %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+  {% if scenario is defined and scenario %}<script type="application/json" id="scenario-state">{{ scenario|state_json }}</script>{% endif %}
+  </main>
+  <script src="{{ url_for('web.static', filename='web.js') }}"></script>
+</body>
+</html>

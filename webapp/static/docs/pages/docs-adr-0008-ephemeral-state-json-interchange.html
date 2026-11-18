@@ -1,0 +1,14 @@
+<h1 id="adr-0008-ephemeral-state-json-as-the-save-and-interchange-format">ADR-0008: Ephemeral state; JSON as the save and interchange format</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>We want to avoid a database or any persistent backend. The working system will probably pass data between components, possibly over a network.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>Application state is <strong>ephemeral</strong>: it exists only while the application runs.</li><li>The user can explicitly <strong>export and import</strong> the state. Nothing is saved automatically.</li><li><strong>JSON</strong> (YAML accepted as an equivalent for editing by hand) is both the <strong>save format</strong> and the <strong>interchange format</strong> between components.</li><li>Data can be <strong>injected at various points</strong>, e.g. a scenario fed straight into the engine, or a saved projection result fed straight into a view.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>A database (local or server): rejected.</li><li>Automatic persistence in browser or local storage: rejected for now.</li><li>A binary or opaque format: rejected, because files must be readable and editable.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Every domain object that crosses a boundary needs a defined, versioned JSON schema. Schema versioning matters because saved files will outlive changes to the code.</li><li>The JSON shapes act as the contracts between engine, controllers and views.</li></ul>
+<h2 id="amendment-2026-11-04-schema-versioning">Amendment (2026-11-04): schema versioning</h2>
+<ul><li>Every exported document and interchange payload carries an explicit <strong>schema version</strong>.</li><li>The versioning <em>strategy</em> (version format, compatibility rules, migration of old files) is still open. See open-questions Q-07.</li></ul>
+<h2 id="amendment-2026-11-15-the-browser-tab-keeps-the-working-scenario">Amendment (2026-11-15): the browser tab keeps the working scenario</h2>
+<ul><li>The web front-end keeps the scenario in the tab's <code>sessionStorage</code> (ADR-0069): it survives a refresh, not closing the tab. This is not persistence across sessions; saving a file stays explicit, and the page warns before a tab with unsaved changes is closed. <code>localStorage</code> (kept across sessions) stays rejected.</li></ul>

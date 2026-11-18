@@ -1,0 +1,10 @@
+<h1 id="adr-0004-simple-static-tax-rules-behind-a-jurisdiction-seam-canada-first">ADR-0004: Simple, static tax rules behind a jurisdiction seam; Canada first</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>Account types (TFSA, RRSP, non-registered) behave differently for tax. We want useful results without building a full tax engine, while keeping room to grow.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>The first jurisdiction is <strong>Canada</strong>.</li><li>Tax modelling is <strong>simple</strong>: tax-free, tax-deferred and taxable treatment categories with simple rules, and no income-tax bracket engine.</li><li>Rules are <strong>static</strong> within a projection.</li><li>The engine <strong>queries</strong> tax rules through an interface (a tax-rules or jurisdiction provider) and never embeds them as constants.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Canadian rules hard-wired into the engine: rejected, because adding another jurisdiction would mean rewriting the core.</li><li>Several jurisdictions or a full bracket-based model from the start: unnecessary for now.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Adding another jurisdiction, or rules that vary by year (e.g. indexed contribution limits, changing brackets), means a new implementation of the interface, not changes to the core.</li><li>The interface has to take the date or period as an input now, even though the rules are static, so time-varying rules fit later without changing the API.</li></ul>

@@ -1,0 +1,10 @@
+<h1 id="adr-0016-a-reference-birth-date-with-ages-as-a-way-of-entering-dates">ADR-0016: A reference birth date, with ages as a way of entering dates</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>Plans are naturally stated in ages ("retire at 60", "plan until 80"), while the engine works on absolute dates (ADR-0007).</p>
+<h2 id="decision">Decision</h2>
+<ul><li>The economic unit has a <strong>reference birth date</strong>: the person whose age the plan is framed around.</li><li>Ages are a way of <strong>entering</strong> dates. Authoring tooling converts "age 60" into an absolute period when the value is entered. The scenario stores only absolute dates.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Storing ages and resolving them in the engine: that brings back anchored dates, which ADR-0007 rejected.</li><li>No ages at all: inconvenient for retirement planning.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Changing the reference birth date does <strong>not</strong> move dates already entered. Time-shift tooling can move them if needed (ADR-0007).</li><li>Views can still <em>display</em> ages next to periods, derived from the reference birth date.</li><li>With a family as the economic unit, only one person's age frames the plan; consistent with ADR-0002.</li></ul>

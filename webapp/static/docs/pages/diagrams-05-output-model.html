@@ -1,0 +1,121 @@
+<h1>Projection result, output model (DRAFT v0.1)</h1><p><code>diagrams/05-output-model.mmd</code></p><figure class="diagram"><a href="/static/docs/diagrams/085edd2ae42196cd.svg" target="_blank"><img src="/static/docs/diagrams/085edd2ae42196cd.svg" alt="diagrams/05-output-model.mmd"></a></figure><details><summary>Mermaid source</summary><pre><code>---
+title: Projection result, output model (DRAFT v0.1)
+---
+classDiagram
+    direction TB
+
+    %% ---------- Root: one result per ScenarioSet run (ADR-0028) ----------
+    class SetResult {
+        +schemaVersion
+        +horizon : Horizon
+        +scenarios : ScenarioResult[1..*]
+        +setGoals : GoalResult[*]
+    }
+    SetResult &quot;1&quot; *-- &quot;1..*&quot; ScenarioResult
+    SetResult &quot;1&quot; *-- &quot;*&quot; GoalResult : set-level
+
+    class ScenarioResult {
+        +scenarioId
+        +name
+        +baseDate : Period (ADR-0013)
+        +inflation : RateGenerator (shown, ADR-0028)
+        +incomeMode : MODELLED | EXPENSES_COVERED (shown, ADR-0044)
+        +appliedDefaults : AppliedDefault[*] (ADR-0040)
+    }
+    ScenarioResult &quot;1&quot; *-- &quot;1..*&quot; PeriodRow : one per month
+    ScenarioResult &quot;1&quot; *-- &quot;*&quot; HoldingSeries : per-holding detail
+    ScenarioResult &quot;1&quot; *-- &quot;*&quot; Movement : ledger
+    ScenarioResult &quot;1&quot; *-- &quot;*&quot; TallySeries
+    ScenarioResult &quot;1&quot; *-- &quot;*&quot; GoalResult : scenario-level
+    ScenarioResult &quot;1&quot; *-- &quot;*&quot; Shortfall
+
+    %% ---------- Main table (ADR-0050) ----------
+    class PeriodRow {
+        +period : Period
+        +cash : Money (operating account)
+        +investments : Money (other accounts + pension value)
+        +propertyAndVehicles : Money (assets)
+        +debts : Money (liabilities)
+        +assetsNetWorth : Money (investments + property - debts)
+        +netWorth : Money (cash + assetsNetWorth)
+        +liquidationNetWorth : Money (ADR-0031, excludes pension)
+        +real(metric) Money (in baseDate dollars, ADR-0013)
+    }
+
+    %% ---------- Detail ----------
+    class HoldingSeries {
+        +holdingId
+        +name
+        +kind : ACCOUNT | ASSET | LIABILITY | PENSION
+        +group : CASH | INVESTMENTS | PROPERTY | DEBTS
+        +points : HoldingPoint[1..*]
+    }
+    HoldingSeries &quot;1&quot; *-- &quot;1..*&quot; HoldingPoint
+    class HoldingPoint {
+        +period : Period
+        +opening : Money
+        +closing : Money
+        +costBasis : Money [0..1] (assets)
+        +interest : Money [0..1] (loans)
+        +principalPaid : Money [0..1] (loans)
+        +rate : Decimal [0..1] (current annual rate)
+    }
+
+    class Movement {
+        +period : Period
+        +kind : MovementKind
+        +from : HoldingRef [0..1] (none = outside)
+        +to : HoldingRef [0..1] (none = outside)
+        +amount : Money (rounded, ADR-0009)
+        +sourceId (the item that caused it)
+        +tags : Set~String~ (ADR-0023)
+    }
+    Movement --&gt; MovementKind
+    class MovementKind {
+        &lt;&lt;enumeration&gt;&gt;
+        INCOME
+        TAX
+        DEDUCTION_CREDIT
+        EXPENSE
+        LOAN_ADVANCE
+        LOAN_INTEREST
+        LOAN_PAYMENT
+        PREPAYMENT
+        PURCHASE
+        IMPROVEMENT
+        SALE
+        SELLING_COST
+        PENALTY
+        CONTRIBUTION
+        EMPLOYER_MATCH
+        WITHDRAWAL
+        PENSION_PAYMENT
+        RETURN
+        APPRECIATION
+        SWEEP
+        TRANSFER
+    }
+
+    %% ---------- Tallies, goals, shortfalls ----------
+    class TallySeries {
+        +tallyId
+        +values : Money[1..*] (one per period)
+    }
+    class GoalResult {
+        +goalId
+        +kind : REACH | MAINTAIN
+        +status : MET | NOT_MET | HELD | VIOLATED
+        +firstMet : Period [0..1]
+        +firstViolated : Period [0..1]
+    }
+    class Shortfall {
+        +period : Period
+        +account : HoldingRef
+        +amount : Money
+        +cause : sourceId
+    }
+    class AppliedDefault {
+        +path (e.g. items.house.sellingCostRate)
+        +value
+    }
+</code></pre></details>

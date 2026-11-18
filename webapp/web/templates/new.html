@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}New scenario{% endblock %}
+{% block content %}
+<h1>New scenario</h1>
+<p>Start an empty scenario. The jurisdiction decides the tax rules, the account types
+(e.g. RRSP and TFSA in Canada, 401(k) and Roth IRA in the United States) and the limits
+the forms offer (ADR-0071). It replaces the current scenario.</p>
+<form method="post" action="{{ url_for('web.new') }}" data-confirm-unsaved="The current scenario has changes that are not saved. Start a new one anyway?">
+  <input type="hidden" name="action" value="new">
+  <fieldset>
+    <legend>Jurisdiction</legend>
+    {% for j in jurisdictions %}
+    <label><input type="radio" name="jurisdiction" value="{{ j.code }}"{% if loop.first %} checked{% endif %}> {{ j.name }}</label>
+    {% endfor %}
+    <button type="submit">Start</button>
+  </fieldset>
+</form>
+{% endblock %}

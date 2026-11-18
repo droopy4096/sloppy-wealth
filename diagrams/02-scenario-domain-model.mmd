@@ -1,5 +1,5 @@
 ---
-title: ScenarioSet input, conceptual domain model (DRAFT v0.46)
+title: ScenarioSet input, conceptual domain model (DRAFT v0.56)
 ---
 classDiagram
     direction TB
@@ -15,7 +15,7 @@ classDiagram
         +id
         +name
         +schemaVersion
-        +jurisdiction : JurisdictionCode
+        +jurisdiction : JurisdictionCode = CA (ISO code; one per scenario; ADR-0071)
         +horizon : Horizon
         +inflation : RateGenerator
         +effectiveTaxRate : RateGenerator
@@ -26,6 +26,7 @@ classDiagram
         +retirementTaxRate : RateGenerator = effectiveTaxRate (from retirement; ADR-0059)
         +pensionDiscountRate : RateGenerator = 2% real (ADR-0052)
         +liquidationTaxRate : RateGenerator = effectiveTaxRate (ADR-0031)
+        +items : every item has enabled : bool = true; off items and their dependents are skipped (ADR-0064)
     }
     class EconomicUnit {
         +name
@@ -35,7 +36,29 @@ classDiagram
         +start : Period
         +end : Period
     }
+    class Person {
+        +id
+        +name
+        +effectiveTaxRate : RateGenerator [0..1] = scenario's
+        +retirementTaxRate : RateGenerator [0..1] = scenario's
+        +birthDate : Period [0..1] (age rules, e.g. US catch-up; ADR-0071)
+        own tax, deduction pool, room, retirement (ADR-0061)
+    }
+    class ContributionRoom {
+        +owner : Person [0..1] = first person
+        +accountType : RRSP | TFSA (Canada's limits; ADR-0071)
+        +room : Money
+        +roomAsOfDate : Period
+        +yearlyMax : Money
+        +maxYear
+        +incomeRate : Decimal = 18% (RRSP)
+        +indexing : Indexing
+        at most one per (person, type) (ADR-0060, ADR-0061)
+    }
     Scenario "1" *-- "1" EconomicUnit
+    EconomicUnit "1" *-- "0..*" Person : none = one implicit person
+    Scenario "1" *-- "*" ContributionRoom
+    ContributionRoom --> Person : owner
     Scenario "1" *-- "1" Horizon
     Scenario "1" *-- "*" Holding
     Scenario "1" *-- "*" CashFlow
@@ -82,6 +105,8 @@ classDiagram
     }
     class Account {
         +taxTreatment : TaxTreatment
+        +owner : Person [0..1] = first person (ADR-0061)
+        +contributor : Person [0..1] = owner (spousal RRSP; ADR-0061)
         +openingFrom : CASH | OUTSIDE (essential if opened in horizon; ADR-0057)
         +returnRate : RateGenerator
         +withdrawalTaxRate : RateGenerator [0..1]
@@ -93,14 +118,15 @@ classDiagram
         +valueRate : RateGenerator (essential)
         +acquisitionPrice : Money
         +openingCostBasis : Money
-        +sellingCostRate : Decimal
+        selling cost = AssociatedCost at its end (was sellingCostRate; ADR-0067)
     }
     class RealEstate {
         +principalResidence : bool (initial designation; ADR-0056)
-        sellingCostRate essential; carrying costs go in expenses (ADR-0040)
+        carrying costs = AssociatedExpense (ADR-0040, ADR-0067)
     }
     class Vehicle
     class PensionEntitlement {
+        +owner : Person [0..1] = first person (ADR-0061)
         +amount : Money (per month, in today's / base-date dollars)
         +indexing : Indexing
         +start : Period [0..1] = retirementDate
@@ -125,6 +151,9 @@ classDiagram
     class Mortgage {
         +interestRate : TermScheduleRate
         compounding = SEMI_ANNUAL (default)
+        +termMonths : int [0..1] (also per renewal; ADR-0073)
+        +penaltyMethod : FLAT | INTEREST_LEFT | MONTHS_INTEREST [0..1]
+        +penaltyAmount | penaltyRate | penaltyMonths (per method)
     }
     class TaxTreatment {
         <<enumeration>>
@@ -157,6 +186,8 @@ classDiagram
         +taxable : bool = false
         +endsAtRetirement : bool = false (ADR-0052)
         +startsAtRetirement : bool = false (ADR-0052)
+        +owner : Person [0..1] (income; flows into/out of an account take its owner; ADR-0061)
+        +retirementOf : Person [0..1] = first person (household items; ADR-0061)
         +netOf : CashFlow|Loan [*] (ADR-0042, deferred)
         +from : Holding [0..1]
         +to : Holding [0..1]
@@ -175,14 +206,32 @@ classDiagram
         +annualRate : RateGenerator
         yearly amount = opening balance x rate on start and each anniversary, paid 1/12 monthly (ADR-0049)
     }
-    class Cost {
-        <<abstract>>
-        +attachedTo : Asset
+    class AssociatedExpense {
+        +parent : item with a lifetime (asset, account, mortgage, recurring item)
+        +amount : Money [0..1] (indexed as expenses) | +rate : Decimal [0..1] (yearly)
+        +basis : value | price | balance | amount | principal (per parent type)
+        runs from the parent's start to its end; % = basis on start and each
+        anniversary x rate, paid 1/12 monthly; replaces attachedTo (ADR-0067)
+        +alsoWhenRenting : bool = false (left out of ownership costs; ADR-0073)
     }
-    class FixedCost
-    class VariableCost {
-        +percentOfAcquisitionPrice : RateGenerator
-        monthly = rate x acquisitionPrice / 12, then indexed
+    class AssociatedCost {
+        +parent : item with a lifetime
+        +at : START | END | date (while the parent exists)
+        +amount : Money [0..1] | +rate : Decimal [0..1] of basis that month
+        one-off cash outflow, e.g. closing costs, selling costs (ADR-0067)
+    }
+    class AssociatedIncome {
+        +parent : Income | Pension
+        +amount : Money [0..1] (indexed as incomes) | +rate : Decimal [0..1] (yearly)
+        +paid : MONTHLY | LUMP (whole quarter / year, in arrears, full periods only)
+        lives with the parent; % of its yearly amount on start and each anniversary;
+        taxable, earned income and owner from the parent (ADR-0068)
+    }
+    class AssociatedOneOffIncome {
+        +parent : Income | Pension
+        +at : START | END | date (while the parent exists)
+        +amount : Money [0..1] | +rate : Decimal [0..1] of the parent's yearly amount
+        one-off cash inflow, e.g. signing bonus, severance (ADR-0068)
     }
     class Indexing {
         <<abstract>>
@@ -192,12 +241,11 @@ classDiagram
     class CustomRate {
         +rate : RateGenerator
     }
-    CashFlow <|-- Cost
+    CashFlow <|-- AssociatedExpense
+    CashFlow <|-- AssociatedIncome
     CashFlow <|-- DrawdownCashFlow
     CashFlow <|-- PercentWithdrawal
     CashFlow <|-- Contribution
-    Cost <|-- FixedCost
-    Cost <|-- VariableCost
     Indexing <|-- FixedNominal
     Indexing <|-- InflationIndexed
     Indexing <|-- CustomRate
@@ -237,9 +285,11 @@ classDiagram
         +from : Account [0..1]
         +to : Holding [0..1]
         +atRetirement : bool = false (instead of a date, ADR-0059)
+        +retirementOf : Person [0..1] = first person (ADR-0061)
     }
     class RetirementEvent {
-        at most one; triggers retirement-tied items and retirementTaxRate (ADR-0059)
+        +owner : Person [0..1] = first person
+        at most one per person (ADR-0061); triggers retirement-tied items and retirementTaxRate (ADR-0059)
     }
     class ResidenceSwitchEvent {
         +to : RealEstate
@@ -252,18 +302,34 @@ classDiagram
         +penalty : Money [0..1] (per settled loan, ADR-0047)
         +taxRate : Decimal [0..1] = effectiveTaxRate (ADR-0017)
         +atRetirement : bool = false (instead of a date, ADR-0059)
+        +retirementOf : Person [0..1] = first person (ADR-0061)
     }
     class LumpSumPrepayment {
         +liability : Liability
         +amount : Money [0..1]
         +payOff : bool = false (whole balance, ADR-0059)
         +atRetirement : bool = false (instead of a date, ADR-0059)
+        +retirementOf : Person [0..1] = first person (ADR-0061)
         +paidFrom : Account | OUTSIDE = operating (ADR-0044)
         +penalty : Money [0..1] (ADR-0047)
+    }
+    class CashBalanceEvent {
+        +balance : Money
+        sets the operating account to the stated balance at month end;
+        difference = reconciliation from/to outside, not taxed (ADR-0063)
+    }
+    class Trigger {
+        +event : ScenarioItem (any item with a date)
+        +target : ScenarioItem
+        +action : START | END | START_AND_END
+        +on : START | END (the event's date, or its end: last month + 1 / sale)
+        sets the target's start/end from the event's date before the run;
+        replaces startsAtRetirement / endsAtRetirement / atRetirement (ADR-0065, proposed)
     }
     class CashFlowAdjustment {
         +cashFlow : CashFlow
         +newAmount / changeRate
+        new amount in dollars of its date; indexing restarts from it (ADR-0062)
     }
     class EventGenerator {
         <<abstract>>
@@ -283,6 +349,7 @@ classDiagram
     Event <|-- Revaluation
     Event <|-- ImprovementEvent
     Event <|-- CashFlowAdjustment
+    Event <|-- CashBalanceEvent
     Event <|-- ResidenceSwitchEvent
     Event <|-- RetirementEvent
     EventGenerator <|-- AnnualAdjustmentGenerator
@@ -433,4 +500,13 @@ classDiagram
         +taxOnSale(asset, price, period) Money
         +inclusionRate(period) Decimal
     }
-    Scenario ..> TaxRules : jurisdiction resolves to
+    class Jurisdiction {
+        <<plug-in package, ADR-0071>>
+        +code : CA | US | ...
+        +accountTypes : code to label, Treatment(deductible, returnsTaxed, withdrawalTaxed)
+        +itemTypes : its own (CA contributionRoom, US contributionLimit)
+        +onContribute() onReturn() onWithdraw() : defaults follow the flags
+        +limits : ContributionLimits [0..1]
+    }
+    Scenario ..> Jurisdiction : jurisdiction resolves to
+    Jurisdiction ..|> TaxRules

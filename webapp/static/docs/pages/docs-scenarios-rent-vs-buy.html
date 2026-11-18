@@ -1,0 +1,41 @@
+<h1 id="scenario-set-rent-vs-buy">Scenario set: rent vs buy</h1>
+<p>Two competing scenarios with the <strong>same horizon and the same income and living expenses</strong>. They differ only in housing. Buy-side objects are tagged <code>housing:buy</code>, rent-side objects <code>housing:rent</code> (ADR-0023). ⚠ marks gaps.</p>
+<h2 id="common">Common</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Details</th></tr>
+<tr><td>Horizon</td><td><code>Horizon</code></td><td>same in both</td></tr>
+<tr><td>Salary (net)</td><td><code>CashFlow</code> → bank</td><td>same in both</td></tr>
+<tr><td>Living expenses</td><td><code>CashFlow</code> bank → (outside)</td><td>InflationIndexed, same in both</td></tr>
+<tr><td>Bank</td><td><code>Account</code> (TAXABLE)</td><td>operating account; income lands here</td></tr>
+<tr><td>Investments</td><td><code>Account</code> (TFSA or TAXABLE)</td><td>target of the sweep rule: bank buffer $X → investments (ADR-0030)</td></tr>
+<tr><td>Inflation, effective tax rate</td><td><code>RateGenerator</code></td><td>shared, untagged</td></tr>
+</table>
+<h2 id="b-buy">B: buy</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Details</th></tr>
+<tr><td>Home</td><td><code>RealEstate</code>, principalResidence = true</td><td>acquisitionPrice, appreciation generator</td></tr>
+<tr><td>Purchase</td><td><code>PurchaseEvent</code></td><td>paidFrom = bank (down payment), financedBy = mortgage</td></tr>
+<tr><td>Closing costs</td><td><code>OneOffTransfer</code> bank → (outside)</td><td>land transfer tax, legal fees, inspection; entered as an amount</td></tr>
+<tr><td>Mortgage</td><td><code>Mortgage</code> securedBy home</td><td>principal = price − down payment (+ CMHC premium if under 20% down, entered); <code>TermScheduleRate</code></td></tr>
+<tr><td>Mortgage payments</td><td>derived by the engine, paymentFrom = bank (ADR-0029)</td><td></td></tr>
+<tr><td>Property tax, home insurance, condo fees</td><td><code>FixedCost</code></td><td>InflationIndexed</td></tr>
+<tr><td>Maintenance</td><td><code>VariableCost</code></td><td>% of acquisition price, InflationIndexed</td></tr>
+<tr><td>Selling costs</td><td><code>sellingCostRate</code> ≈ 5% on the home (ADR-0031)</td><td></td></tr>
+</table>
+<h2 id="r-rent">R: rent</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Details</th></tr>
+<tr><td>Rent</td><td><code>CashFlow</code> bank → (outside)</td><td>CustomRate (e.g. rent increase guideline)</td></tr>
+<tr><td>Tenant insurance</td><td><code>FixedCost</code>-like cash flow</td><td></td></tr>
+<tr><td>Down payment + closing costs not spent</td><td>swept to investments (ADR-0030)</td><td></td></tr>
+<tr><td>Monthly difference (owner costs − rent)</td><td>swept to investments (ADR-0030)</td><td></td></tr>
+</table>
+<h2 id="comparison">Comparison</h2>
+<ul><li><strong>Liquidation net worth</strong> at the end of the horizon (real dollars) (ADR-0031).</li><li>Total cost by tag (<code>housing:buy</code> vs <code>housing:rent</code>).</li><li>Net worth over time: the crossover period (when buying overtakes renting) is a key output.</li></ul>
+<h2 id="decisions-taken-from-this-scenario">Decisions taken from this scenario</h2>
+<p>R1 → ADR-0029, R2 → ADR-0030, R3 → ADR-0031, R4 → ADR-0028, R5 → ADR-0032, break-even → ADR-0027 + ADR-0028.</p>
+<p>Assumptions: closing costs and the CMHC premium are entered amounts, not calculated by tax rules. TFSA contribution limits are not enforced (Q-06).</p>
+<h2 id="break-even-goal-requested-being-defined">Break-even goal (requested, being defined)</h2>
+<p>"Report when owning has paid off compared with renting": e.g. thanks to appreciation, after about 2 years the owner is ahead of what rent would have cost. Principal residence, so no tax on the gain (ADR-0017).</p>
+<p>Candidate definition, per period P (all cumulative from the purchase):</p>
+<ul><li>owner's net gain G(P) = (home value − mortgage balance) − cash paid out on <code>housing:buy</code> (down payment, closing costs, mortgage payments, costs) = appreciation − (interest + property tax + insurance + maintenance + closing costs)</li><li>renter's cost R(P) = cumulative rent paid (+ tenant insurance) on <code>housing:rent</code></li><li>break-even condition (decided): <strong>G(P) ≥ −R(P)</strong>, i.e. owning has cost no more than renting. The literal "gain ≥ rent" was rejected because it counts the rent twice.</li><li>Evaluation: tallies plus a goal evaluated every month by the stepping stage (ADR-0027, Proposed):<ul><li>tally <code>ownerNetGain</code> (in the buy scenario) = Derived: (VALUE(home) − BALANCE(mortgage)) − TagSum(housing:buy, outflows)</li><li>tally <code>rentSpent</code> = TagSum(housing:rent, outflows), in the rent scenario</li><li>goal REACH: ownerNetGain + rentSpent ≥ 0, which reports the break-even period</li></ul></li><li>buy and rent run in lockstep as one scenario set (ADR-0028). The break-even goal is a <strong>set-level goal</strong>: <code>buy.ownerNetGain + rent.rentSpent ≥ 0</code>.</li></ul>

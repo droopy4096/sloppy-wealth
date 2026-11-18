@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "name": "Single house, renewals and lender switch",
+  "horizon": {
+    "start": "2027-01-01",
+    "end": "2059-12-01"
+  },
+  "openingCash": "150000",
+  "items": [
+    {
+      "type": "property",
+      "id": "house",
+      "name": "House",
+      "purchaseDate": "2027-01-01",
+      "price": "700000",
+      "annualAppreciation": "0.05"
+    },
+    {
+      "type": "mortgage",
+      "id": "mtg",
+      "name": "House mortgage",
+      "property": "house",
+      "startDate": "2027-01-01",
+      "principal": "560000",
+      "annualRate": "0.0379",
+      "amortizationYears": "25"
+    },
+    {
+      "type": "income",
+      "id": "income",
+      "name": "Free income",
+      "startDate": "2027-01-01",
+      "endDate": "",
+      "amount": "3500",
+      "per": "month",
+      "taxable": false
+    },
+    {
+      "type": "renewal",
+      "id": "r1",
+      "name": "Renew 5y",
+      "mortgage": "mtg",
+      "startDate": "2029-01-01",
+      "annualRate": "0.0475",
+      "amortizationYears": ""
+    },
+    {
+      "type": "renewal",
+      "id": "r2",
+      "name": "Switch lender, new 25y",
+      "mortgage": "mtg",
+      "startDate": "2034-01-01",
+      "annualRate": "0.0425",
+      "amortizationYears": "25"
+    }
+  ]
+}

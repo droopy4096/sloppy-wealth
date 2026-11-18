@@ -1,0 +1,8 @@
+<h1 id="adr-0038-when-does-it-become-possible-is-answered-by-variant-sweeps-in-authoring-tooling">ADR-0038: "When does it become possible?" is answered by variant sweeps in authoring tooling</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-05</li><li><strong>Builds on:</strong> ADR-0006 (no solving), ADR-0028 (scenario sets), ADR-0032 (composition)</li></ul>
+<h2 id="context">Context</h2>
+<p>Questions like "how many years until I can sell one property and retire?" ask for a date. The engine only observes; it never solves (ADR-0006).</p>
+<h2 id="decision">Decision</h2>
+<ul><li>The <strong>authoring tooling</strong> offers a <strong>variant sweep</strong>. From a base scenario, a set of objects to move (by tag, ADR-0023) and a range of offsets (e.g. +0 to +20 years, step 1), it generates a <strong>scenario set</strong> with one variant per offset. The variants share the horizon and goals.</li><li>The engine runs the set in lockstep (ADR-0028) and reports goal outcomes for each variant.</li><li>The answer is the <strong>earliest variant whose goals hold</strong>. Picking it is done by the tooling or the view, not the engine.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>No change to the engine. The sweep reuses the shift tool's logic (ADR-0007).</li><li>A sweep of a few dozen variants of a ~400-month horizon is cheap.</li><li>A readiness tally (a quick single-run estimate) remains a possible later addition.</li></ul>

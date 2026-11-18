@@ -1,0 +1,10 @@
+<h1 id="adr-0020-income-is-entered-net-with-an-optional-taxable-flag">ADR-0020: Income is entered net, with an optional taxable flag</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>The simple tax model (ADR-0004, ADR-0017) has no income-tax brackets. Salary is usually known as take-home pay, while other income such as rent is received gross and taxed later.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>Income cash flows are entered <strong>net (after tax)</strong> by default.</li><li>An income cash flow can be flagged <strong>taxable</strong>. The engine then taxes it at the flat effective tax rate in the tax step (ADR-0018 step 7).</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Salary is entered as take-home pay. Rent, and any other gross income, is flagged taxable.</li><li>Expenses that reduce taxable rental income (deductions) are not modelled.</li></ul>
+<h2 id="amendment-2026-11-07-defaults-differ-between-files-and-entry-screens">Amendment (2026-11-07): defaults differ between files and entry screens</h2>
+<ul><li>In <strong>JSON</strong>, an income cash flow without <code>taxable</code> is after tax (<code>taxable = false</code>), the neutral default (ADR-0040): omitting the flag never invents a tax.</li><li><strong>Authoring screens</strong> pre-fill new income as <strong>taxable</strong> (gross), because salaries are usually known gross. This is a UI default only; pensions already known net and "free income" are entered with taxable switched off.</li><li>Tax on taxable income is still computed in the <strong>tax step</strong> (ADR-0018 step 7), together with every other tax. The PoC deducts it as income arrives (withholding); within a month the result is the same, and the PoC will be aligned later.</li></ul>

@@ -1,0 +1,10 @@
+<h1 id="adr-0031-selling-costs-and-a-liquidation-adjusted-net-worth">ADR-0031: Selling costs, and a liquidation-adjusted net worth</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>Net worth counts a home at its full value, but turning it into cash costs about 4–6% (realtor, legal). Comparing an owner with a renter on unadjusted net worth favours buying.</p>
+<h2 id="decision">Decision</h2>
+<ul><li><code>Asset</code> gains <strong><code>sellingCostRate</code></strong> (a percentage of the sale price).</li><li>On a <code>SaleEvent</code>, selling costs = price × sellingCostRate. They are deducted from the proceeds and <strong>reduce the capital gain</strong> (ADR-0017).</li><li>A <strong>liquidation net worth</strong> is available as a tally (<code>NetWorthTally.liquidationAdjusted</code>, ADR-0027). It is net worth minus what selling everything in that period would cost: selling costs and capital gains tax on owned assets, and tax at the effective rate on tax-deferred account balances.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Comparisons and goals can use either net worth or liquidation net worth. Rent vs buy should use liquidation net worth.</li></ul>
+<h2 id="amendment-2026-11-09-liquidation-tax-rate-c-p6">Amendment (2026-11-09): liquidation tax rate (C-P6)</h2>
+<ul><li>Scenario setting <strong><code>liquidationTaxRate</code></strong> (rate series; default: the effective tax rate; listed as an applied default). It is used for <strong>every tax in liquidation net worth</strong>: tax-deferred balances, unrealised gains on TAXABLE accounts (ADR-0054) and capital gains on owned assets.</li><li>The pension value (ADR-0052 amendment 2026-11-09) keeps the effective rate: it is received over years, not cashed in at once.</li><li>Reason: liquidating everything puts it all in one tax year; the flat rate understates that tax by six figures on large balances.</li></ul>

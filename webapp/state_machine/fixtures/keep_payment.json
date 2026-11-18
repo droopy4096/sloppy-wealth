@@ -1,0 +1,129 @@
+{
+  "name": "Renewal keepPayment (synthetic)",
+  "description": "Invented figures. Renewals keeping the payment (C-M7): after extra payments, a second keepPayment renewal at a higher rate, a renewal in the accrual window before a late first payment, a fallback when the payment cannot cover the new interest, a zero-rate renewal after a lump sum, and a default renewal for contrast.",
+  "horizon": {
+    "start": "2026-01-01",
+    "end": "2046-12-01"
+  },
+  "openingCash": "60000",
+  "effectiveTaxRate": "0.25",
+  "items": [
+    {
+      "type": "income",
+      "id": "pay",
+      "name": "Salary",
+      "startDate": "2026-01-01",
+      "amount": "14000",
+      "taxable": true
+    },
+    {
+      "type": "mortgage",
+      "id": "home",
+      "name": "Home loan",
+      "startDate": "2026-01-01",
+      "principal": "450000",
+      "annualRate": "0.045",
+      "amortizationYears": "20"
+    },
+    {
+      "type": "extraPayment",
+      "id": "home-extra",
+      "name": "Extra",
+      "mortgage": "home",
+      "startDate": "2026-02-01",
+      "endDate": "2030-12-01",
+      "monthlyAmount": "400"
+    },
+    {
+      "type": "renewal",
+      "id": "home-r1",
+      "name": "Renewal 1",
+      "mortgage": "home",
+      "startDate": "2031-01-01",
+      "annualRate": "0.039",
+      "keepPayment": true,
+      "penalty": "1500"
+    },
+    {
+      "type": "renewal",
+      "id": "home-r2",
+      "name": "Renewal 2",
+      "mortgage": "home",
+      "startDate": "2036-01-01",
+      "annualRate": "0.055",
+      "keepPayment": true
+    },
+    {
+      "type": "mortgage",
+      "id": "cottage",
+      "name": "Cottage loan",
+      "startDate": "2026-03-01",
+      "firstPaymentDate": "2026-08-01",
+      "principal": "200000",
+      "annualRate": "0.05",
+      "amortizationYears": "15"
+    },
+    {
+      "type": "renewal",
+      "id": "cottage-r",
+      "name": "Cottage renewal",
+      "mortgage": "cottage",
+      "startDate": "2026-05-01",
+      "annualRate": "0.04",
+      "keepPayment": true
+    },
+    {
+      "type": "mortgage",
+      "id": "rental",
+      "name": "Rental loan",
+      "startDate": "2026-01-01",
+      "principal": "150000",
+      "annualRate": "0.05",
+      "amortizationYears": "10"
+    },
+    {
+      "type": "renewal",
+      "id": "rental-r",
+      "name": "Rental renewal",
+      "mortgage": "rental",
+      "startDate": "2028-01-01",
+      "annualRate": "0.25",
+      "keepPayment": true
+    },
+    {
+      "type": "mortgage",
+      "id": "car",
+      "name": "Small loan",
+      "startDate": "2026-01-01",
+      "principal": "50000",
+      "annualRate": "0.03",
+      "amortizationYears": "5"
+    },
+    {
+      "type": "lumpSum",
+      "id": "car-lump",
+      "name": "Lump",
+      "mortgage": "car",
+      "paymentDate": "2026-06-01",
+      "amount": "10000"
+    },
+    {
+      "type": "renewal",
+      "id": "car-r",
+      "name": "Zero-rate renewal",
+      "mortgage": "car",
+      "startDate": "2027-01-01",
+      "annualRate": "0",
+      "keepPayment": true
+    },
+    {
+      "type": "renewal",
+      "id": "car-r2",
+      "name": "Default renewal",
+      "mortgage": "car",
+      "startDate": "2028-01-01",
+      "annualRate": "0.02",
+      "keepPayment": false
+    }
+  ]
+}

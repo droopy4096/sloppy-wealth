@@ -1,0 +1,12 @@
+<h1 id="adr-0003-the-engine-is-a-platform-agnostic-core-everything-else-is-an-adapter">ADR-0003: The engine is a platform-agnostic core; everything else is an adapter</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>The way the tool is distributed is undecided: an offline HTML app, a web service with an app, or a mobile app. More than one competing front-end (e.g. mobile and browser) may be built. The system has an MVC-style split, and the View is the least defined part.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>The calculation <strong>engine</strong> is designed first, as a self-contained core with no dependencies on UI, transport, storage or platform.</li><li>Controllers, views, transport (HTTP or in-process) and persistence (import/export) are <strong>adapters</strong> around the engine.</li><li>The <strong>implementation language is deferred</strong>: it will be chosen in a later ADR, once the requirements are clear.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Design around a specific UI or framework first: rejected, because it would lock in the distribution model before it is decided.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>The engine's API must be expressible as data in and data out (see ADR-0008), so it can be called in-process or remotely.</li><li>Several front-ends can share one engine.</li><li><strong>Open:</strong> where the engine runs is undecided. Candidates include fully client-side (offline HTML, mobile), local execution, and a stateless serverless function (e.g. a Google Cloud function) that anyone can invoke for backend tasks. See open-questions Q-01.</li></ul>
+<h2 id="amendment-2026-11-04-engine-is-stateless-per-invocation">Amendment (2026-11-04): engine is stateless per invocation</h2>
+<ul><li>None of the hosting candidates can be ruled out, so the engine must suit all of them, serverless included: <strong>each invocation is self-contained</strong>. Its input is the complete scenario (or set of scenarios) and its output is the result. Nothing is kept between calls.</li><li>This matches ADR-0008 (ephemeral state, JSON payloads) and ADR-0006 (a goal optimiser may call the engine many times).</li></ul>

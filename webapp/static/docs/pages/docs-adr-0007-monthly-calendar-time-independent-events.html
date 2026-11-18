@@ -1,0 +1,10 @@
+<h1 id="adr-0007-monthly-time-model-on-real-dates-with-independent-shiftable-events">ADR-0007: Monthly time model on real dates with independent, shiftable events</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>Mortgages, rent, salaries and contributions happen monthly. Strategies mostly differ in <em>when</em> things happen, and the user needs to move them in time easily.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>The engine steps in <strong>monthly periods</strong> on <strong>real calendar dates</strong>.</li><li>Decisions and events (start of double mortgage payments, purchase, sale, lump-sum prepayment, retirement, ...) are <strong>first-class, dated objects</strong>.</li><li>Every date is <strong>independent and absolute</strong>: there is no anchoring of one date to another.</li><li>Shifting is handled by <strong>tooling</strong>: operations that shift one or several objects, possibly of different types, by an offset, followed by a recomputation of the projection.</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Yearly periods: too coarse for mortgage amortisation and prepayment.</li><li>Relative time ("month N"): makes tax years, ages and calendar events awkward.</li><li>Anchored or relative dates with a dependency graph: rejected, because it adds complexity and the time-shift tooling covers the same need explicitly.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Every dated object needs a common way to be shifted (e.g. a shared "time-shiftable" interface), which the shift tooling works with.</li><li>Yearly concerns (tax year, annual limits) are handled as events at year boundaries inside the monthly stepping.</li></ul>

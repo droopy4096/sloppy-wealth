@@ -1,0 +1,81 @@
+{
+  "name": "Legacy fields, retired before the horizon (synthetic)",
+  "description": "Legacy scenario retirementDate before the horizon start (every month retired), legacy property saleDate/sellingCostRate/salePenalty paying off a loan, monthlyAmount flows, startsAtRetirement income and blank-start pension/even withdrawal anchored before the horizon.",
+  "horizon": {
+    "start": "2026-01-01",
+    "end": "2030-12-01"
+  },
+  "openingCash": "40000",
+  "annualInflation": "0.025",
+  "effectiveTaxRate": "0.30",
+  "retirementTaxRate": "0.15",
+  "retirementDate": "2024-07-01",
+  "items": [
+    {
+      "type": "income",
+      "id": "rent-in",
+      "name": "Old style income",
+      "startDate": "2026-01-01",
+      "monthlyAmount": "2500",
+      "taxable": true
+    },
+    {
+      "type": "income",
+      "id": "cpp",
+      "name": "From retirement",
+      "startDate": "2026-06-01",
+      "startsAtRetirement": true,
+      "amount": "900",
+      "indexing": "custom",
+      "indexRate": "0.02",
+      "taxable": true
+    },
+    {
+      "type": "expense",
+      "id": "spend",
+      "startDate": "2026-01-01",
+      "monthlyAmount": "3100"
+    },
+    {
+      "type": "property",
+      "id": "condo",
+      "name": "Condo",
+      "purchaseDate": "2020-01-01",
+      "price": "300000",
+      "annualAppreciation": "0.02",
+      "saleDate": "2028-06-01",
+      "sellingCostRate": "0.04",
+      "salePenalty": "1500"
+    },
+    {
+      "type": "mortgage",
+      "id": "mtg",
+      "property": "condo",
+      "startDate": "2026-01-01",
+      "principal": "150000",
+      "annualRate": "0.05",
+      "amortizationYears": "10"
+    },
+    {
+      "type": "pension",
+      "id": "pen",
+      "name": "Pension since 2024",
+      "amount": "1000",
+      "indexing": "inflation"
+    },
+    {
+      "type": "account",
+      "id": "rrsp",
+      "accountType": "rrsp",
+      "annualReturn": "0.04",
+      "openingBalance": "90000"
+    },
+    {
+      "type": "withdrawal",
+      "id": "draw",
+      "account": "rrsp",
+      "method": "even",
+      "startDate": ""
+    }
+  ]
+}

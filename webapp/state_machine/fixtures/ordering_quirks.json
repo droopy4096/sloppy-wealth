@@ -1,0 +1,52 @@
+{
+  "name": "Ordering quirks (synthetic)",
+  "description": "Duplicate account id (first slot, last definition wins), items without id, interleaved holding kinds.",
+  "horizon": {
+    "start": "2026-01-01",
+    "end": "2027-06-01"
+  },
+  "openingCash": "30000",
+  "items": [
+    {
+      "type": "account",
+      "id": "acct",
+      "name": "First definition",
+      "accountType": "tfsa",
+      "annualReturn": "0.02",
+      "openingBalance": "1000"
+    },
+    {
+      "type": "vehicle",
+      "id": "bike",
+      "purchaseDate": "2026-04-01",
+      "price": "3000",
+      "annualDepreciation": "0.2",
+      "annualMaintenance": "120"
+    },
+    {
+      "type": "income",
+      "startDate": "2026-01-01",
+      "amount": "2000"
+    },
+    {
+      "type": "account",
+      "id": "acct",
+      "name": "Second definition wins",
+      "accountType": "rrsp",
+      "annualReturn": "0.06",
+      "openingBalance": "5000"
+    },
+    {
+      "type": "contribution",
+      "account": "acct",
+      "startDate": "2026-02-01",
+      "amount": "100"
+    },
+    {
+      "type": "expense",
+      "startDate": "2026-01-01",
+      "amount": "1500",
+      "per": "month"
+    }
+  ]
+}

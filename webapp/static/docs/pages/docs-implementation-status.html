@@ -1,0 +1,232 @@
+<h1 id="implementation-status-planning-decisions-vs-the-poc">Implementation status: planning decisions vs the PoC</h1>
+<p>Audit date: 2026-11-10. PoC = <strong>iteration 2</strong> on <code>poc/python-flask</code> (developed on <code>poc/state-machine</code>, merged 2026-11-18; <code>webapp/state_machine/</code>, UI <code>webapp/web/</code> over the JSON API <code>webapp/api.py</code>, spec <code>webapp/SPEC.md</code>). Iteration 1 is frozen on tag <code>poc-iteration-1</code>; its results are the golden suite, so iteration 2 behaves the same. Verified against the code (grep/read) and the test suites (175 app tests + 214 package tests pass). Paths are relative to <code>webapp/state_machine/</code> unless they start with <code>webapp/</code>.</p>
+<p><strong>Status keys:</strong> Implemented · Partial · Not implemented (decided, not built) · N/A (planning-only, deferred, superseded, or "no change" decisions). The planning model is much broader than the PoC. "Not implemented" is a normal status.</p>
+<p><strong>Summary:</strong> ADRs 0001–0061: 16 Implemented, 26 Partial, 14 Not implemented, 5 N/A. CRITIQUE findings (37): 13 implemented, 13 decided but not built, 11 need no code (no change or documentation only).</p>
+<p>PoC field names differ from the domain model: <code>dollarsOf</code> = <code>baseDate</code>; <code>openedDate</code> / <code>openingBalance</code> = <code>openedOn</code> / <code>openingValue</code>; <code>annualReturn</code> = <code>returnRate</code>; <code>nonRegistered</code> / <code>rrsp</code> / <code>tfsa</code> = TAXABLE / TAX_DEFERRED / TAX_FREE. The PoC has no warnings channel: every "the result warns" decision is unbuilt.</p>
+<h2 id="1-per-adr">1. Per ADR</h2>
+<table>
+<tr><th>ADR</th><th>Topic</th><th>Status</th><th>Where / gap</th></tr>
+<tr><td>0001</td><td>ADRs and diagrams as text</td><td>N/A</td><td>Process</td></tr>
+<tr><td>0002</td><td>Personal tool, single economic unit</td><td>Implemented</td><td>One household (<code>household.py</code> Household), no auth</td></tr>
+<tr><td>0002 am.</td><td>Persons inside the economic unit</td><td>Implemented</td><td><code>household.persons</code> (ADR-0061)</td></tr>
+<tr><td>0003</td><td>Platform-agnostic engine core</td><td>Implemented</td><td>Package <code>state_machine</code> has no Flask import; <code>api.py</code> run/run_detailed; UI is an adapter</td></tr>
+<tr><td>0003 am.</td><td>Stateless per invocation</td><td>Implemented</td><td><code>engine.run(scenario)</code> builds a fresh Household each call</td></tr>
+<tr><td>0004</td><td>Tax rules behind a jurisdiction seam</td><td>Partial</td><td>ADR-0071 seam: <code>state_machine/jurisdictions/</code> (Canada in <code>ca/</code>); <code>rules/tax.py</code>, <code>rules/capital_gains.py</code></td></tr>
+<tr><td>0005</td><td>Deterministic, time-varying rate series</td><td>Partial</td><td>Deterministic yes; rates constant per item (only renewals and the retirement tax rate change a rate); no rate-source seam</td></tr>
+<tr><td>0006</td><td>Scenarios, goals, comparable results</td><td>Partial</td><td>Scenario + horizon + result rows; <code>/compare</code> (webapp/web/pages.py, <code>/api/compare</code>); no goals</td></tr>
+<tr><td>0006 am.</td><td>Goals observed, not solved</td><td>Not implemented</td><td>No goals</td></tr>
+<tr><td>0007</td><td>Monthly time on real dates, dated events</td><td>Partial</td><td>Monthly calendar (<code>dates.py</code>, <code>runner.py</code>); shift tooling not built</td></tr>
+<tr><td>0008</td><td>Ephemeral state, JSON save/interchange</td><td>Partial</td><td>Browser tab sessionStorage (ADR-0069) + Save (in the browser) / <code>/load</code>; no YAML; no injection at stage boundaries</td></tr>
+<tr><td>0008 am.</td><td>Schema version</td><td>Implemented</td><td><code>schemaVersion: 1</code> checked in <code>state_machine/ops.py</code> <code>load</code>; strategy still open (Q-07)</td></tr>
+<tr><td>0009 (+am.)</td><td>Decimal money, half-even, 2 dp per movement</td><td>Implemented</td><td><code>arith.py</code> <code>money</code>, <code>household.move</code> rounds every movement</td></tr>
+<tr><td>0010</td><td>Pipeline of pure stages + one stepping stage</td><td>Partial</td><td>Different design: compile (<code>compiler.py</code>) → <code>ScenarioRunner</code> (<code>runner.py</code>) → <code>results.assemble</code>; stages are not pure or serialisable (DECISIONS D-E1..D-E4)</td></tr>
+<tr><td>0011</td><td>Holding hierarchy</td><td>Implemented</td><td><code>base.py</code> Aggregate; <code>holdings/</code> Cash, RealEstate, Vehicle, Mortgage, InvestmentAccount, Pension</td></tr>
+<tr><td>0012</td><td>Events, cash flows, event generators</td><td>Partial</td><td>Events (<code>events/</code>) and flows (<code>flows/</code>) yes; event generators no</td></tr>
+<tr><td>0013</td><td>Per-flow indexing; nominal and real reporting</td><td>Implemented</td><td><code>arith.indexed</code>, <code>rules/indexing.py</code>; real columns <code>results.add_real_net_worth</code></td></tr>
+<tr><td>0013 am.</td><td>Amount in dollars of its start</td><td>Implemented</td><td><code>flows/income_expense.py</code> <code>flow_terms</code></td></tr>
+<tr><td>0013 am.</td><td>Base date named and settable</td><td>Implemented</td><td>Scenario <code>dollarsOf</code> (<code>dates.base_month</code>); columns labelled with it (webapp/web/templates/run.html)</td></tr>
+<tr><td>0013 am.</td><td>Yearly step on the anniversary</td><td>Implemented</td><td><code>arith.indexed</code> (full years since start)</td></tr>
+<tr><td>0013 am.</td><td>Base date is scenario input</td><td>Implemented</td><td><code>dollarsOf</code> saved in the scenario</td></tr>
+<tr><td>0013 am. C-P14</td><td>Base date input only; separate <code>displayDollarsOf</code></td><td>Not implemented</td><td>One <code>dollarsOf</code> drives both inputs (pensions, <code>amountIn: base</code>) and display; builder labels it "Show real values in dollars of"</td></tr>
+<tr><td>0013 am.</td><td><code>amountIn: base</code></td><td>Implemented</td><td><code>flows/income_expense.py</code> <code>flow_terms</code></td></tr>
+<tr><td>0014 (+am.)</td><td>Global/local goals, REACH/MAINTAIN</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0015</td><td>Debits capped, shortfalls</td><td>Not implemented</td><td>PoC simplification: cash may go negative (C-M17)</td></tr>
+<tr><td>0016</td><td>Reference birth date, ages</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0017</td><td>Capital gains on asset sale, principal-residence flag</td><td>Not implemented</td><td><code>rules/capital_gains.py</code> CapitalGainsRule is a no-op (C-M8 gap)</td></tr>
+<tr><td>0017 am.</td><td>One flat rate for every effect</td><td>Implemented</td><td><code>effectiveTaxRate</code> in <code>rules/tax.py</code> TaxRule (plus the RRSP's own <code>withdrawalTaxRate</code>, ADR-0035)</td></tr>
+<tr><td>0017 am.</td><td>Taxable-account income = income yield only</td><td>Not implemented</td><td>Whole non-registered return is taxable, <code>max(0, ·)</code> (<code>Jurisdiction.on_return</code>); see ADR-0054</td></tr>
+<tr><td>0017 am. C-P6</td><td><code>SaleEvent.taxRate</code></td><td>Not implemented</td><td>No CG tax at all</td></tr>
+<tr><td>0017 am. C-P13</td><td>Partial exemption by designated years</td><td>Not implemented</td><td>See ADR-0056</td></tr>
+<tr><td>0018 (+am.)</td><td>Order of steps within a month</td><td>Partial</td><td><code>clock.Order</code> (income → events → debt service → expenses → maintenance → contributions → withdrawals → growth → tax → close); no capping/shortfalls, no sweeps (7a), no tallies/goals (9–10), no CG tax at sale; costs come after expenses (ADR: before)</td></tr>
+<tr><td>0019</td><td>Rate generators; compounding per holding</td><td>Partial</td><td>Mortgage semi-annual (<code>arith.monthly_rate</code>), assets/accounts effective annual → monthly; no RateGenerator types; renewals stand in for TermScheduleRate</td></tr>
+<tr><td>0020 (+am.)</td><td>Income net, <code>taxable</code> flag; JSON false, UI true</td><td>Implemented</td><td><code>flows/income_expense.py</code> Income adds gross to taxable; tax in the tax step (<code>rules/tax.py</code>); UI default in webapp/app.py</td></tr>
+<tr><td>0021 (+am.)</td><td>Monthly flows; per month/quarter/year</td><td>Implemented</td><td><code>arith.PER</code>, <code>flow_amount</code></td></tr>
+<tr><td>0022</td><td>Variable cost = rate × acquisition price</td><td>Not implemented</td><td>Only vehicle <code>annualMaintenance</code> (fixed amount, optional <code>maintenanceIncrease</code>, <code>holdings/vehicle.py</code>)</td></tr>
+<tr><td>0023</td><td>Tags</td><td>Not implemented</td><td>Ledger has no tags</td></tr>
+<tr><td>0024</td><td>Generic Loan, Mortgage specialisation</td><td>Partial</td><td>Mortgage only (<code>holdings/mortgage.py</code>), secured by a property; sale settles every loan secured by the asset (<code>events/sale.py</code> LoanPayoff)</td></tr>
+<tr><td>0025</td><td>OneOffTransfer; financed purchase</td><td>Partial</td><td>Financed purchase: mortgage with <code>property</code> and blank start (<code>dates.mortgage_start</code>); <code>transfer</code> is cash → account only (<code>events/transfer.py</code>)</td></tr>
+<tr><td>0025 am.</td><td>Purchase <code>marketValue</code></td><td>Implemented</td><td><code>events/purchase.py</code></td></tr>
+<tr><td>0025 am. C-P12</td><td>Closing costs inside the mortgage</td><td>N/A</td><td>Assumption only; nothing to build</td></tr>
+<tr><td>0026 (+am.)</td><td>Holdings not owned (lease, buyout)</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0027</td><td>Tallies, monthly goal evaluation</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0028</td><td>Scenario sets in lockstep</td><td>Partial</td><td><code>/compare</code> runs two files side by side, same horizon enforced; no ScenarioSet, lockstep or set goals</td></tr>
+<tr><td>0028 am.</td><td>Inflation may differ; shown per scenario</td><td>Implemented</td><td>webapp/web/templates/compare.html header shows each inflation</td></tr>
+<tr><td>0028 am. C-P17</td><td>Per-scenario deflator</td><td>Implemented</td><td>Each run deflates by its own <code>annualInflation</code></td></tr>
+<tr><td>0029</td><td>Engine derives loan payments</td><td>Implemented</td><td><code>arith.mortgage_terms</code>/<code>annuity</code>; fixed under prepayments; recalculated at renewal (<code>Mortgage.renew</code>)</td></tr>
+<tr><td>0029 am.</td><td>Final payment clears the balance</td><td>Implemented</td><td><code>Mortgage.pay_scheduled</code></td></tr>
+<tr><td>0029 am.</td><td>First payment month after advance; <code>firstPaymentDate</code></td><td>Implemented</td><td><code>LoanTerms.first_pay</code></td></tr>
+<tr><td>0029 am. C-P15</td><td>No fixed-payment variable / interest-only loans</td><td>N/A</td><td>Not modelled by decision</td></tr>
+<tr><td>0029 am. C-M6</td><td>Interest adjustment before a late first payment</td><td>Implemented</td><td><code>Mortgage.accrue</code> / <code>settle_accrued</code> (INTEREST_ADJUSTMENT); amortisation from first payment</td></tr>
+<tr><td>0029 am. C-M7</td><td>Prepayments shorten "until the next renewal"</td><td>Implemented</td><td>Default renewal recalculates the payment (<code>Mortgage.renew</code>)</td></tr>
+<tr><td>0030</td><td>Surplus-cash sweep rules</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0031</td><td>Selling costs; liquidation net worth</td><td>Partial</td><td><code>sellingCostRate</code> on the sale (<code>events/sale.py</code> SELLING_COST); no liquidation net worth</td></tr>
+<tr><td>0031 am. C-P6</td><td><code>liquidationTaxRate</code></td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0032</td><td>Composition is authoring's concern</td><td>N/A</td><td>Engine takes complete scenarios; no composition tool</td></tr>
+<tr><td>0033</td><td>Revaluation event</td><td>Partial</td><td><code>marketAdjustment</code> on properties and vehicles (<code>events/adjustment.py</code>; vehicles since the 2026-11-11 amendment)</td></tr>
+<tr><td>0033 am.</td><td>Set value is the month's closing value</td><td>Implemented</td><td><code>events/adjustment.py</code>, growth skipped (<code>holdings/real_estate.py</code>)</td></tr>
+<tr><td>0033 am. C-P16</td><td>Market adjustment on accounts</td><td>Not implemented</td><td>Validation accepts only properties</td></tr>
+<tr><td>0034</td><td>Negative-equity sale settlement</td><td>Partial</td><td>Order SALE → SELLING_COST → LoanPayoff → PENALTY (<code>events/sale.py</code>); no CG step; deficit makes cash negative (no shortfall); proceeds always to cash</td></tr>
+<tr><td>0035</td><td>Tax-deferred withdrawals; <code>taxPaidFrom</code></td><td>Partial</td><td><code>withdrawalTaxRate</code>, gross withdrawals (<code>Jurisdiction.on_withdraw</code>); tax always from cash</td></tr>
+<tr><td>0036</td><td>Pensions as income flows; no RRIF</td><td>N/A</td><td>Superseded by ADR-0052 (pension holding); "RRIF not modelled" holds</td></tr>
+<tr><td>0037</td><td>Period tallies, goal active window</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0038</td><td>Variant sweeps (authoring)</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0039</td><td>Even drawdown (fixed at start)</td><td>Superseded</td><td>Retired by the 2026-11-11 amendment; <code>even</code> is read as an unindexed annuity</td></tr>
+<tr><td>0039 am. C-P3</td><td>Annuity at expected return, yearly recompute, <code>indexed</code></td><td>Implemented (2026-11-11)</td><td><code>flows/withdrawal.py</code> AnnuityStrategy; <code>indexed</code> = the <code>indexing</code> field; about one month's return is left</td></tr>
+<tr><td>0039 am. 2026-11-11</td><td>Amount (given/annuity) × indexing; <code>even</code> retired</td><td>Implemented</td><td><code>validation.py</code>, app load conversion</td></tr>
+<tr><td>0040</td><td>Minimal input, neutral defaults, implicit cash</td><td>Partial</td><td>Optional fields default to neutral values; implicit cash; no list of applied defaults</td></tr>
+<tr><td>0040 am.</td><td>Asset value rate essential</td><td>Implemented</td><td><code>validation.REQUIRED</code> (<code>annualAppreciation</code>, <code>annualDepreciation</code>)</td></tr>
+<tr><td>0040 am. C-P11</td><td><code>sellingCostRate</code> essential for RealEstate</td><td>Not implemented</td><td>Optional in validation and UI ("optional")</td></tr>
+<tr><td>0040 am. 2026-11-11</td><td>Expense attached to an asset or an income (<code>attachedTo</code>)</td><td>Implemented (on <code>poc/sm-triggers</code>: replaced by triggers, converted on load)</td><td><code>flows/income_expense.py</code> ExpenseEmitter asset check; <code>validation.py</code>; builder select. Branch: <code>upgrade.py</code> <code>_attached</code></td></tr>
+<tr><td>0041</td><td>Shift start, end or both</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0042</td><td>Free income <code>netOf</code></td><td>N/A</td><td>Deferred</td></tr>
+<tr><td>0043</td><td>Renewal and lender switch</td><td>Partial</td><td><code>renewal</code> (<code>events/loan.py</code>, <code>Mortgage.renew</code>): new rate, optional new amortisation, <code>penalty</code>; no term length / <code>termAt</code></td></tr>
+<tr><td>0043 am. C-M7</td><td><code>keepPayment</code></td><td>Partial</td><td><code>arith.keep_payment_months</code>, <code>Mortgage.renew</code>; fallback noted only in the event log, not as a result warning</td></tr>
+<tr><td>0044 (+am.)</td><td>Income-less mode; lump-sum source; contributions/withdrawals; pensions still pay</td><td>Implemented</td><td><code>household.covered</code>, <code>recurring_source</code>; <code>lumpSum.paidFrom</code>; <code>holdings/pension.py</code></td></tr>
+<tr><td>0045</td><td>Rates as fractions, UI percent, range checks</td><td>Implemented</td><td><code>validation.py</code>; webapp/web/pages.py <code>percent_to_fraction</code></td></tr>
+<tr><td>0046</td><td>Improvement event</td><td>Implemented</td><td><code>events/improvement.py</code>; a mortgage on the property starting that month funds it; no cost basis (no CG)</td></tr>
+<tr><td>0047</td><td>Early-closure penalty is manual</td><td>Partial</td><td><code>salePenalty</code>, renewal <code>penalty</code>, lump-sum <code>penalty</code> from cash; one penalty per sale, not per secured loan</td></tr>
+<tr><td>0047 am. C-P20</td><td>Warning for in-term closure without penalty</td><td>Not implemented</td><td>No term length, no warnings</td></tr>
+<tr><td>0047 am. C-M12</td><td>Penalty from paymentFrom even for outside lump sums</td><td>Implemented</td><td><code>events/loan.py</code> PENALTY from cash</td></tr>
+<tr><td>0048</td><td>Deduction in the same month</td><td>Implemented</td><td><code>Jurisdiction.on_contribute</code>; <code>rules/tax.py</code></td></tr>
+<tr><td>0048 am.</td><td>Employer match not deductible; DB contributions deductible</td><td>Implemented</td><td><code>holdings/account.py</code> accept_contribution; <code>holdings/pension.py</code> accept_contribution</td></tr>
+<tr><td>0048 am. C-P2</td><td>Refund credit</td><td>N/A</td><td>Superseded by the pool</td></tr>
+<tr><td>0048 am. C-P2 rev.</td><td>Carry-forward pool</td><td>Implemented</td><td><code>rules/tax.py</code> TaxRule (<code>tax.pool</code>), <code>run_detailed()[&quot;tax&quot;]</code></td></tr>
+<tr><td>0048 am.</td><td>Deductions and pool per person</td><td>Implemented</td><td><code>Jurisdiction.on_contribute</code> (contributor), <code>rules/tax.py</code> per person</td></tr>
+<tr><td>0049</td><td>Percent-of-balance withdrawal</td><td>Implemented</td><td><code>flows/withdrawal.py</code> PercentStrategy</td></tr>
+<tr><td>0050</td><td>Result columns, assets net worth</td><td>Partial</td><td><code>results.row</code>; no liquidation net worth</td></tr>
+<tr><td>0050 am.</td><td>Pension value in Investments</td><td>Implemented</td><td><code>results.row</code> (<code>account</code>, <code>pension</code>)</td></tr>
+<tr><td>0050 am. C-P4</td><td>Pension in liquidation net worth</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0051</td><td>Contributions and employer match</td><td>Implemented</td><td><code>flows/contribution.py</code>, <code>employerMatch</code></td></tr>
+<tr><td>0052</td><td>Pension holding; retirement date</td><td>Partial</td><td><code>holdings/pension.py</code> Pension (value, payment, revaluation)</td></tr>
+<tr><td>0052 am.</td><td>No discounting, amount in base-date dollars (Q-36)</td><td>Implemented</td><td><code>Pension.value</code> / <code>payment</code>; superseded in the plan by C-P4</td></tr>
+<tr><td>0052 am.</td><td><code>endsAtRetirement</code>, <code>startsAtRetirement</code>, own start/end, member contributions</td><td>Implemented</td><td><code>flows/income_expense.py</code>, <code>holdings/pension.py</code>, <code>flows/contribution.py</code></td></tr>
+<tr><td>0052 am. C-P4</td><td><code>pensionDiscountRate</code> (2% real)</td><td>Not implemented</td><td>Value undiscounted</td></tr>
+<tr><td>0052 am. C-P5</td><td>Warning when retirement date varies</td><td>Not implemented</td><td>No warnings, no sweeps</td></tr>
+<tr><td>0052 am. C-P14</td><td>Amount fixed by base date</td><td>Partial</td><td>Uses <code>dollarsOf</code>, which is also the display date (see 0013)</td></tr>
+<tr><td>0052 am. C-M13</td><td>Drift within a year</td><td>Implemented</td><td>Behaviour as documented (<code>Pension.value</code>)</td></tr>
+<tr><td>0053</td><td>Output model, three levels</td><td>Partial</td><td>rows, holdings (opening/closing/rate; loans interest/principal), ledger (kind/from/to/amount/source), tax detail, event log (<code>results.assemble</code>, <code>api.run_detailed</code>); no SetResult, applied defaults, cost basis, tags, tallies, goals, shortfalls, liquidation NW</td></tr>
+<tr><td>0054</td><td>Taxable-account return split, cost basis</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0055</td><td>OAS clawback, GIS, splitting not modelled</td><td>N/A</td><td>Records a bias; nothing to build</td></tr>
+<tr><td>0056</td><td>ResidenceSwitchEvent</td><td>Not implemented</td><td>—</td></tr>
+<tr><td>0057</td><td>Account opening balance source</td><td>Partial</td><td><code>openingFrom</code> validation; <code>holdings/account.py</code> AccountOpening (OPENING_TRANSFER / OPENING_BALANCE), AccountAtStart (statement balance); no warning about the net-worth jump; no cost basis</td></tr>
+<tr><td>0058</td><td>Holdings before the horizon</td><td>Partial</td><td>Assets carried in grown from purchase (<code>events/purchase.py</code> CarryInEmitter); pre-horizon improvements/adjustments rejected; loan replay and <code>balanceAtHorizonStart</code> not built</td></tr>
+<tr><td>0059 (+4 am.)</td><td>RetirementEvent, <code>retirementTaxRate</code>; ends at retirement; sale/lump sum/payOff/transfer at retirement</td><td>Implemented</td><td><code>events/retirement.py</code>, <code>household.current_tax_rate</code>, <code>flows/contribution.flow_window</code>, <code>events/sale.py</code>, <code>events/loan.py</code>, <code>events/transfer.py</code></td></tr>
+<tr><td>0059 am.</td><td>One retirement per person; <code>retirementOf</code></td><td>Implemented</td><td><code>events/retirement.py</code> setup per person; <code>compiler.CompileContext.retirement_for</code></td></tr>
+<tr><td>0060</td><td>RRSP/TFSA contribution room</td><td>Implemented</td><td><code>jurisdictions/ca/room.py</code>; caps in <code>holdings/account.py</code>, <code>events/transfer.py</code>; earned income in <code>flows/income_expense.py</code>; rows <code>rrspRoom</code>/<code>tfsaRoom</code></td></tr>
+<tr><td>0060 am.</td><td>Room per person</td><td>Implemented</td><td><code>jurisdictions/ca/room.py</code> keyed by (person, type)</td></tr>
+<tr><td>0063</td><td>Cash balance reconciliation</td><td>Implemented</td><td><code>events/cash_balance.py</code> (CASH_RECONCILIATION); builder form</td></tr>
+<tr><td>0062</td><td>Cash flow adjustment (new amount from a date)</td><td>Implemented</td><td><code>flows/adjustment.py</code>; used by income, expense, contribution, withdrawal (amount; percent: new annualRate, amendment); builder 'Cash flow changes'; change rate not built</td></tr>
+<tr><td>0061</td><td>Second earner: persons, owners, retirement/tax/room per person, spousal RRSP</td><td>Implemented</td><td><code>persons.py</code>, <code>rules/person.py</code>, <code>household.py</code> Person, <code>env.retirement_for</code>, <code>rules/tax.py</code> per person, UI owner fields and ledger tax per person; not built: pension splitting, attribution rule (decided deferred / not modelled)</td></tr>
+<tr><td>0064</td><td>Item on/off switch (<code>enabled</code>, cascade to dependents)</td><td>Implemented</td><td><code>enabled.py</code> (<code>active</code> after <code>upgrade</code> in validation, compiler, <code>retirement_dates</code>); builder "On" checkbox at the front of each row (<code>app.toggle_item</code>), off rows greyed with "off via"</td></tr>
+<tr><td>0065 (proposed)</td><td>Triggers instead of at-retirement fields</td><td>Implemented on <code>poc/sm-triggers</code> (experiment)</td><td><code>triggers.py</code> (resolve, <code>prepared</code>), <code>events/trigger.py</code> (log), <code>upgrade.py</code> (flags → triggers); builder Trigger form, triggers under their target, date-less items kept off. Amendment 2026-11-13: `on: start</td><td>end<code> (</code>triggers.event_month`), attachedTo → triggers, start triggers carry their target off/deleted with the event</td></tr>
+<tr><td>0066 (proposed)</td><td>Timeline view (lanes, branches, trigger arrows)</td><td>Implemented on <code>poc/sm-triggers</code> (experiment)</td><td><code>webapp/timeline.py</code> (<code>layout</code>), <code>webapp/web/timeline_draw.py</code> (<code>svg</code>, <code>graph</code>), <code>/timeline</code>, <code>templates/timeline.html</code>; builder rows get <code>id=&quot;item-&lt;id&gt;&quot;</code></td></tr>
+<tr><td>0067 (proposed)</td><td>Associated expense / cost (lives with a parent; amount or % of a looked-up basis)</td><td>Implemented on <code>poc/sm-triggers</code></td><td><code>flows/associated.py</code>; <code>upgrade.py</code> (<code>attachedTo</code>, vehicle maintenance, sale <code>sellingCostRate</code> converted); validation <code>check_associated</code>; adjustments; builder forms; timeline. Not built: cost at a scheduled mortgage payoff</td></tr>
+<tr><td>0068 (proposed)</td><td>Associated income / one-off income (lives with an income or pension; amount or % of its yearly amount; monthly or a lump in arrears)</td><td>Implemented on <code>poc/sm-triggers</code></td><td><code>flows/associated_income.py</code>; validation <code>check_associated_income</code>; adjustments; builder forms ("Associated income"); timeline. No conversion on load</td></tr>
+<tr><td>0070 (proposed)</td><td>Builder as cards by person and category; estimated monthly figures; adding in context</td><td>Implemented on <code>poc/sm-cards</code> (with the flat view <code>/flat</code>, after-tax incomes, editing (<code>ops.update_item</code>, <code>/api/items/update</code>) and card icons, amendments)</td><td><code>state_machine/cards.py</code>; <code>/api/view/builder</code> <code>cards</code>; <code>web/templates/_items.html</code> shared by <code>builder.html</code> and <code>flat.html</code>; <code>schema.py</code> <code>CARD_ADDS</code>; <code>web/templates/builder.html</code>; <code>web.js</code> (add forms, open state); tests <code>test_cards.py</code>, <code>test_ui_emitters.BuilderCards</code></td></tr>
+<tr><td>0071 (proposed)</td><td>Tax jurisdictions as plug-in packages; the US next to Canada</td><td>Implemented on <code>poc/sm-jurisdictions</code>: (1) seam with Canada moved (results unchanged); (2) <code>jurisdiction</code> field (CA default via upgrade), person <code>birthDate</code>, schema / validation / settings switch / run columns / ledger labels by jurisdiction; (3) US: 401(k) and IRA (traditional, Roth), HSA, brokerage, <code>contributionLimit</code> (yearly, catch-up); (4) New page (<code>/new</code>), jurisdiction dropdown in the settings, nav label; (5) conformance suite, golden set per jurisdiction (<code>tests/golden/us/</code>), samples, CONTRIBUTING in <code>state_machine/README.md</code></td><td><code>state_machine/jurisdictions/</code> (<code>ca/</code>, <code>us/</code>); <code>schema.merged</code>, <code>describe(code)</code>; <code>ops.settings</code> <code>switch_problem</code>; tests <code>test_jurisdictions.py</code>, <code>test_us.py</code>, <code>test_conformance.py</code>, <code>test_golden.GoldenUnitedStates</code>, <code>test_ui_emitters.UnitedStatesInTheApp</code></td></tr>
+<tr><td>0072 (proposed)</td><td>RESP accounts with the CESG grant (Canada)</td><td>Implemented on <code>poc/sm-resp</code></td><td><code>jurisdictions/ca/resp.py</code> (grant via <code>Canada.on_contribute</code>, lifetime cap via <code>RoomLimits.cap</code>); <code>AccountType.fields</code> on the account form (<code>schema.merged</code>); tests <code>test_resp.py</code>, <code>test_ui_emitters.RespInTheApp</code>; Canada's sample has an RESP</td></tr>
+<tr><td>0073 (proposed)</td><td>Property break-even and rent equivalent; penalty formula per term</td><td>Implemented on <code>poc/sm-break-even</code></td><td><code>holdings/mortgage.py</code> (<code>ClosureTerm</code>, <code>penalty_at</code>), <code>events/sale.py</code>, <code>events/loan.py</code> (<code>ClosurePenalty</code>); <code>state_machine/break_even.py</code>; <code>/api/view/break-even</code>; <code>/run/break-even</code> (summary and table); tests <code>test_closure_penalty.py</code>, <code>test_break_even.py</code>, <code>test_ui_emitters.BreakEvenInTheApp</code></td></tr>
+<tr><td>0074 (proposed)</td><td>Vehicle cost of ownership per month</td><td>Implemented on <code>poc/sm-vehicle-cost</code></td><td><code>state_machine/vehicle_cost.py</code>; <code>/api/view/vehicle-cost</code>; <code>/run/vehicle-cost</code> (chart icon on vehicle cards and rows); tests <code>test_vehicle_cost.py</code>, <code>test_ui_emitters.VehicleCostInTheApp</code></td></tr>
+<tr><td>0069 (proposed)</td><td>Stateless server, scenario in the browser (sessionStorage), JSON API, Jinja builder as an API client</td><td>Implemented on <code>poc/sm-stateless</code> (steps 1-4)</td><td><code>state_machine/ops.py</code> (commands: load, settings, add, toggle, delete with cascade; outcome <code>{scenario, ok, messages}</code>), <code>state_machine/views.py</code> (effective starts, display order, off items, trigger-set dates, choices, ledger month); <code>app.py</code> routes call them. JSON API <code>api.py</code> (<code>/api/...</code>, schema <code>schema.py</code>, limits, gzip; <code>test_api.py</code>). Pages in <code>web/</code> (API client only; <code>web/static/web.js</code> keeps the scenario in sessionStorage); no server-side store, no session cookie. Tests use <code>browser.py</code></td></tr>
+</table>
+<h2 id="2-per-critique-finding">2. Per CRITIQUE finding</h2>
+<table>
+<tr><th>ID</th><th>User's decision (short)</th><th>PoC status</th><th>Where</th></tr>
+<tr><td>C-P1</td><td>Return split, deferred growth, average cost</td><td>Not implemented</td><td>ADR-0054</td></tr>
+<tr><td>C-P2</td><td>Carry-forward pool (revisited)</td><td>Implemented</td><td><code>rules/tax.py</code> TaxRule</td></tr>
+<tr><td>C-P3, C-M3</td><td>Annuity drawdown, yearly recompute, <code>indexed</code></td><td>Implemented (2026-11-11)</td><td>ADR-0039 amendments; <code>method: annuity</code></td></tr>
+<tr><td>C-P4</td><td><code>pensionDiscountRate</code>; pension after tax in liquidation NW</td><td>Not implemented</td><td>ADR-0052/0050 amendments</td></tr>
+<tr><td>C-P5</td><td>Constant amount; warning when retirement varies</td><td>Not implemented (warning)</td><td>ADR-0052 amendment</td></tr>
+<tr><td>C-P6</td><td><code>SaleEvent.taxRate</code>, <code>liquidationTaxRate</code></td><td>Not implemented</td><td>ADR-0017/0031 amendments</td></tr>
+<tr><td>C-P7</td><td>No change</td><td>N/A</td><td>—</td></tr>
+<tr><td>C-P8</td><td>No change</td><td>N/A</td><td>—</td></tr>
+<tr><td>C-P9</td><td>Record the bias</td><td>N/A (doc)</td><td>ADR-0055</td></tr>
+<tr><td>C-P10</td><td>No change</td><td>N/A</td><td>—</td></tr>
+<tr><td>C-P11</td><td><code>sellingCostRate</code> essential for RealEstate</td><td>Not implemented</td><td>Still optional (<code>validation.py</code>, webapp/schema.py)</td></tr>
+<tr><td>C-P12</td><td>Closing costs inside the mortgage</td><td>N/A (assumption)</td><td>ADR-0025 amendment</td></tr>
+<tr><td>C-P13</td><td>ResidenceSwitchEvent, exempt share</td><td>Not implemented</td><td>ADR-0056</td></tr>
+<tr><td>C-P14</td><td><code>baseDate</code> input only; <code>displayDollarsOf</code></td><td>Not implemented</td><td><code>dollarsOf</code> still does both</td></tr>
+<tr><td>C-P15</td><td>Not modelled</td><td>N/A</td><td>—</td></tr>
+<tr><td>C-P16</td><td>Account market adjustment (percent)</td><td>Not implemented</td><td>ADR-0033 amendment</td></tr>
+<tr><td>C-P17</td><td>Per-scenario deflator</td><td>N/A (matches PoC)</td><td>—</td></tr>
+<tr><td>C-P18</td><td>No change</td><td>N/A</td><td>—</td></tr>
+<tr><td>C-P19</td><td>No change</td><td>N/A</td><td>—</td></tr>
+<tr><td>C-P20</td><td>In-term closure warning</td><td>Not implemented</td><td>Needs term length and warnings</td></tr>
+<tr><td>C-M1</td><td>Percent/even can't start before the account opens; empty → 0</td><td>Implemented</td><td><code>validation.py</code> withdrawal check; <code>flows/withdrawal.py</code> PercentStrategy</td></tr>
+<tr><td>C-M2</td><td>Reject a sale before the horizon start</td><td>Implemented</td><td><code>validation.py</code> sale check</td></tr>
+<tr><td>C-M4</td><td><code>openingFrom</code> for in-horizon accounts; pre-horizon = statement balance</td><td>Implemented (no warning)</td><td><code>validation.py</code>; <code>holdings/account.py</code></td></tr>
+<tr><td>C-M5</td><td>Replay pre-horizon loans, <code>balanceAtHorizonStart</code></td><td>Not implemented</td><td>SPEC warns against the fake advance</td></tr>
+<tr><td>C-M6</td><td>Interest adjustment at a late first payment</td><td>Implemented</td><td><code>holdings/mortgage.py</code> accrue/settle_accrued</td></tr>
+<tr><td>C-M7</td><td><code>keepPayment</code></td><td>Implemented</td><td><code>holdings/mortgage.py</code> renew, <code>arith.keep_payment_months</code></td></tr>
+<tr><td>C-M8</td><td>Capital-gains tax on sale (Phase 4.5)</td><td>Not implemented</td><td><code>rules/capital_gains.py</code> no-op; SPEC lists the gap</td></tr>
+<tr><td>C-M9</td><td>Non-registered return taxable as max(0, ·)</td><td>Implemented</td><td><code>Jurisdiction.on_return</code> (<code>returns_taxed</code>)</td></tr>
+<tr><td>C-M10</td><td>Reject renewal in/after the sale month</td><td>Implemented</td><td><code>validation.py</code> renewal check</td></tr>
+<tr><td>C-M11</td><td>Amortisation a whole number of months ≥ 1</td><td>Implemented</td><td><code>validation.check_amortization</code></td></tr>
+<tr><td>C-M12</td><td>Penalty from paymentFrom (no change)</td><td>Implemented (as before)</td><td><code>events/loan.py</code></td></tr>
+<tr><td>C-M13</td><td>Document pension drift</td><td>N/A (doc)</td><td>ADR-0052 amendment</td></tr>
+<tr><td>C-M14</td><td>Pension contribution cash → outside</td><td>Implemented</td><td><code>holdings/pension.py</code> accept_contribution</td></tr>
+<tr><td>C-M15</td><td>Reject a pension ending before its effective start</td><td>Implemented</td><td><code>validation.py</code> pension check</td></tr>
+<tr><td>C-M16</td><td>Reject indexing on percent withdrawals (and legacy even); form hides the field</td><td>Implemented (validation); form shows a hint instead of hiding</td><td><code>validation.py</code>; webapp/app.py hint</td></tr>
+<tr><td>C-M17</td><td>No change (negative cash)</td><td>N/A</td><td>—</td></tr>
+</table>
+<h2 id="3-backlog-decided-not-built">3. Backlog (decided, not built)</h2>
+<p>Ordered as CRITIQUE.md Phase 4 (impact on rent vs buy and retirement readiness), then the rest of the planned model. Phase 4 items whose decision was "no change" are dropped (4.6 C-P8, 4.11 C-P12, 4.12 C-P10, 4.14 C-P15, 4.15 C-P17); 4.2 (C-P2) is done.</p>
+<table>
+<tr><th>#</th><th>Item</th><th>ADR</th><th>Scope</th></tr>
+<tr><td>1</td><td>Taxable-account return split (CR 4.1, C-P1)</td><td>0054, 0017 am.</td><td><code>incomeYield</code>, <code>openingCostBasis</code>, average-cost basis, realised gain on withdrawal taxed at inclusion × rate; show cost basis</td></tr>
+<tr><td>2</td><td>~~Annuity drawdown (4.3, C-P3/C-M3)~~</td><td>0039 am.</td><td><strong>Done 2026-11-11</strong> (<code>method: annuity</code>)</td></tr>
+<tr><td>3</td><td>Result warnings channel + pension warning (4.4, C-P5)</td><td>0052 am.</td><td><code>warnings</code> in the result; first use: pension start tied to a varying retirement date. Also: keepPayment fallback (0043), OUTSIDE opening jump (0057)</td></tr>
+<tr><td>4</td><td>Capital-gains tax on sale (4.5, C-M8, C-P6, C-P13)</td><td>0017 (+am.), 0056, 0034</td><td>Gain = price − cost − selling costs (cost basis incl. improvements), inclusion rate, <code>SaleEvent.taxRate</code>, principal residence + ResidenceSwitchEvent exempt share; replaces the no-op CapitalGainsRule</td></tr>
+<tr><td>5</td><td>Pension discount + liquidation net worth (4.7, C-P4, C-P6)</td><td>0052 am., 0050 am., 0031 (+am.)</td><td><code>pensionDiscountRate</code> (2% real); liquidation NW column: selling costs, CG tax, tax-deferred and unrealised gains at <code>liquidationTaxRate</code>, pension × (1 − rate)</td></tr>
+<tr><td>6</td><td>Separate display date (4.8, C-P14)</td><td>0013 am., 0052 am.</td><td><code>baseDate</code> input only (pensions, <code>amountIn</code>); <code>displayDollarsOf</code> view setting rescales real columns</td></tr>
+<tr><td>7</td><td><code>sellingCostRate</code> essential for properties (4.9, C-P11)</td><td>0040 am.</td><td>Validation error when missing (explicit 0 allowed); UI note that carrying costs go in living expenses</td></tr>
+<tr><td>8</td><td>Pre-horizon loans (4.10, C-M5)</td><td>0058</td><td>Replay schedule from the loan's start without cash; <code>balanceAtHorizonStart</code>; allow pre-horizon improvements/adjustments in carry-in</td></tr>
+<tr><td>9</td><td>Account market adjustment (4.13, C-P16)</td><td>0033 am.</td><td>Percent revaluation on accounts, cost basis unchanged</td></tr>
+<tr><td>10</td><td>In-term closure warning (4.16, C-P20)</td><td>0047 am., 0019, 0043</td><td>Needs term length on mortgages/renewals (<code>termAt</code>), then the warning</td></tr>
+<tr><td>11</td><td>Shortfalls instead of negative cash</td><td>0015, 0034, 0035</td><td>Capped debits, shortfall per flow, sale deficit shortfall, <code>taxPaidFrom</code></td></tr>
+<tr><td>12</td><td>Goals and tallies</td><td>0006, 0014, 0027, 0037</td><td>HoldingMetric/NetWorth/TagSum/Derived tallies, REACH/MAINTAIN, active window</td></tr>
+<tr><td>13</td><td>Scenario sets in lockstep</td><td>0028, 0053</td><td>SetResult, set-level goals</td></tr>
+<tr><td>14</td><td>Sweep rules</td><td>0030</td><td>Surplus cash above a buffer to an account after tax</td></tr>
+<tr><td>15</td><td>Tags and shift/sweep tooling</td><td>0023, 0007, 0038, 0041</td><td>Tags on items and ledger; time shifts (START/END/BOTH); variant sweeps</td></tr>
+<tr><td>16</td><td>Rate series and generators</td><td>0005, 0019</td><td>Segmented/term rates, compounding per holding, Monte-Carlo seam</td></tr>
+<tr><td>17</td><td>Remaining model pieces</td><td>0012, 0016, 0022, 0024, 0025, 0026, 0040, 0053</td><td>Event generators; birth date/ages; variable costs; generic loans; generic OneOffTransfer; leased (not owned) holdings; applied-defaults list</td></tr>
+</table>
+<h2 id="4-known-poc-simplifications-and-gaps">4. Known PoC simplifications and gaps</h2>
+<table>
+<tr><th>Source</th><th>Behaviour</th></tr>
+<tr><td>SPEC, ADR-0015, C-M17</td><td>Cash may go negative; no shortfalls (the UI highlights negative cash)</td></tr>
+<tr><td>SPEC, C-M8</td><td>No capital-gains tax on any sale</td></tr>
+<tr><td>SPEC</td><td>No warnings in the result; the keepPayment fallback is noted only in the Renew event's log detail</td></tr>
+<tr><td>SPEC, C-M5</td><td>A mortgage cannot start before the horizon; a fake new mortgage at the start overstates net worth by its advance</td></tr>
+<tr><td>SPEC, ADR-0057</td><td>A pre-horizon account enters at its stated balance (not grown); an OUTSIDE opening makes net worth jump</td></tr>
+<tr><td>SPEC</td><td>Improvements and market adjustments must fall inside the horizon</td></tr>
+<tr><td>SPEC</td><td>No return on cash</td></tr>
+<tr><td>ADR-0017, C-P18</td><td>Capital losses give no credit; a non-registered loss gives no credit (C-M9)</td></tr>
+<tr><td>ADR-0017</td><td>One flat effective rate for all taxable effects (plus RRSP <code>withdrawalTaxRate</code>, <code>retirementTaxRate</code>)</td></tr>
+<tr><td>ADR-0029</td><td>No mid-month interest adjustment; whole months only</td></tr>
+<tr><td>ADR-0048</td><td>Unused deduction pool is lost at the horizon end; contribution room not checked (Q-06)</td></tr>
+<tr><td>ADR-0051</td><td>Employer matching caps not modelled</td></tr>
+<tr><td>ADR-0055</td><td>OAS before clawback, no GIS, no pension splitting</td></tr>
+<tr><td>ADR-0036, C-P10</td><td>No RRIF conversion or minimum withdrawals</td></tr>
+<tr><td>ADR-0052, C-P5</td><td>Pension amount does not change with its start date</td></tr>
+<tr><td>ADR-0052, C-M13</td><td>Pension value in real columns drifts by up to a year's inflation within each year</td></tr>
+<tr><td>ADR-0025, C-P12</td><td>Closing costs assumed inside the mortgage principal</td></tr>
+<tr><td>ADR-0040, C-P11</td><td>Carrying costs belong in living expenses; nothing warns</td></tr>
+<tr><td>ADR-0029, C-P15</td><td>Amortising loans only</td></tr>
+<tr><td>ADR-0047</td><td>One <code>salePenalty</code> per sale, not per secured loan</td></tr>
+<tr><td>OBJECTS §9.1</td><td>A JSON number <code>0</code> (not <code>&quot;0&quot;</code>) for marketValue, salePrice, valueAdded, withdrawalTaxRate, retirementTaxRate or a renewal's amortizationYears is read as "not given"</td></tr>
+<tr><td>OBJECTS §9.2</td><td>Some bad input raises KeyError, not a readable ValueError (sale/improvement/marketAdjustment without <code>property</code>, account without <code>accountType</code>, withdrawal without <code>method</code>)</td></tr>
+<tr><td>OBJECTS §9.3</td><td>Duplicate ids keep the first slot; items without id become <code>item{n}</code> and cannot be referenced</td></tr>
+<tr><td>OBJECTS §9.4</td><td>Before a late first payment the debt shows the accrued interest (simple, on the rounded principal); lump sums and extra payments in that window are dropped</td></tr>
+<tr><td>OBJECTS §9.5</td><td>A renewal or lump sum on a loan already at 0 is lost with its penalty; a lump-sum penalty is charged even when its prepayment rounds to 0</td></tr>
+<tr><td>OBJECTS §9.6</td><td>The payment is annuitised on the unrounded principal; the advance uses the rounded one</td></tr>
+<tr><td>OBJECTS §9.7</td><td>Loan detail <code>interest</code>/<code>paid</code> default <code>Decimal(&#x27;0&#x27;)</code> vs <code>0.00</code>; pension <code>rate</code> is the annual indexing rate, others monthly</td></tr>
+<tr><td>OBJECTS §9.8</td><td>Sold assets stay with balance 0.00 and keep reporting points</td></tr>
+<tr><td>OBJECTS §9.9</td><td>Income-less mode drops expense/maintenance/pension-contribution lines but keeps loan-payment and contribution lines with <code>from None</code>; tax still comes from cash</td></tr>
+<tr><td>OBJECTS §9.10</td><td>Own-rate tax and <code>amountIn: base</code> amounts stay unrounded until final use</td></tr>
+<tr><td>OBJECTS §9.11</td><td>Percent withdrawal re-bases on the opening balance (current balance in the account's opening month); a percent withdrawal that started before the horizon pays 0 until its first in-horizon anniversary; the annuity is set from the current balance at the first month with a balance</td></tr>
+<tr><td>OBJECTS §9.12</td><td>Pension indexing counts years from the base date; other flows from their own start</td></tr>
+<tr><td>ADR-0018</td><td>Within a month expenses come before vehicle maintenance (ADR: costs before expenses); no effect while debits are uncapped</td></tr>
+</table>
+<h2 id="5-docs-vs-code-inconsistencies-found">5. Docs vs code inconsistencies found</h2>
+<ul><li><code>webapp/SPEC.md</code> "Simplified income tax" says taxable income is credited net (gross − round(gross × rate)). The code credits gross and taxes it in the monthly tax step with the deduction pool (<code>rules/tax.py</code>). <strong>Fixed 2026-11-10</strong> (SPEC rewritten for iteration 2, commit 18c14da).</li><li>ADR-0020 amendment says the PoC will later be aligned to tax in the tax step. It already does.</li><li><code>webapp/SPEC.md</code> Layout, Engine semantics and Commits still describe iteration 1 (<code>engine.py</code>, a 4-step month, branch <code>poc/python-flask</code>). <code>webapp/state_machine/README.md</code> and <code>clock.Order</code> are current. <strong>Fixed 2026-11-10</strong> (SPEC rewritten for iteration 2, commit 18c14da).</li><li>The builder labels <code>dollarsOf</code> "Show real values in dollars of". It also fixes pension amounts and <code>amountIn: base</code> (C-P14 not built).</li><li>C-M16's decision says the form hides indexing for percent withdrawals. The form only shows a hint.</li><li>CRITIQUE Phase 1.6 asks for a SPEC note on pension drift (C-M13). <code>webapp/SPEC.md</code> has none; ADR-0052 has it. <strong>Fixed 2026-11-10</strong> (SPEC rewritten for iteration 2, commit 18c14da).</li><li>ADR-0058 says pre-horizon improvements and market adjustments are included in the carried-in value. The PoC rejects them.</li></ul>

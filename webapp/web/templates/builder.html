@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_items.html" import details, add_form, adders, figure, switch, delete, off_note,
+   own_figure, settings_form, form_templates, edit, actions, add_icon, chart with context %}
+{# The builder as cards (ADR-0070): sections by person, then Household; categories
+   stacked vertically; each section, category and card collapses (<details>); web.js
+   keeps which are open. Figures are estimates (greyed, with a tooltip). #}
+
+{% macro rows_table(card) -%}
+{% if card.rows %}
+<table class="rows">
+  {% for row in card.rows %}{% set item = by_id[row.id] %}
+  <tr id="item-{{ row.id }}" class="depth{{ row.depth }}{% if row.off %} off{% endif %}">
+    <td>{{ switch(item) }}</td>
+    <td class="name">{% if row.type == "trigger" %}&#9889; {% endif %}{{ row.name }}{{ off_note(row.id) }}<br><span class="muted">{{ row.type }}{% if starts[row.id] %} &middot; {{ starts[row.id] }}{% endif %}</span></td>
+    <td class="num">{{ figure(row.estimate) }}</td>
+    <td class="details">{{ details(item) }}</td>
+    <td>{{ actions(item) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{%- endmacro %}
+
+{% macro card_box(card, add_kinds) -%}
+{% set item = by_id.get(card.id) %}
+{% set dom = ("also-" if card.via else "item-") ~ card.id %}
+<details class="card{% if card.off %} off{% endif %}" id="{{ dom }}" data-key="card-{{ dom }}">
+  <summary>
+    {% if item %}<span class="card-icons">{% if addable(add_kinds, {'card': card.id, 'type': card.type}) %}{{ add_icon(card.name) }}{% endif %}{{ chart(item) }}{{ edit(item) }}{{ delete(item) }}</span>{% endif %}
+    {% if item %}{{ switch(item) }}{% endif %}<b>{{ card.name }}</b>{{ off_note(card.id) }} <span class="muted">&middot; {{ card.type }}{% if card.via %} from {{ card.via }}{% endif %}</span><br>
+    {{ figure(card.estimate, card.total) }}
+    {% if card.fact %}<br><span class="muted">{{ card.fact }}</span>{% endif %}
+    {% if card.rows %}<br><span class="muted">&#9656; {{ card.rows|length }} linked</span>{% endif %}
+  </summary>
+  {% if item %}
+  <p class="own">{{ own_figure(card.id) }} {{ details(item) }}</p>
+  {% endif %}
+  {{ rows_table(card) }}
+  {{ adders(add_kinds, {'card': card.id, 'type': card.type}) }}
+</details>
+{%- endmacro %}
+
+{% block content %}
+<h1>Scenario builder</h1>
+<p class="muted">Cards by person and category &middot; <a href="{{ url_for('web.flat') }}">flat list</a></p>
+<p><a class="play" href="{{ url_for('web.run') }}">&#9654; Play scenario</a>
+  <span class="muted" title="{{ estimate_tip }}">Figures per month are estimates for {{ layout.base }} (greyed); the run gives the exact amounts.</span></p>
+
+{% for section in layout.sections %}
+<details class="section" open data-key="section-{{ section.key }}">
+  <summary><h2>{{ section.title }} {{ figure({"monthly": none, "oneOff": none, "note": none}, section.total) }}</h2></summary>
+  {% set head = section.head %}
+  <details class="card head" id="item-{{ head.id }}" data-key="card-{{ head.id }}">
+    <summary><span class="card-icons">{{ add_icon(head.name) }}{% if by_id.get(head.id) and head.type == "person" %}{{ edit(by_id[head.id]) }}{{ delete(by_id[head.id]) }}{% endif %}</span><b>{{ head.name }}</b> <span class="muted">&middot; {{ "settings" if head.type == "scenario" else "person" }}</span><br><span class="muted">{{ head.fact }}</span>
+      {% if head.rows %}<br><span class="muted">&#9656; {{ head.rows|length }} linked</span>{% endif %}</summary>
+    {% if head.type == "scenario" %}
+{{ settings_form() }}
+    {% elif by_id.get(head.id) %}
+    {% set person = by_id[head.id] %}
+    <p class="own">{{ details(person) }}</p>
+    {% endif %}
+    {{ rows_table(head) }}
+    {{ adders(head_kinds[head.type], ({"owner": head.id} if head.type == "person" and by_id.get(head.id) else {})) }}
+  </details>
+  {% for cat in section.categories %}
+  <details class="category" open data-key="category-{{ section.key }}-{{ cat.key }}">
+    {% set cat_ctx = ({"owner": section.key} if section.kind == "person" and by_id.get(section.key) else {}) %}
+    <summary>{% if addable(cat.types, cat_ctx) %}<span class="card-icons">{{ add_icon(section.title ~ " " ~ cat.title|lower) }}</span>{% endif %}<h3>{{ cat.title }} {{ figure({"monthly": none, "oneOff": none, "note": none}, cat.total) }}</h3></summary>
+    <div class="cards">
+      {% for card in cat.cards %}{{ card_box(card, linked_kinds.get(card.type, ["trigger"])) }}{% else %}<p class="muted">None yet.</p>{% endfor %}
+    </div>
+    {{ adders(cat.types, cat_ctx) }}
+  </details>
+  {% endfor %}
+</details>
+{% endfor %}
+
+{{ form_templates() }}
+{% endblock %}

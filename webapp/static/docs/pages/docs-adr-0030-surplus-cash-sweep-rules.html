@@ -1,0 +1,8 @@
+<h1 id="adr-0030-sweep-rules-move-surplus-cash-into-investment-accounts">ADR-0030: Sweep rules move surplus cash into investment accounts</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li><li><strong>Amends:</strong> ADR-0018 (adds a sweep step)</li></ul>
+<h2 id="context">Context</h2>
+<p>Income lands in an operating account, so without a sweep, unspent money earns only that account's rate. In rent vs buy this understates renting, because the opportunity cost of the down payment and of the monthly difference goes missing.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>A scenario can define ordered <strong>SweepRules</strong>: <code>from : Account</code>, <code>buffer : Money</code>, <code>to : Account</code>. Each month, anything in <code>from</code> above <code>buffer</code> moves to <code>to</code>.</li><li>Sweeps run <strong>after tax and before close</strong> (new step 7a in ADR-0018), so the period's tax has already been paid before anything is swept.</li><li>Swept money earns returns in its target account from the next period, because growth is computed on opening balances (ADR-0018).</li><li>Sweeps go <strong>one way only</strong>. Covering a shortfall by drawing from investment accounts (a withdrawal waterfall) remains out of scope (ADR-0015).</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>In rent vs buy, both scenarios sweep the bank into the same investment account, so the renter's unspent money is invested on equal terms.</li><li>Contribution limits (e.g. TFSA room) are not enforced (watch item Q-06).</li></ul>

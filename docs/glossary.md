@@ -6,7 +6,18 @@ These are the exact terms the diagrams and ADRs use. Decisions behind these term
 
 | Term | Definition |
 |---|---|
+| **Enabled (item switch)** | Every item can be switched off in the builder; an off item, and every item that refers to it, is left out of the run but kept in the file. Used to keep several variations in one file (ADR-0064). |
+| **Associated expense / cost** | An item that belongs to a parent item and lives exactly as long as it: a recurring expense (e.g. property tax, vehicle maintenance, account fees) or a one-off cost at the parent's start, end or a date (e.g. closing or selling costs); a fixed amount or a yearly percentage of a value looked up from the parent (ADR-0067, proposed). |
+| **Associated income** | An income that belongs to a parent income or pension and lives exactly as long as it: recurring (e.g. a bonus, a 13th-month pension; paid monthly or as a lump at the end of each full quarter or year) or one-off at the parent's start, end or a date (signing bonus, severance); a fixed amount or a yearly percentage of the parent's yearly amount; taxed and owned as its parent (ADR-0068, proposed). |
+| **Trigger** | Ties a date of one item (its start or end) to the date of another item, the event, e.g. a salary ends at retirement, a sale happens at retirement. `on: end` uses the event's end instead (an income's end, an asset's sale), e.g. property tax ends with the house. Resolved before the run (ADR-0065, proposed). |
+| **Timeline** | The builder's picture of a scenario over time: lasting items as lanes branching off their host and merging back where they end, one-off items as dots, triggers as arrows (ADR-0066, proposed). |
 | **Economic Unit** | The single entity being planned for: an individual or a family treated as one (ADR-0002). Owns everything in a scenario. |
+| **Cash Balance Event** | States the actual cash balance at the end of a month; the engine sets cash to it and records the difference as a reconciliation from or to outside, not taxed (ADR-0063). |
+| **Cash Flow Adjustment** | A new amount for a cash flow from a date, in dollars of that date; the flow's indexing continues from it (ADR-0062). E.g. a property tax reassessment. |
+| **Person** | A member of the economic unit with their own income, accounts, pensions, contribution room, retirement date, tax rates and deduction pool (ADR-0061). Money outcomes stay household-level. A file without persons has one implicit person. |
+| **Owner** | The person an income, account, pension, contribution room or retirement event belongs to; blank = the first person. Flows into or out of an account take the account's owner (ADR-0061). |
+| **Contributor** | On a spousal RRSP: the person whose room and deduction a contribution uses; withdrawals are taxed to the owner (ADR-0061). |
+| **retirementOf** | On a household item tied to retirement (sale, payoff, transfer, expense end): whose retirement it follows; blank = the first person (ADR-0061). |
 | **Scenario** | A named, self-contained description of one strategy: the economic unit's accounts, assets, liabilities, cash flows, events, assumptions, goals and horizon (ADR-0006). The unit of input to the engine. |
 | **Horizon** | The start and end dates of a scenario's projection. Defined per scenario. |
 | **Goal** | A condition over one or more tallies, evaluated every month (ADR-0027), e.g. "retirement funds ≥ $1M" or "monthly pension income ≥ $3k". Observed only, never solved for (ADR-0006). |
@@ -27,6 +38,10 @@ These are the exact terms the diagrams and ADRs use. Decisions behind these term
 |---|---|
 | **Holding** | Anything the economic unit owns or owes whose value changes over time. The common base type of Account, Asset and Liability. Net worth is the sum of all holdings, with liabilities counted as negative (ADR-0011). |
 | **Account** | A holding: a container of money with a tax treatment, e.g. TFSA, RRSP, non-registered investments, cash. Its balance changes through cash flows and returns. |
+| **Break-even** (property) | Each month, the net proceeds of a hypothetical sale (market value − selling costs − mortgage balance − early-closure penalty) minus the net investment: everything paid for the property so far (from the horizon start for a property bought before it). Positive = ahead. Two variants: ownership costs, and all linked costs (ADR-0073). |
+| **Rent equivalent** | (net investment − net proceeds) / months owned: what owning cost per month so far, i.e. the rent that would have cost the same; negative once owning is ahead (ADR-0073). |
+| **Cost of ownership** (vehicle) | Each month: (everything paid for the vehicle so far − its value net of selling costs) / months owned (ADR-0074). |
+| **RESP** | Registered Education Savings Plan (Canada): an account for a child's education; contributions not deductible, growth sheltered, withdrawals untaxed in the model. Contributions bring the **CESG** grant (20%, at most $500 a year or $1,000 with carried-forward room, $7,200 lifetime); lifetime contributions are limited to $50,000. One account per beneficiary (ADR-0072). |
 | **Asset** | A holding: a non-cash item whose value changes over time, e.g. real estate or a vehicle. Grows (appreciation) or shrinks (depreciation) according to a rate generator, and may carry costs. |
 | **Liability** | A holding with negative value: an amount owed that is paid down over time, e.g. a mortgage. Has an interest rate generator and a payment schedule, and may have prepayment options and early closure penalties. |
 | **Acquisition Price** | What it cost to acquire an asset (purchase price). A fixed input, and the basis for variable costs (ADR-0022). |
@@ -54,7 +69,7 @@ These are the exact terms the diagrams and ADRs use. Decisions behind these term
 | **Revaluation** | A one-off dated event that changes an asset's value by a % or to a set value, e.g. a market shock (ADR-0033). |
 | **Negative Equity** | A sale whose proceeds do not cover its secured loans. The deficit is debited from the proceeds account, and any unpaid part becomes a shortfall (ADR-0034). |
 | **Pension** | A guaranteed income cash flow until the end of the horizon, usually inflation-indexed and taxable; it has no holding or value in net worth (ADR-0036). |
-| **Drawdown Cash Flow** | Draws a pot to zero at the horizon end as an annuity at the account's expected return, recomputed each year; optionally indexed to inflation (ADR-0039). |
+| **Drawdown Cash Flow** | Draws a pot to zero at the end of the draw (`method: annuity`) as an annuity at the account's expected return, recomputed each year; with `indexing` it keeps its purchasing power. A fixed `amount` can be indexed too but runs until the pot is empty; `even` is the retired name of the unindexed annuity (ADR-0039). |
 | **Operating Account** | The implicit "cash" account in every scenario; the default for income, payments, proceeds and tax (ADR-0040). |
 | **Neutral Default** | The value used for an omitted optional field, chosen so it contributes nothing (e.g. rate 0) (ADR-0040). |
 | **Variant Sweep** | Authoring tooling that generates a scenario set by shifting tagged objects over a range of offsets, to find the earliest variant whose goals hold (ADR-0038). |
@@ -81,7 +96,7 @@ These are the exact terms the diagrams and ADRs use. Decisions behind these term
 | **Contribution** | A cash flow into an account (RRSP, TFSA, investments), optionally with an employer match: the employer adds a share of each contribution from outside (ADR-0051). |
 | **Percent Withdrawal** | A withdrawal of a percentage of a fund: on its start and each anniversary, rate × the balance then, paid as 1/12 each month (ADR-0049). |
 | **Pension Entitlement** | A guaranteed (defined-benefit) pension held as a holding: it pays from the retirement date to the horizon end, and its amount is in today's dollars and its value is the present value of the payments still to come at a real discount rate (default 2%), in today's dollars; after tax in liquidation net worth (ADR-0052). |
-| **Retirement Date** | The month of the scenario's Retirement Event (ADR-0059, formerly a scenario field, ADR-0052). |
+| **Retirement Date** | The month of a person's Retirement Event (ADR-0059, ADR-0061; formerly a scenario field, ADR-0052). |
 | **Assets Net Worth** | Everything except the operating cash account, net of debts: investments (including the value of guaranteed pensions) + property & vehicles − debts. Shown in base-date dollars (ADR-0050). |
 | **Taxable Flag** | An optional flag on an income cash flow. Income is entered net (after tax) by default; flagged income is taxed at the effective rate (ADR-0020). |
 | **Capital Gain** | Sale price minus cost basis on an asset sale. Taxed at inclusion rate × effective tax rate; principal residences are exempt (ADR-0017). |
@@ -89,6 +104,8 @@ These are the exact terms the diagrams and ADRs use. Decisions behind these term
 | **Withdrawal Tax Rate** | An optional rate on a tax-deferred account that overrides the effective tax rate for its withdrawals (ADR-0035). |
 | **Tax Paid From** | The account that pays every tax the engine computes (ADR-0035). |
 | **Tax Rules** | The interface the engine queries for the tax effect of a movement, given a tax treatment and a date. Implemented per **jurisdiction** (Canada first) (ADR-0004). |
+| **Jurisdiction** | The tax country a scenario targets (`jurisdiction`: ISO code, default CA; one per scenario). A plug-in package (`state_machine/jurisdictions/<code>/`) declaring its account types with their **treatment**, its own item types, labels, contribution limits and hooks (ADR-0071). |
+| **Treatment** | How an account type is taxed, as three flags: contributions deductible, returns taxed, withdrawals taxed (RRSP and traditional 401(k): deductible and withdrawals taxed; TFSA and Roth: none; non-registered and brokerage: returns taxed) (ADR-0071). |
 
 ## Time
 

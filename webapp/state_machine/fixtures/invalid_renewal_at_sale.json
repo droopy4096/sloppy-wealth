@@ -1,0 +1,41 @@
+{
+  "name": "Invalid: renewal in the month of the sale",
+  "description": "Rejected by validate: renewal in the month its property is sold.",
+  "horizon": {
+    "start": "2026-01-01",
+    "end": "2030-12-01"
+  },
+  "openingCash": "100000",
+  "items": [
+    {
+      "type": "property",
+      "id": "h",
+      "name": "House",
+      "purchaseDate": "2026-01-01",
+      "price": "300000",
+      "annualAppreciation": "0.02"
+    },
+    {
+      "type": "mortgage",
+      "id": "m",
+      "name": "Loan",
+      "property": "h",
+      "principal": "200000",
+      "annualRate": "0.04",
+      "amortizationYears": "25"
+    },
+    {
+      "type": "sale",
+      "id": "s",
+      "property": "h",
+      "saleDate": "2029-03-01"
+    },
+    {
+      "type": "renewal",
+      "id": "r",
+      "mortgage": "m",
+      "startDate": "2029-03-01",
+      "annualRate": "0.05"
+    }
+  ]
+}

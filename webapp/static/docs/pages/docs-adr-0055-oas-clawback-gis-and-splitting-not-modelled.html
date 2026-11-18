@@ -1,0 +1,8 @@
+<h1 id="adr-0055-oas-clawback-gis-and-pension-income-splitting-are-not-modelled">ADR-0055: OAS clawback, GIS and pension income splitting are not modelled</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-09</li><li><strong>Relates to:</strong> ADR-0002 (one economic unit), ADR-0004 (tax seam), ADR-0017 (flat rate), ADR-0037 (retirement-income goals), ADR-0052 (pensions); CRITIQUE.md C-P9</li></ul>
+<h2 id="context">Context</h2>
+<p>These rules depend on each person's income, and the model has one household and one flat rate. Without a record, the bias they cause stays invisible.</p>
+<h2 id="decision">Decision</h2>
+<ul><li><strong>OAS</strong> is counted at its full amount, <strong>before the recovery tax</strong> (clawback: 15% of a person's net income above about $93k).</li><li><strong>GIS</strong> and other income-tested benefits are not modelled.</li><li><strong>Pension income splitting</strong> is not modelled. Its effect, if any, is assumed to be inside the user's chosen effective tax rate.</li><li>A later per-person tax rule can add them behind the jurisdiction seam (ADR-0004).</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Retirement income and goals (ADR-0037) are <strong>overstated</strong> when a person's income exceeds the clawback threshold (large RRIF withdrawals, DB pension), and <strong>understated</strong> for low-income households that would receive GIS.</li><li>The user should lower the OAS amount by hand when a clawback is expected.</li></ul>

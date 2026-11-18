@@ -1,0 +1,10 @@
+<h1 id="adr-0034-settling-a-sale-when-proceeds-do-not-cover-the-secured-loans">ADR-0034: Settling a sale when proceeds do not cover the secured loans</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-05</li><li><strong>Amends:</strong> ADR-0018 step 4 (sale settlement), ADR-0024</li></ul>
+<h2 id="context">Context</h2>
+<p>After a price drop, an asset may sell for less than the balance of the loans secured by it (negative equity). The settlement rule assumed the remainder after paying off the loans was always positive.</p>
+<h2 id="decision">Decision</h2>
+<p>Sale settlement order:</p>
+<ol><li>Gross proceeds = sale price.</li><li>Deduct selling costs (ADR-0031).</li><li>Pay off every loan secured by the asset, plus early closure penalties.</li><li>Deduct capital gains tax, if any (ADR-0017).</li><li>If the remainder is <strong>positive</strong>, credit it to <code>proceedsTo</code>.</li><li>If it is <strong>negative</strong>, debit the deficit from <code>proceedsTo</code>. The debit is <strong>capped at available funds</strong>, and any unpaid part is recorded as a <strong>shortfall</strong> on the sale (ADR-0015).</li></ol>
+<p>The loans are always closed by the sale. An unpaid deficit is reported as a shortfall, not carried as a residual debt.</p>
+<h2 id="consequences">Consequences</h2>
+<ul><li>A MAINTAIN goal on the sale proceeds account's SHORTFALL catches unaffordable sales.</li><li>Not modelled: carrying the deficit as a new unsecured loan, or lender actions.</li><li>Capital losses still produce no tax credit (ADR-0017).</li></ul>

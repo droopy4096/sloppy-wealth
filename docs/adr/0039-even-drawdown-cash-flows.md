@@ -54,3 +54,30 @@ the decision and chose an annuity.
 - The pot is used up exactly at the horizon end, under the expected return.
 - Unindexed: nominal income is flat within each year and changes only with returns;
   its real value still falls. Indexed: real income is about flat.
+
+## Amendment (2026-11-11): two independent settings; `even` retired
+The user split the drawdown into two independent settings on a withdrawal:
+- **How much**: a given amount (`method: amount`, runs until the account is empty) or
+  derived so the account is spent down by the end of the draw (`method: annuity`, the
+  annuity of the amendment above).
+- **Shape**: `indexing` (none | inflation | custom). With indexing the payment rises each
+  anniversary to keep its purchasing power; without it the dollars stay level.
+  Allowed on `amount` and `annuity`; still rejected on `percent` (C-M16).
+
+Banking precedents: given + level = a systematic withdrawal plan (SWP); given + indexed =
+the "4% rule" (Bengen 1994); derived + level = a term-certain annuity; derived + indexed =
+an indexed term-certain annuity, recomputed yearly as in the "annually recalculated
+virtual annuity" (Waring & Siegel 2015).
+
+- **`even` is retired.** Older files with `method: even` are read as an unindexed
+  `annuity` (the app converts them on load; the engine accepts `even` as an alias).
+  Results change: `even` divided the balance by the months left and ignored returns.
+- The `indexed` flag of the amendment above is the existing `indexing` field.
+- Defaults taken from the proposal: the account's own `annualReturn`; recompute on each
+  anniversary of the draw's first month; the first payment is set from the *current*
+  balance in the first month with a balance (after same-month transfers), not the
+  opening balance; ordinary (end-of-month) annuity, matching the engine's return on the
+  opening balance.
+- The final month withdraws the whole balance. That month's return is credited after it,
+  so about one month's return stays in the account ("nothing left" becomes "about one
+  month's return").

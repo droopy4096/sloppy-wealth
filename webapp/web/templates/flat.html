@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{# The flat builder (ADR-0070 amendment): every item in one table in order of its start,
+   modifiers and triggers indented under their host. Same data and building blocks as the
+   card builder (_items.html); only the arrangement differs. #}
+{% from "_items.html" import details, add_form, adders, figure, switch, delete, off_note,
+   own_figure, settings_form, form_templates, edit, actions, add_icon with context %}
+{% block title %}Scenario builder (flat){% endblock %}
+{% block content %}
+<h1>Scenario builder (flat)</h1>
+<p class="muted">Every item in one list &middot; <a href="{{ url_for('web.builder') }}">cards</a></p>
+{{ settings_form() }}
+<p><a class="play" href="{{ url_for('web.run') }}">&#9654; Play scenario</a>
+  <span class="muted" title="{{ estimate_tip }}">Figures per month are estimates for {{ layout.base }} (greyed); the run gives the exact amounts.</span></p>
+<fieldset class="add-groups"><legend>+ Add an item</legend>
+{% for title, kinds in add_groups %}{{ adders(kinds, {}, title ~ ":") }}{% endfor %}
+</fieldset>
+{% if ordered %}
+<table class="flat">
+  <tr><th title="on: the item is in the run">On</th><th>Starts</th><th>Type</th><th>Name</th><th>Per month</th><th>Details</th><th></th></tr>
+  {% for item, nested in ordered %}
+  {% set classes = (["modifier"] if nested else []) + (["off"] if item.id in off else []) %}
+  <tr id="item-{{ item.id }}"{% if classes %} class="{{ classes|join(' ') }}"{% endif %}{% if nested %} title="belongs to the item above"{% endif %}>
+    <td>{{ switch(item) }}</td>
+    <td>{{ starts[item.id] or "-" }}</td>
+    <td>{{ item.type }}</td>
+    <td class="name">{% if nested %}&#8627; {% endif %}{% if item.type == "trigger" %}&#9889; {% endif %}{{ item.name }}{{ off_note(item.id) }}</td>
+    <td class="num">{{ own_figure(item.id) }}</td>
+    <td class="details">{{ details(item) }}</td>
+    <td>{{ actions(item) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>No items yet.</p>
+{% endif %}
+{{ form_templates() }}
+{% endblock %}

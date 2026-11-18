@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Load scenario{% endblock %}
+{% block content %}
+<h1>Load scenario</h1>
+<p>Upload a scenario JSON file (schemaVersion 1). It replaces the current scenario.</p>
+<form method="post" action="{{ url_for('web.load') }}" enctype="multipart/form-data">
+  <input type="hidden" name="action" value="load">
+  <input type="file" name="file" accept=".json,application/json" required>
+  <button type="submit">Load</button>
+</form>
+{% endblock %}

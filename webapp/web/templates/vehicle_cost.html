@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Vehicle cost of ownership{% endblock %}
+{% block content %}
+<h1>Vehicle cost of ownership: {{ scenario.name }}</h1>
+<p><a href="{{ url_for('web.run') }}">&larr; Back to the run</a></p>
+{% if error %}<div class="flash">{{ error }}</div>{% endif %}
+{% if not vehicles %}
+<p class="muted">The scenario has no vehicle.</p>
+{% else %}
+<form method="get">
+  <label>Vehicle <select name="vehicle" onchange="this.form.requestSubmit()">
+    {% for v in vehicles %}<option value="{{ v.id }}"{% if view and v.id == view.vehicle %} selected{% endif %}>{{ v.name }}</option>{% endfor %}
+  </select></label>
+  <noscript><button type="submit">Show</button></noscript>
+</form>
+{% if view %}
+<p>Each month: <b>Paid so far</b> = the purchase price and every expense and cost of the
+vehicle (fuel, insurance, maintenance...) up to that month; <b>Cost/mo</b> = (Paid so far −
+Value less Sale costs) / Owned (mo): what owning it has cost per month. Hover a heading for
+its formula. Nominal dollars (ADR-0074).</p>
+{% for note in view.notes %}<p class="muted">{{ note }}</p>{% endfor %}
+<table class="summary">
+  {% for label, r in [("in " ~ (view.summary.current.month if view.summary.current else ""), view.summary.current), ("in " ~ (view.summary.last.month if view.summary.last else ""), view.summary.last)] if r %}
+  <tr><td title="(Paid so far - (Value - Sale costs)) / months owned">Cost/mo {{ label }}</td><td class="num">{{ r.costPerMonth|money }}</td>
+      <td class="muted">over {{ r.monthsOwned }} months: {{ r.paidSoFar|money }} paid, worth {{ r.netValue|money }}</td></tr>
+  {% endfor %}
+</table>
+{% set heads = [
+  ("Month", "the month; figures at its end"),
+  ("Owned (mo)", "months owned: from the purchase, or from the horizon start if bought before it"),
+  ("Value", "market value at the end of the month"),
+  ("Sale costs", "selling costs: the vehicle's associated costs at its end"),
+  ("Paid so far", "purchase price (or value at the horizon start) + every expense and cost of the vehicle so far"),
+  ("Cost/mo", "(Paid so far - (Value - Sale costs)) / Owned (mo): the cost of ownership per month"),
+] %}
+<table>
+  <tr>{% for title, tip in heads %}<th title="{{ tip }}">{{ title }}</th>{% endfor %}</tr>
+  {% for r in view.rows %}
+  <tr>
+    <td><a href="{{ url_for('web.run_ledger', month=r.month) }}">{{ r.month }}</a></td>
+    <td class="num">{{ r.monthsOwned }}</td>
+    <td class="num">{{ r.value|money }}</td><td class="num">{{ r.sellingCosts|money }}</td>
+    <td class="num">{{ r.paidSoFar|money }}</td><td class="num">{{ r.costPerMonth|money }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endif %}
+{% endblock %}

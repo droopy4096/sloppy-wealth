@@ -45,3 +45,24 @@ has grown rich, but it must not demand all that detail.
   screens and the schema description for RealEstate state this.
 - No warning is raised for a property without attached costs (avoids prompting double
   counting).
+
+## Amendment (2026-11-11): an expense may be attached to an asset (carrying costs)
+- An expense item may name the asset it belongs to: `attachedTo` (a property or a
+  vehicle). It is paid only while that asset is owned: not before its purchase, and not
+  from the month it is sold (any sale: on a date or at retirement), like a vehicle's
+  maintenance. A blank startDate then means "from the purchase".
+- This is the domain model's `Cost` (`attachedTo: Asset`, FixedCost) built as an expense
+  item; carrying costs stay expense items, so the C-P11 rule above holds (not part of the
+  property entry). Typical use: property tax, home insurance, condo fees, utilities.
+- Property tax as a share of the property's value (a VariableCost on value) is not built;
+  a fixed amount with indexing is used instead.
+
+## Amendment (2026-11-11, later): an expense may be attached to an income
+- `attachedTo` may also name an income item: the expense is paid only in the months that
+  income runs (its start to its end, including "ends at retirement" of its owner), so it
+  follows the income when its dates change. A blank startDate means the income's start.
+- Typical use: costs that exist only with a job (group insurance premiums, union or
+  professional dues, commuting). Treated as an ordinary expense: not tax-deductible.
+- Not the same as `netOf` (ADR-0042, deferred), which grosses up an income stated net.
+- On `poc/sm-triggers` (experiment), `attachedTo` is replaced by triggers (ADR-0065
+  amendment 2026-11-13); older files are converted on load.

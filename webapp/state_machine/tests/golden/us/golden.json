@@ -1,0 +1,18 @@
+{
+ "fixtures/us_single.json": {
+  "holdings": "077bb9272bff0348c2b2c6e5778be3c0c4e667024e304d8bdb4eca98f5113bed",
+  "lastNetWorth": "18154.57",
+  "ledger": "88599e7ecd79b13f7056b74394850e88a2cf6516072897d0bcb64bdaec42632b",
+  "rowCount": 84,
+  "rows": "8a338a6c6e53ef1e7e1941a6b6372fbdf3b3d91fabd2d1805fda09bada830d28",
+  "tax": "3667d1c0badb0b130d614503ef3232e25f1d78e62ceae1932ab9293c549b8a34"
+ },
+ "jurisdictions/us/sample.json": {
+  "holdings": "6c963b1109bfee9c0c0b037a883a25cc76fd358c1fcb2903a5ece9e9f3dcc4bb",
+  "lastNetWorth": "1085572.70",
+  "ledger": "15cba9d4661d1f62cd932e4e699cca8b979389cbd434beebb60943f7148153e0",
+  "rowCount": 60,
+  "rows": "6b35e01d1a63f1b4c5911c03e56e8dc5a10b0a98f6c681040fbbeb29f98e354b",
+  "tax": "2cd03d81adfaba899e9de5d2eb84524ef0e059885c3e9a14505fcb81e9d2d7e5"
+ }
+}

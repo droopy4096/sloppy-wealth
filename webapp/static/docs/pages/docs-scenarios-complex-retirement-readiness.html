@@ -1,0 +1,65 @@
+<h1 id="scenario-retirement-readiness-after-selling-one-property">Scenario: retirement readiness after selling one property</h1>
+<h2 id="question">Question</h2>
+<p>"How many years from today until I can sell one property and retire on $3,500/month?" Deliberately simple: only the important points are modelled (ADR-0040).</p>
+<h2 id="given">Given</h2>
+<table>
+<tr><th>Fact</th><th>Value</th></tr>
+<tr><td>Income</td><td>$150,000/yr (crude: net income + one "monthly expenses" figure, or just "free income")</td></tr>
+<tr><td>Property A</td><td>value $600k, mortgage ~$300k</td></tr>
+<tr><td>Property B</td><td>value $850k, mortgage ~$400k</td></tr>
+<tr><td>Vehicles</td><td>2 × value ~$12k, maintenance $1,500/yr each</td></tr>
+<tr><td>RRSP</td><td>$80k today, contributions $600/month</td></tr>
+<tr><td>Guaranteed pension</td><td>$1,500/month, starts at retirement</td></tr>
+<tr><td>Target retirement income</td><td>$3,500/month</td></tr>
+<tr><td>Horizon end</td><td>estimated death (a date, or years from today); no age needed</td></tr>
+</table>
+<h2 id="simplified-model-base-scenario">Simplified model (base scenario)</h2>
+<table>
+<tr><th>Element</th><th>Type</th><th>Notes</th></tr>
+<tr><td>Operating account</td><td>implicit "cash" (ADR-0040)</td><td>income lands here, and it pays everything</td></tr>
+<tr><td>Free income, or salary + monthly expenses</td><td><code>CashFlow</code>s, tagged <code>work</code></td><td>end = retirement</td></tr>
+<tr><td>Property A, B</td><td><code>RealEstate</code>, value, appreciation (default 0)</td><td>A tagged <code>exit</code></td></tr>
+<tr><td>Mortgages A, B</td><td><code>Mortgage</code>: balance, rate, amortisation; payments derived (ADR-0029)</td><td></td></tr>
+<tr><td>Vehicles</td><td><code>Vehicle</code> ×2, $12k each; <code>FixedCost</code> $1.5k/yr each (ADR-0021: spread monthly)</td><td>replacement ignored</td></tr>
+<tr><td>RRSP</td><td><code>Account</code> TAX_DEFERRED, $80k</td><td></td></tr>
+<tr><td>RRSP contributions</td><td><code>CashFlow</code> cash → RRSP, $600/month, tagged <code>work</code></td><td>end = retirement</td></tr>
+<tr><td>Sale of A</td><td><code>SaleEvent</code>, proceedsTo = investments account, tagged <code>exit</code></td><td>settlement per ADR-0034</td></tr>
+<tr><td>Pension</td><td>income <code>CashFlow</code> $1.5k/month, tagged <code>exit</code>, <code>retirement-income</code></td><td>starts at retirement</td></tr>
+<tr><td>Drawdowns</td><td><code>DrawdownCashFlow</code> from the RRSP and from investments, tagged <code>exit</code>, <code>retirement-income</code> (ADR-0039)</td><td>start at retirement</td></tr>
+<tr><td>Goal</td><td>MAINTAIN: TagSum(retirement-income, IN, PERIOD) ≥ $3,500, activeFrom = retirement</td><td>tagged <code>exit</code> so it moves too</td></tr>
+</table>
+<h2 id="answering-how-many-years">Answering "how many years"</h2>
+<p>A variant sweep (ADR-0038): shift everything tagged <code>exit</code> and the end of everything tagged <code>work</code> by +0, +1, …, +20 years. The engine runs the set in lockstep, and the earliest variant whose goal holds is the answer.</p>
+<h2 id="ignored-on-purpose">Ignored on purpose</h2>
+<p>Vehicle replacement (V1), RRSP contribution tax deduction (T1), renting, age.</p>
+<h2 id="inputs-from-the-user">Inputs (from the user)</h2>
+<table>
+<tr><th>Input</th><th>Value</th></tr>
+<tr><td>Mortgage rate (A and B)</td><td>4.5%, semi-annual compounding (ADR-0019)</td></tr>
+<tr><td>Appreciation (A and B)</td><td>4%/yr</td></tr>
+<tr><td>Free income</td><td>$25,000/yr</td></tr>
+<tr><td>Horizon</td><td>30 years from today (estimated death)</td></tr>
+<tr><td>⚠ Remaining amortisation</td><td>not given; 25 years assumed below</td></tr>
+</table>
+<h2 id="goal-decided">Goal (decided)</h2>
+<p>The $3.5k must also cover B's mortgage, which continues in retirement. So the goal is on a <strong>derived tally</strong>, disposable retirement income:</p>
+<ul><li><code>disposable</code> = TagSum(retirement-income, IN, PERIOD) − TagSum(mortgage-B, OUT, PERIOD)</li><li>MAINTAIN: <code>disposable</code> ≥ $3,500, REAL, activeFrom = activeUntil = the retirement month (ADR-0014 amendment, ADR-0027, ADR-0037). With inflation at its default of 0, real = nominal.</li></ul>
+<h2 id="free-income-decided">Free income (decided)</h2>
+<p>$25,000/yr is <strong>after</strong> mortgage payments. It is modelled with <code>netOf = [mortgage A, mortgage B]</code> (ADR-0042), so the engine does not count the mortgages twice. <strong>ADR-0042 is deferred (2026-11-07):</strong> until it is revisited, this scenario has to be entered as gross income and expenses instead of a single free-income figure. ⚠ Is it also after vehicle costs and RRSP contributions?</p>
+<h2 id="sweep-decided">Sweep (decided)</h2>
+<p><code>exit</code> shifted with BOTH, <code>work</code> shifted with END, +0 … +20 years (ADR-0041).</p>
+<h2 id="rough-hand-check-illustrative-only-validates-the-model-not-a-result">Rough hand check (illustrative only; validates the model, not a result)</h2>
+<p>Assumptions: 25-year amortisation (confirmed); free income is after mortgages, vehicle costs and RRSP contributions; neutral defaults for everything else (no tax, no selling costs, 0 returns, 0 inflation); accumulated cash is drawn down too.</p>
+<ul><li>Mortgage payments: monthly rate (1 + 0.045/2)^(1/6) − 1 ≈ 0.3715%; A ≈ $1,660.42/month, B ≈ $2,213.89/month.</li><li>Needed: drawdown ≥ $3,500 − $1,500 pension + $2,213.89 B mortgage ≈ <strong>$4,214/month</strong>.</li></ul>
+<table>
+<tr><th>Retire in year</th><th>A value</th><th>A balance</th><th>Proceeds</th><th>RRSP</th><th>Cash</th><th>Pots</th><th>Months left</th><th>Drawdown</th></tr>
+<tr><td>0</td><td>600k</td><td>300k</td><td>300k</td><td>80k</td><td>0</td><td>380k</td><td>360</td><td>~$1,060 ❌</td></tr>
+<tr><td>5</td><td>730k</td><td>263k</td><td>467k</td><td>116k</td><td>125k</td><td>708k</td><td>300</td><td>~$2,360 ❌</td></tr>
+<tr><td>8</td><td>821k</td><td>237k</td><td>584k</td><td>138k</td><td>200k</td><td>922k</td><td>264</td><td>~$3,490 ❌</td></tr>
+<tr><td>9</td><td>854k</td><td>228k</td><td>626k</td><td>145k</td><td>225k</td><td>996k</td><td>252</td><td>~$3,950 ❌</td></tr>
+<tr><td>10</td><td>888k</td><td>218k</td><td>670k</td><td>152k</td><td>250k</td><td>1,072k</td><td>240</td><td>~$4,470 ✅</td></tr>
+</table>
+<p>So, roughly <strong>10 years</strong> under these assumptions (4 years if B's mortgage did not have to be covered).</p>
+<p>Side observation: B's mortgage ends in year 25. From then on, disposable income rises by about $2,200/month, so the fixed drawdown is front-loaded against a need that falls. A drawdown recomputed when B's mortgage ends would allow an earlier retirement.</p>
+<h2 id="open">⚠ Open</h2>
+<ul><li>ADR-0042 (<code>netOf</code>) deferred: re-enter the free income as income and expenses, or revisit ADR-0042 when this scenario is run.</li><li>Is the $25k also after vehicle costs and RRSP contributions? If not, they must be added to <code>netOf</code> too, or the cash saved shrinks.</li></ul>

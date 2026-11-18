@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Timeline: {{ scenario.name }}</h1>
+{% if error %}<div class="flash">{{ error }}</div>{% endif %}
+<p>
+  {% if view == "graph" %}<strong>Graph</strong>{% else %}<a href="{{ url_for('web.timeline_page') }}">Graph</a>{% endif %}
+  ({% if view == "graph" and not newest %}<strong>oldest first</strong>{% else %}<a href="{{ url_for('web.timeline_page') }}">oldest first</a>{% endif %},
+   {% if view == "graph" and newest %}<strong>newest first</strong>{% else %}<a href="{{ url_for('web.timeline_page', order='newest') }}">newest first</a>{% endif %})
+  &middot;
+  {% if view == "axis" %}<strong>Time axis</strong>{% else %}<a href="{{ url_for('web.timeline_page', view='axis') }}">Time axis</a>{% endif %}
+</p>
+{% if view == "graph" %}
+<p class="muted">Like <code>git log --graph</code>: one row per start, end or one-off item, in
+time order (not to scale). Each lasting item is a column that branches off the item it
+belongs to (or the household, left) and merges back where it ends; &#9889; names the
+trigger that sets the date; dashed amber curves are triggers; greyed rows are switched
+off. Click a row to find the item in the builder.</p>
+{% else %}
+<p class="muted">Each lasting item is a lane from its first to its last month, to scale; it
+branches off the item it belongs to (or the household) and merges back where it ends. Dots
+are one-off items; dashed &#9889; arrows and links are triggers; greyed items are switched
+off. Hover for dates; click a name or dot to find it in the builder.</p>
+{% endif %}
+{% if picture %}<div style="overflow-x:auto">{{ picture }}</div>{% endif %}
+{% endblock %}

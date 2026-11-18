@@ -1,0 +1,86 @@
+{
+  "name": "Late first payment (synthetic)",
+  "description": "firstPaymentDate 5 months after the advance: accrual, renewal during accrual, extra payment and lump sum (with penalty) dropped while accruing, interest adjustment, payOff from outside, renewal after the payoff lost with its penalty.",
+  "horizon": {
+    "start": "2026-01-01",
+    "end": "2028-12-01"
+  },
+  "openingCash": "80000",
+  "effectiveTaxRate": "0.25",
+  "items": [
+    {
+      "type": "income",
+      "id": "pay",
+      "startDate": "2026-01-01",
+      "amount": "7000",
+      "taxable": true
+    },
+    {
+      "type": "property",
+      "id": "condo",
+      "name": "Condo",
+      "purchaseDate": "2026-02-01",
+      "price": "400000",
+      "annualAppreciation": "0.02"
+    },
+    {
+      "type": "mortgage",
+      "id": "m",
+      "name": "Condo loan",
+      "property": "condo",
+      "firstPaymentDate": "2026-07-01",
+      "principal": "320000",
+      "annualRate": "0.0499",
+      "amortizationYears": "2.5"
+    },
+    {
+      "type": "renewal",
+      "id": "early-renewal",
+      "mortgage": "m",
+      "startDate": "2026-05-01",
+      "annualRate": "0.0449",
+      "penalty": "750"
+    },
+    {
+      "type": "extraPayment",
+      "id": "x",
+      "mortgage": "m",
+      "startDate": "2026-03-01",
+      "monthlyAmount": "200"
+    },
+    {
+      "type": "lumpSum",
+      "id": "lost-lump",
+      "mortgage": "m",
+      "paymentDate": "2026-04-01",
+      "amount": "5000",
+      "penalty": "100"
+    },
+    {
+      "type": "lumpSum",
+      "id": "lump",
+      "mortgage": "m",
+      "paymentDate": "2027-03-01",
+      "amount": "20000",
+      "penalty": "0"
+    },
+    {
+      "type": "lumpSum",
+      "id": "payoff",
+      "mortgage": "m",
+      "paymentDate": "2028-06-01",
+      "payOff": true,
+      "paidFrom": "outside",
+      "penalty": "300"
+    },
+    {
+      "type": "renewal",
+      "id": "late-renewal",
+      "mortgage": "m",
+      "startDate": "2028-09-01",
+      "annualRate": "0.04",
+      "amortizationYears": "1",
+      "penalty": "500"
+    }
+  ]
+}

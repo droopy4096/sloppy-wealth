@@ -1,0 +1,10 @@
+<h1 id="adr-0015-debits-are-capped-at-available-funds-and-the-unpaid-part-is-a-shortfall">ADR-0015: Debits are capped at available funds, and the unpaid part is a shortfall</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>In a drawdown scenario (e.g. pension withdrawals in retirement), a cash flow can need more than its source account holds. The engine has to define what happens then.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>A debit from an account is <strong>capped at the funds available</strong> in that period. The account balance never goes below zero.</li><li>The unpaid remainder is recorded as a <strong>shortfall</strong> on that cash flow for that period.</li><li>Shortfalls are part of the projection result: per period, per cash flow and in total.</li><li>The cumulative shortfall is a holding metric (SHORTFALL), so goals can use it, e.g. a MAINTAIN goal "bank account SHORTFALL = 0" (ADR-0014).</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Letting the balance go negative and reporting when it is depleted: simpler, but it hides how badly the plan falls short.</li><li>Funding the shortfall automatically from other accounts (a withdrawal waterfall): powerful, but it is a strategy decision. It is left out for now and could later be added as an explicit model element.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>The rule applies to every debit from an account, including liability payments. A shortfall on a mortgage payment means the plan cannot afford the mortgage. For now it is reported only; there is no modelling of default or arrears.</li><li>When several debits compete for the same account in one month, the <strong>order</strong> in which they are paid decides which ones fall short. This feeds into Q-08 (order of steps within a month).</li></ul>

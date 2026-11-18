@@ -1,0 +1,10 @@
+<h1 id="adr-0012-one-off-events-recurring-cash-flows-and-event-generators">ADR-0012: One-off events, recurring cash flows, and event generators</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>A scenario contains things that happen once (buy a house, sell a car, a lump-sum prepayment), things that recur (salary, rent, contributions, doubled mortgage payments from a date), and changes that follow a pattern (salary raised 2% each year on a given date).</p>
+<h2 id="decision">Decision</h2>
+<ul><li>An <strong>Event</strong> is a one-off occurrence with an absolute date.</li><li>A <strong>Cash Flow</strong> is a recurring movement of money with a start date and an optional end date. Recurring changes such as "double payments from July 2027" are modelled as cash flows.</li><li>An <strong>Event Generator</strong> (event factory) is a rule that <strong>produces concrete events</strong> following a pattern, e.g. "salary +2% every 1 April from 2027". Generators are expanded into events during the event-placement stage (ADR-0010).</li><li>Events, cash flows and event generators are all <strong>time-shiftable</strong> (ADR-0007).</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Treating everything as an event: a recurring cash flow would become hundreds of events to edit and shift.</li><li>Building recurrence rules into events themselves: the nuanced patterns would end up inside one overloaded type.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>The scenario input stores <strong>generators</strong>, not the events they produce. Generated events exist only in the pipeline state after event placement, so shifting a generator shifts every event it produces.</li><li>Generators are a natural extension point: new patterns mean new generator types.</li></ul>

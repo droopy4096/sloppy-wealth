@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Break-even{% endblock %}
+{% block content %}
+<h1>Break-even: {{ scenario.name }}</h1>
+<p><a href="{{ url_for('web.run') }}">&larr; Back to the run</a></p>
+{% if error %}<div class="flash">{{ error }}</div>{% endif %}
+{% if not properties %}
+<p class="muted">The scenario has no property.</p>
+{% else %}
+<form method="get">
+  <label>Property <select name="property" onchange="this.form.requestSubmit()">
+    {% for p in properties %}<option value="{{ p.id }}"{% if view and p.id == view.property %} selected{% endif %}>{{ p.name }}</option>{% endfor %}
+  </select></label>
+  <noscript><button type="submit">Show</button></noscript>
+</form>
+{% if view %}
+<p>Each month, a hypothetical sale at its end: <b>Net proceeds</b> = Value − Sale costs −
+Loan balance − Penalty. <b>Invested</b> = everything paid for the property so far.
+<b>Gain</b> = Net proceeds − Invested (positive: ahead). <b>Rent eq.</b> = what owning has
+cost per month so far, the rent that would have cost the same (negative: owning is
+ahead). <i>Owner</i> costs leave out expenses a renter pays too (marked "also when
+renting"); <i>all</i> costs keep them. Hover a heading for its formula. Nominal dollars
+(ADR-0073).</p>
+{% for note in view.notes %}<p class="muted">{{ note }}</p>{% endfor %}
+{% set cur = view.summary.current %}
+<table class="summary">
+  <tr><th></th><th title="without expenses a renter pays too (utilities...)">Owner costs</th><th title="every expense and cost linked to the property">All costs</th></tr>
+  <tr><td title="the first month Gain is 0 or more">Breaks even from</td>
+    {% for v in ["ownership", "all"] %}<td>{{ view.summary.breakEvenMonth[v] or "not within the horizon" }}</td>{% endfor %}</tr>
+  {% if cur %}
+  <tr><td title="Net proceeds - Invested">Gain in {{ cur.month }}</td>
+    {% for v in ["ownership", "all"] %}<td class="num{% if cur[v].breakEven < zero %} neg{% endif %}">{{ cur[v].breakEven|money }}</td>{% endfor %}</tr>
+  <tr><td title="(Invested - Net proceeds) / months owned">Rent eq. in {{ cur.month }} ($ a month)</td>
+    {% for v in ["ownership", "all"] %}<td class="num">{{ cur[v].rentEquivalent|money }}</td>{% endfor %}</tr>
+  {% endif %}
+</table>
+<table>
+  {# Short titles, each with its meaning as a tooltip (owner's choice 2026-11-18). #}
+  {% set heads = [
+    ("Month", "the month; a sale is assumed at its end"),
+    ("Owned (mo)", "months owned: from the purchase, or from the horizon start if bought before it"),
+    ("Value", "market value at the end of the month"),
+    ("Sale costs", "selling costs: the property's associated costs at its end (realtor %, legal fees)"),
+    ("Loan balance", "what is still owed on its mortgages"),
+    ("Penalty", "early-closure penalty of the mortgage term in effect (0 after the term)"),
+    ("Net proceeds", "Value - Sale costs - Loan balance - Penalty: the cash a sale would bring"),
+  ] %}
+  {% set variants = [("owner", "owner costs: without expenses a renter pays too (utilities...)"),
+                     ("all", "all costs: every expense and cost linked to the property")] %}
+  <tr>{% for title, tip in heads %}<th title="{{ tip }}">{{ title }}</th>{% endfor %}
+    {% for short, tip in variants %}
+    <th title="Invested ({{ tip }}): everything paid for the property so far (down payment, closing costs, mortgage payments, penalties, improvements, its expenses); the equity at the horizon start if bought before it">Invested ({{ short }})</th>
+    <th title="Gain ({{ tip }}): Net proceeds - Invested; positive = ahead">Gain ({{ short }})</th>
+    <th title="Rent equivalent ({{ tip }}): (Invested - Net proceeds) / Owned (mo): what owning has cost per month so far, the rent that would have cost the same; negative = owning is ahead">Rent eq. ({{ short }})</th>
+    {% endfor %}</tr>
+  {% for r in view.rows %}
+  <tr>
+    <td><a href="{{ url_for('web.run_ledger', month=r.month) }}">{{ r.month }}</a></td>
+    <td class="num">{{ r.monthsOwned }}</td>
+    <td class="num">{{ r.value|money }}</td><td class="num">{{ r.sellingCosts|money }}</td>
+    <td class="num">{{ r.balance|money }}</td><td class="num">{{ r.penalty|money }}</td>
+    <td class="num">{{ r.netProceeds|money }}</td>
+    {% for v in ["ownership", "all"] %}
+    <td class="num">{{ r[v].netInvestment|money }}</td>
+    <td class="num{% if r[v].breakEven < zero %} neg{% endif %}">{{ r[v].breakEven|money }}</td>
+    <td class="num">{{ r[v].rentEquivalent|money }}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endif %}
+{% endblock %}

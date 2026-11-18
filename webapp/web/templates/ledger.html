@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Ledger: {{ scenario.name }}, {{ month }}</h1>
+<p><a href="{{ url_for('web.run') }}">&larr; Back to the run</a></p>
+<form method="get">
+  <label>Month <select name="month" onchange="this.form.requestSubmit()">
+    {% for m in months %}<option{% if m == month %} selected{% endif %}>{{ m }}</option>{% endfor %}
+  </select></label>
+  <noscript><button type="submit">Show</button></noscript>
+</form>
+<h2>Holdings at the end of {{ month }}</h2>
+<table>
+  <tr><th>Holding</th><th>Type</th><th>Opening</th><th>Change</th><th>Closing</th></tr>
+  {% for h, p in balances %}
+  {% set change = p.closing - (p.opening if p.opening is not none else 0) %}
+  <tr>
+    <td><a href="{{ url_for('web.run_holdings', id=h.id) }}">{{ h.name }}</a></td>
+    <td>{{ h.kind }}</td>
+    <td class="num">{{ p.opening|money if p.opening is not none else "-" }}</td>
+    <td class="num{% if change < zero %} neg{% endif %}">{{ change|money }}</td>
+    <td class="num"><b>{{ p.closing|money }}</b></td>
+  </tr>
+  {% endfor %}
+</table>
+<h2>Movements</h2>
+<table>
+  <tr>{% if events is not none %}<th>#</th>{% endif %}<th>Kind</th><th>From</th><th>To</th><th>Amount</th><th>Cash effect</th><th>Caused by</th></tr>
+  {% for x in movements %}
+  {% if events is not none %}<tr id="m{{ indices[loop.index0] }}">
+    <td class="num">{{ indices[loop.index0] }}</td>{% else %}<tr>{% endif %}
+    <td>{{ x.kind }}</td>
+    <td>{{ names.get(x["from"], x["from"]) if x["from"] else "(outside)" }}</td>
+    <td>{{ names.get(x["to"], x["to"]) if x["to"] else "(outside)" }}</td>
+    <td class="num">{{ x.amount|money }}</td>
+    <td class="num{% if x.cash is not none and x.cash < zero %} neg{% endif %}">{% if x.cash is not none %}{{ "+" if x.cash > zero else "" }}{{ x.cash|money }}{% endif %}</td>
+    <td>{{ names.get(x.source, x.source) if x.source else "-" }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="{{ 7 if events is not none else 6 }}">No movements this month.</td></tr>
+  {% endfor %}
+  <tr>
+    <td colspan="{{ 5 if events is not none else 4 }}"><b>Net cash flow this month</b> ({{ "inflow" if net_cash > zero else "outflow" if net_cash < zero else "no change" }})</td>
+    <td class="num{% if net_cash < zero %} neg{% endif %}"><b>{{ "+" if net_cash > zero else "" }}{{ net_cash|money }}</b></td>
+    <td></td>
+  </tr>
+</table>
+<h2>Tax step for {{ month }}</h2>
+{% if tax.persons %}
+<p>Each person is taxed separately (ADR-0061): own rate, own deductions and deduction pool, own TAX movement.</p>
+<table>
+  <tr><th></th>{% for pid in tax.persons %}<th>{{ names.get(pid, pid) }}</th>{% endfor %}<th>Household</th></tr>
+  {% for key, label in [("taxable", "Taxable income this month"), ("deductions", jurisdiction.labels.deductions or "Deductions this month"), ("poolIn", "Deduction pool carried in"), ("used", "Deductions used against this month's income"), ("poolOut", "Deduction pool carried forward"), ("incomeTax", "Income tax: rate × (taxable income − deductions used)"), ("ownRateTax", "Tax on withdrawals at an account's own rate"), ("total", "Total tax (the TAX movements)")] %}
+  <tr><td>{{ label }}</td>{% for d in tax.persons.values() %}<td class="num">{{ d[key]|money }}</td>{% endfor %}<td class="num"><b>{{ tax[key]|money }}</b></td></tr>
+  {% if key == "poolOut" %}<tr><td>Rate</td>{% for d in tax.persons.values() %}<td class="num">{{ d.rate|percent }}{{ " (retired)" if d.retired else "" }}</td>{% endfor %}<td></td></tr>{% endif %}
+  {% endfor %}
+</table>
+{% else %}
+<table>
+  <tr><td>Taxable income this month</td><td class="num">{{ tax.taxable|money }}</td></tr>
+  <tr><td>{{ jurisdiction.labels.deductions or "Deductions this month" }}</td><td class="num">{{ tax.deductions|money }}</td></tr>
+  <tr><td>Deduction pool carried in</td><td class="num">{{ tax.poolIn|money }}</td></tr>
+  <tr><td>Deductions used against this month's income</td><td class="num">{{ tax.used|money }}</td></tr>
+  <tr><td>Deduction pool carried forward</td><td class="num"><b>{{ tax.poolOut|money }}</b></td></tr>
+  <tr><td>Rate ({{ "retirement rate" if tax.retired else "income tax rate" }})</td><td class="num">{{ tax.rate|percent }}</td></tr>
+  <tr><td>Income tax: rate &times; (taxable income &minus; deductions used)</td><td class="num">{{ tax.incomeTax|money }}</td></tr>
+  {% if tax.ownRateTax %}<tr><td>Tax on withdrawals at an account's own rate</td><td class="num">{{ tax.ownRateTax|money }}</td></tr>{% endif %}
+  <tr><td><b>Total tax (the TAX movement)</b></td><td class="num"><b>{{ tax.total|money }}</b></td></tr>
+</table>
+{% endif %}
+<p>The deduction pool is not money: it is {{ jurisdiction.labels.pool or "deductible contributions" }} not yet deducted, carried forward to later months (ADR-0048).</p>
+{% if events is not none %}
+<h2>Events this month</h2>
+<p class="muted">In the order the engine applied them (order key = order.item.sub, D-E2); a follow-up (&#8627;) is emitted by the event it names (D-E3).</p>
+<table class="events">
+  <tr><th>#</th><th>Order key</th><th>Event</th><th>Kind</th><th>Caused by</th><th>Ledger movements</th></tr>
+  {% for e in events %}
+  <tr id="e{{ e.n }}">
+    <td class="num">{{ e.n }}</td>
+    <td>{{ e.key|join(".") }}</td>
+    <td style="padding-left: {{ 0.5 + 1.5 * e.depth }}rem">{% if e.cause is not none %}&#8627; {% endif %}{{ e.event }}{% if e.detail and e.detail != e.event %}: {{ e.detail }}{% endif %}{% if e.emitter != e.event %} <span class="muted">({{ e.emitter }})</span>{% endif %}{% if e.cause is not none %} <span class="muted">follow-up of <a href="#e{{ e.cause }}">#{{ e.cause }}</a></span>{% endif %}</td>
+    <td>{{ e.kind }}</td>
+    <td>{{ names.get(e.source, e.source) if e.source else "(scenario)" }}</td>
+    <td>{% for i, x in e.movements %}<a href="#m{{ i }}">#{{ i }}</a> {{ x.kind }} {{ x.amount|money }}{% if not loop.last %}<br>{% endif %}{% else %}-{% endfor %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6">No events shown this month.</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

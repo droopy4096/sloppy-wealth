@@ -1,0 +1,8 @@
+<h1 id="adr-0036-guaranteed-pensions-are-income-cash-flows-rrif-rules-are-not-modelled">ADR-0036: Guaranteed pensions are income cash flows; RRIF rules are not modelled</h1>
+<ul><li><strong>Status:</strong> Accepted; amended by ADR-0052 (pension value in net worth, retirement date)</li><li><strong>Date:</strong> 2026-11-05</li></ul>
+<h2 id="context">Context</h2>
+<p>Retirement money comes either as a finite pot (RRSP) or as guaranteed income until death (defined-benefit pension, CPP/OAS-like), usually indexed to inflation.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>A <strong>pension</strong> is an income <code>CashFlow</code> from outside into an account. It starts at the pension start date, ends at the horizon end (the planned lifespan), is <code>InflationIndexed</code> (or <code>CustomRate</code> for partial indexing) and is flagged taxable (ADR-0020).</li><li>A pension has <strong>no holding and no value in net worth</strong> (no commuted value). Retirement options are compared with income tallies (ADR-0037), not net worth.</li><li><strong>RRSP to RRIF conversion and minimum withdrawals are not modelled.</strong> The user is responsible for withdrawals large enough to meet the minimums.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Net worth understates the wealth of someone who relies on a pension. This is a known limitation, and comparisons of retirement options should use income-based goals.</li><li>Watch items: RRIF minimums (Q-13), pension commuted value (Q-14), annuity purchase (Q-15).</li></ul>

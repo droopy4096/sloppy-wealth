@@ -1,0 +1,11 @@
+# Personal scenario files and local exports at the repo root: never committed.
+/*_financials*.json
+/Untitled.json
+/Optimal.json
+/*.html
+# Local renderings, environments, editor tags, worktrees, caches.
+diagrams/svg/
+webapp/.venv
+webapp/tags
+.worktrees/
+__pycache__/

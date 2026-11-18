@@ -1,0 +1,10 @@
+<h1 id="adr-0009-decimal-representation-of-money">ADR-0009: Decimal representation of money</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>Floating-point arithmetic introduces representation errors that accumulate over hundreds of monthly periods.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>Money is represented as a <strong>decimal</strong> type, never as binary floating point.</li><li><strong>Standard accounting rounding rules</strong> apply.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>The future implementation language needs a solid decimal type or library (an input to the language ADR).</li><li>JSON serialisation must not convert money to floats; amounts are likely serialised as strings.</li></ul>
+<h2 id="amendment-2026-11-04-rounding-mode-and-precision">Amendment (2026-11-04): rounding mode and precision</h2>
+<ul><li>Rounding mode: <strong>half-even (banker's rounding)</strong>.</li><li>Money precision: <strong>2 decimal places</strong>.</li><li><strong>Every money movement is rounded as it happens</strong>: each interest accrual, payment, cost and transfer is rounded to 2 decimal places when it is computed in a period. Balances are therefore always exact sums of rounded movements, the way real account statements are.</li><li><strong>Rates and percentages are not rounded</strong>; they keep full decimal precision.</li></ul>

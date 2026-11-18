@@ -1,0 +1,10 @@
+<h1 id="adr-0045-rates-are-fractions-in-json-percentages-in-the-ui-and-are-range-checked">ADR-0045: Rates are fractions in JSON, percentages in the UI, and are range-checked</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-07</li><li><strong>Amends:</strong> ADR-0040 (validation)</li></ul>
+<h2 id="context">Context</h2>
+<p>In the PoC a mortgage rate typed as <code>3.79</code> was read as 379% a year. Nothing failed: the payment was almost all interest and the principal never fell. Saved files are meant to be edited by hand (ADR-0008), so the same confusion would recur at every boundary.</p>
+<h2 id="decision">Decision</h2>
+<ul><li>In JSON (save files and interchange), every rate is a <strong>fraction written as a string</strong>, e.g. <code>&quot;0.0379&quot;</code>, like money values (ADR-0009).</li><li><strong>User interfaces</strong> accept and display rates as <strong>percentages</strong> (<code>3.79</code>). Converting between the two happens only in the UI.</li><li>The engine <strong>rejects implausible rates</strong> with a readable message naming the field and the expected form:<ul><li>interest, tax and selling-cost rates: 0 ≤ rate &lt; 1;</li><li>appreciation, depreciation, indexing and inflation rates: −1 &lt; rate &lt; 1.</li></ul></li><li>Validation therefore has three outcomes: a missing essential field (error), an implausible value (error), or an omitted optional field (neutral default) (ADR-0040).</li></ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul><li>Percentages in JSON: readable, but every consumer must remember to divide by 100.</li><li>Accept either and guess (a value above 1 is a percentage): ambiguous for small rates such as 0.5 (half a percent or 50%?).</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>Old files with percentages fail loudly instead of running.</li><li>Rates of 100% or more cannot be expressed. That is acceptable for this tool.</li></ul>

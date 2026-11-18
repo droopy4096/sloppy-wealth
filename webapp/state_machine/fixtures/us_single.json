@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "US single earner, no persons (ADR-0071)",
+  "jurisdiction": "US",
+  "horizon": {"start": "2027-01-01", "end": "2033-12-01"},
+  "openingCash": "20000",
+  "effectiveTaxRate": "0.22",
+  "annualInflation": "0.03",
+  "items": [
+    {"type": "income", "id": "job", "name": "Salary", "startDate": "2027-01-01",
+     "endDate": "2030-12-01", "amount": "7000", "per": "month", "taxable": true},
+    {"type": "expense", "id": "living", "name": "Living", "startDate": "2027-01-01",
+     "amount": "3500", "per": "month", "indexing": "inflation"},
+    {"type": "account", "id": "ira", "name": "Traditional IRA", "accountType": "traditionalIra",
+     "openingBalance": "50000", "annualReturn": "0.05"},
+    {"type": "account", "id": "roth", "name": "Roth IRA", "accountType": "rothIra",
+     "openingBalance": "0", "annualReturn": "0.05"},
+    {"type": "account", "id": "taxable", "name": "Brokerage", "accountType": "brokerage",
+     "openingBalance": "0", "openedDate": "2028-01-01", "openingFrom": "cash",
+     "annualReturn": "0.07"},
+    {"type": "contribution", "id": "c-ira", "account": "ira", "startDate": "2027-01-01",
+     "endDate": "2030-12-01", "amount": "400", "per": "month"},
+    {"type": "contribution", "id": "c-roth", "account": "roth", "startDate": "2027-01-01",
+     "endDate": "2030-12-01", "amount": "400", "per": "month"},
+    {"type": "transfer", "id": "t", "account": "roth", "transferDate": "2029-03-01",
+     "amount": "5000"},
+    {"type": "withdrawal", "id": "draw", "account": "ira", "method": "annuity",
+     "startDate": "2031-01-01", "indexing": "inflation"},
+    {"type": "contributionLimit", "id": "ira-limit", "limitType": "ira", "yearlyLimit": "7000",
+     "limitYear": "2025", "catchUp": "1000", "indexing": "custom", "indexRate": "0.03"}
+  ]
+}

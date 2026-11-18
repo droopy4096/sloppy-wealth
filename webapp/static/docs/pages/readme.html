@@ -1,0 +1,41 @@
+<h1 id="sloppy-wealth">Sloppy Wealth</h1>
+<p>Sloppy Wealth is sloppy in more ways than one. It was designed by a human and largely vibe-coded with an LLM, and it is not meant to be a precise instrument: it is a ballpark calculator for a household's big financial questions.</p>
+<p>Over the years I kept asking questions like these:</p>
+<ul><li>Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?</li><li>When can I sell the house without losing the money I put into buying and maintaining it?</li><li>Would it be cheaper to rent?</li><li>When can I retire with an income of $NNN in today's dollars?</li><li>How much net worth am I really adding each year, in today's dollars?</li></ul>
+<p>I built calculators for some of them, but never had the time for one tool that combines them all, let alone one that isn't command-line based. Enter the LLM. I brought the ideas (how to design it, what to design it for, and what <em>I</em> need) and let the LLM fill the gaps, tuning its approach as we went. This project is the result.</p>
+<h2 id="what-it-does">What it does</h2>
+<p>It models a household month by month over a lifetime: incomes, expenses, accounts, pensions, properties and mortgages, vehicles and taxes. It projects cash, investments, property, debts and net worth (also in today's dollars), compares scenarios side by side, and has calculators for a property's break-even and rent equivalent and for a vehicle's cost of ownership per month.</p>
+<p>You don't have to model everything at once. A scenario can hold just one property, to see its costs and break-even, or just one vehicle, to see what it costs to own, and nothing else. Every item, and every expense attached to it, can be switched off and on with one click, so you can see straight away what a different setup changes: the same house without its renovation, or the same car without its insurance.</p>
+<p>It understands Canadian and US tax rules and accounts (RRSP, TFSA, RESP; 401(k), IRA, HSA). That doesn't mean it can't be used elsewhere, but it may lack what other jurisdictions need to represent all of a household's finances, so beware. Or open a pull request: jurisdictions are pluggable (see "Contributing a jurisdiction" in <a href="/docs/webapp-state-machine-readme">webapp/state_machine/README.md</a>).</p>
+<h2 id="your-data-stays-with-you">Your data stays with you</h2>
+<p>Everything you enter stays on your side. The scenario lives in your browser tab (its session storage) while you work, and <strong>Save</strong> downloads it as a JSON file that you can keep, load again later, compare with another one, or share. The server stores nothing: each page sends it the scenario, gets the results back, and it forgets the scenario (ADR-0069). There are no accounts and no database. The tab's copy is gone once the tab is closed, so save before you close it; the app warns you about unsaved changes.</p>
+<h2 id="where-it-is-going">Where it is going</h2>
+<p>I will be phasing out LLM use in favour of human contributors. The next goal is developer documentation thorough enough for that to happen.</p>
+<h2 id="how-it-is-organised">How it is organised</h2>
+<ol><li><strong>Design</strong>: architecture decisions (ADRs), the domain model and diagrams. Design decisions live here; the code follows them.</li><li><strong>The app</strong> (<code>webapp/</code>): a Python/Flask web app over a JSON API and an event-driven engine.</li></ol>
+<p>Start with <a href="/docs/claude">CLAUDE.md</a> (working rules for developers and agents), then <a href="/docs/docs-implementation-status">docs/IMPLEMENTATION_STATUS.md</a> (what is built, what is backlog).</p>
+<h2 id="repository-map">Repository map</h2>
+<table>
+<tr><th>Path</th><th>What</th></tr>
+<tr><td><code>docs/adr/</code></td><td>Architecture Decision Records 0001–0074, many with dated amendments. The source of truth for decisions.</td></tr>
+<tr><td><code>docs/open-questions.md</code></td><td>Decisions still open, deferred or on watch</td></tr>
+<tr><td><code>docs/glossary.md</code></td><td>Domain terms</td></tr>
+<tr><td><code>docs/scenarios/</code></td><td>The use cases the model must serve (rent vs buy, two houses, retirement readiness, ...)</td></tr>
+<tr><td><code>docs/IMPLEMENTATION_STATUS.md</code></td><td>Which ADRs and review decisions the app implements; the backlog</td></tr>
+<tr><td><code>docs/poc-review-2026-11-07.md</code></td><td>Lessons from the first prototype that fed back into the design</td></tr>
+<tr><td><code>diagrams/*.mmd</code></td><td>Mermaid diagrams: feature mind map, engine pipeline, scenario domain model (02), sequences, output model, event-emitter conceptual model (06). <code>scripts/render-diagrams.sh</code> renders them (output is not committed).</td></tr>
+<tr><td><code>CRITIQUE.md</code></td><td>Adversarial review of the design and the app (2026-11-08): findings, rulings, work plan</td></tr>
+<tr><td><code>CRITIQUE_RESPONSES.md</code></td><td>The user's decision on every critique finding, with rationale</td></tr>
+<tr><td><code>webapp/</code></td><td>The app: <code>app.py</code> (server), <code>api.py</code> (JSON API), <code>web/</code> (pages, an API client), <code>state_machine/</code> (engine), <code>SPEC.md</code> (scenario JSON and semantics), <code>samples/</code>, tests, <code>build_docs.py</code> + <code>static/docs/</code> (Documentation tab)</td></tr>
+</table>
+<h2 id="contributing">Contributing</h2>
+<p><code>main</code> is protected: every change goes through a pull request.</p>
+<ol><li>Branch off <code>main</code> (one branch per change, e.g. <code>feature/&lt;topic&gt;</code> or <code>docs/&lt;topic&gt;</code>).</li><li>Make the change with its records (ADR, open questions, SPEC, IMPLEMENTATION_STATUS, see <a href="/docs/claude">CLAUDE.md</a>) and run the gates below; commit only when they pass.</li><li>Open a pull request against <code>main</code>; it is reviewed, then merged.</li></ol>
+<p>Adding a tax jurisdiction: see "Contributing a jurisdiction" in <a href="/docs/webapp-state-machine-readme">webapp/state_machine/README.md</a>. All sample and test data must be synthetic.</p>
+<h2 id="quick-start">Quick start</h2>
+<pre><code>git clone https://github.com/droopy4096/sloppy-wealth.git &amp;&amp; cd sloppy-wealth/webapp
+python3 -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt   # once
+.venv/bin/python app.py                                              # http://127.0.0.1:5000
+.venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
+.venv/bin/python -m unittest discover -s state_machine/tests -t .    # engine + golden suite</code></pre>
+<p>The app has a <strong>Documentation</strong> tab (<code>/docs</code>) with every document and rendered diagram.</p>

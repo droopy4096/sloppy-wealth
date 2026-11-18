@@ -1,0 +1,65 @@
+{
+  "name": "Legacy retirementDate inside the horizon (synthetic)",
+  "description": "Legacy scenario retirementDate inside the horizon driving atRetirement sale and transfer, endsAtRetirement income, percent withdrawal starting at retirement on an account that is empty at the start of that month.",
+  "horizon": {
+    "start": "2026-01-01",
+    "end": "2029-12-01"
+  },
+  "openingCash": "20000",
+  "effectiveTaxRate": "0.28",
+  "retirementTaxRate": "0.18",
+  "retirementDate": "2027-07-01",
+  "items": [
+    {
+      "type": "income",
+      "id": "job",
+      "startDate": "2026-01-01",
+      "amount": "6500",
+      "taxable": true,
+      "endsAtRetirement": true
+    },
+    {
+      "type": "property",
+      "id": "house",
+      "purchaseDate": "2026-03-01",
+      "price": "350000",
+      "annualAppreciation": "0.04"
+    },
+    {
+      "type": "mortgage",
+      "id": "loan",
+      "property": "house",
+      "principal": "280000",
+      "annualRate": "0.045",
+      "amortizationYears": "25"
+    },
+    {
+      "type": "sale",
+      "id": "downsize",
+      "property": "house",
+      "atRetirement": true,
+      "sellingCostRate": "0.05"
+    },
+    {
+      "type": "account",
+      "id": "tfsa",
+      "accountType": "tfsa",
+      "annualReturn": "0.05"
+    },
+    {
+      "type": "transfer",
+      "id": "t",
+      "account": "tfsa",
+      "atRetirement": true,
+      "amount": "30000"
+    },
+    {
+      "type": "withdrawal",
+      "id": "w",
+      "account": "tfsa",
+      "method": "percent",
+      "annualRate": "0.05",
+      "startDate": ""
+    }
+  ]
+}

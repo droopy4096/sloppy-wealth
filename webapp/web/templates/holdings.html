@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Per-holding detail: {{ scenario.name }}</h1>
+<p><a href="{{ url_for('web.run') }}">&larr; Back to the run</a></p>
+<form method="get">
+  <label>Holding <select name="id" onchange="this.form.requestSubmit()">
+    {% for h in holdings %}<option value="{{ h.id }}"{% if h.id == chosen.id %} selected{% endif %}>{{ h.name }} ({{ h.kind }})</option>{% endfor %}
+  </select></label>
+  <noscript><button type="submit">Show</button></noscript>
+</form>
+{% set loan = chosen.kind == "mortgage" %}
+<table>
+  <tr><th>Month</th><th>Opening</th>{% if loan %}<th>Interest</th><th>Paid</th><th>Principal paid</th>{% endif %}<th>Closing</th><th>Change</th></tr>
+  {% for p in chosen.points %}
+  {% set change = p.closing - (p.opening if p.opening is not none else 0) %}
+  <tr>
+    <td><a href="{{ url_for('web.run_ledger', month=p.month) }}">{{ p.month }}</a></td>
+    <td class="num">{{ p.opening|money if p.opening is not none else "-" }}</td>
+    {% if loan %}<td class="num">{{ p.interest|money }}</td><td class="num">{{ p.paid|money }}</td><td class="num">{{ p.principalPaid|money }}</td>{% endif %}
+    <td class="num">{{ p.closing|money }}</td>
+    <td class="num{% if change < zero %} neg{% endif %}">{{ change|money }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,8 @@
+<h1 id="adr-0032-composing-scenarios-from-a-base-is-the-authoring-tool-s-concern">ADR-0032: Composing scenarios from a base is the authoring tool's concern</h1>
+<ul><li><strong>Status:</strong> Accepted</li><li><strong>Date:</strong> 2026-11-04</li></ul>
+<h2 id="context">Context</h2>
+<p>The scenarios in a set repeat the same income, expenses, accounts and assumptions, and differ only in one area (e.g. housing).</p>
+<h2 id="decision">Decision</h2>
+<ul><li>The engine always receives <strong>complete, self-contained scenarios</strong> (ADR-0003, ADR-0008).</li><li>Deriving variants from a base (e.g. "copy base, replace everything tagged housing:*") is done by <strong>authoring tooling</strong> outside the engine.</li></ul>
+<h2 id="consequences">Consequences</h2>
+<ul><li>The engine and its JSON contract stay simple, with no inheritance or overlay resolution.</li><li>Authoring tooling becomes a component to design later (with the time-shift tool and the ages-to-dates conversion).</li></ul>

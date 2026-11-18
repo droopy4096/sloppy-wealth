@@ -1,0 +1,407 @@
+{
+  "schemaVersion": 1,
+  "name": "Kitchen sink, expenses covered (synthetic)",
+  "description": "kitchen_sink.json with incomeMode expensesCovered (only that field differs).",
+  "horizon": {
+    "start": "2026-01-01",
+    "end": "2037-12-01"
+  },
+  "openingCash": "250000",
+  "annualInflation": "0.02",
+  "dollarsOf": "2025-01-01",
+  "effectiveTaxRate": "0.30",
+  "retirementTaxRate": "0.20",
+  "incomeMode": "expensesCovered",
+  "items": [
+    {
+      "type": "income",
+      "id": "salary",
+      "name": "Salary",
+      "startDate": "2026-01-01",
+      "endDate": "",
+      "amount": "9000",
+      "per": "month",
+      "taxable": true,
+      "indexing": "inflation",
+      "endsAtRetirement": true
+    },
+    {
+      "type": "income",
+      "id": "rental",
+      "name": "Rental income",
+      "startDate": "2026-03-01",
+      "endDate": "2035-06-01",
+      "amount": "18000",
+      "per": "year",
+      "taxable": true,
+      "indexing": "custom",
+      "indexRate": "0.03"
+    },
+    {
+      "type": "income",
+      "id": "consulting",
+      "name": "Consulting after retirement",
+      "startDate": "",
+      "endDate": "2034-12-01",
+      "amount": "6000",
+      "per": "quarter",
+      "taxable": true,
+      "startsAtRetirement": true
+    },
+    {
+      "type": "expense",
+      "id": "living",
+      "name": "Living (base-date dollars)",
+      "startDate": "2026-01-01",
+      "amount": "4200",
+      "per": "month",
+      "indexing": "inflation",
+      "amountIn": "base"
+    },
+    {
+      "type": "expense",
+      "id": "travel",
+      "name": "Travel in retirement",
+      "startDate": "",
+      "amount": "12000",
+      "per": "year",
+      "indexing": "inflation",
+      "amountIn": "base",
+      "startsAtRetirement": true
+    },
+    {
+      "type": "expense",
+      "name": "Insurance",
+      "startDate": "2026-02-01",
+      "endDate": "2031-12-01",
+      "amount": "900",
+      "per": "quarter"
+    },
+    {
+      "type": "mortgage",
+      "id": "mtg-cottage",
+      "name": "Cottage mortgage",
+      "property": "cottage",
+      "principal": "300000",
+      "annualRate": "0.0459",
+      "amortizationYears": "25"
+    },
+    {
+      "type": "property",
+      "id": "home",
+      "name": "Home",
+      "purchaseDate": "2018-06-01",
+      "price": "650000",
+      "marketValue": "910000",
+      "annualAppreciation": "0.03"
+    },
+    {
+      "type": "mortgage",
+      "id": "mtg-home",
+      "name": "Home refinance",
+      "property": "home",
+      "startDate": "2026-01-01",
+      "firstPaymentDate": "2026-04-01",
+      "principal": "420000",
+      "annualRate": "0.0389",
+      "amortizationYears": "20"
+    },
+    {
+      "type": "property",
+      "id": "cottage",
+      "name": "Cottage",
+      "purchaseDate": "2027-04-01",
+      "price": "480000",
+      "annualAppreciation": "0.025"
+    },
+    {
+      "type": "sale",
+      "id": "sell-cottage",
+      "name": "Sell cottage",
+      "property": "cottage",
+      "atRetirement": true,
+      "salePrice": "560000",
+      "sellingCostRate": "0.05",
+      "salePenalty": "4500"
+    },
+    {
+      "type": "lumpSum",
+      "id": "lump-cottage",
+      "name": "Pay off cottage (lost)",
+      "mortgage": "mtg-cottage",
+      "atRetirement": true,
+      "payOff": true,
+      "penalty": "1000"
+    },
+    {
+      "type": "lumpSum",
+      "id": "lump-home",
+      "name": "Pay off home",
+      "mortgage": "mtg-home",
+      "atRetirement": true,
+      "payOff": true,
+      "paidFrom": "cash",
+      "penalty": "2500"
+    },
+    {
+      "type": "lumpSum",
+      "id": "lump-home-early",
+      "name": "Inheritance prepayment",
+      "mortgage": "mtg-home",
+      "paymentDate": "2028-06-01",
+      "amount": "25000",
+      "paidFrom": "outside",
+      "penalty": "0"
+    },
+    {
+      "type": "extraPayment",
+      "id": "extra-home",
+      "name": "Extra principal",
+      "mortgage": "mtg-home",
+      "startDate": "2026-02-01",
+      "endDate": "",
+      "monthlyAmount": "350",
+      "endsAtRetirement": true
+    },
+    {
+      "type": "renewal",
+      "id": "renew-home",
+      "name": "Renew home",
+      "mortgage": "mtg-home",
+      "startDate": "2029-01-01",
+      "annualRate": "0.0429",
+      "amortizationYears": "15",
+      "penalty": "3200"
+    },
+    {
+      "type": "renewal",
+      "id": "renew-cottage",
+      "name": "Renew cottage",
+      "mortgage": "mtg-cottage",
+      "startDate": "2030-04-01",
+      "annualRate": "0.0399",
+      "amortizationYears": 0
+    },
+    {
+      "type": "improvement",
+      "id": "reno",
+      "name": "Kitchen",
+      "property": "home",
+      "improvementDate": "2027-09-01",
+      "cost": "60000",
+      "valueAdded": "45000"
+    },
+    {
+      "type": "marketAdjustment",
+      "id": "dip",
+      "name": "Local dip",
+      "property": "home",
+      "adjustmentDate": "2027-09-01",
+      "percent": "-0.08"
+    },
+    {
+      "type": "marketAdjustment",
+      "id": "appraisal",
+      "name": "Cottage appraisal",
+      "property": "cottage",
+      "adjustmentDate": "2029-07-01",
+      "newValue": "530000"
+    },
+    {
+      "type": "vehicle",
+      "id": "car",
+      "name": "Old car",
+      "purchaseDate": "2024-05-01",
+      "price": "42000",
+      "annualDepreciation": "0.15",
+      "annualMaintenance": "2400",
+      "maintenanceIncrease": "0.05"
+    },
+    {
+      "type": "sale",
+      "id": "sell-car",
+      "name": "Trade in",
+      "property": "car",
+      "saleDate": "2030-05-15",
+      "sellingCostRate": "0.02"
+    },
+    {
+      "type": "vehicle",
+      "id": "car2",
+      "name": "New car",
+      "purchaseDate": "2030-05-01",
+      "price": "38000",
+      "annualDepreciation": "0.12",
+      "annualMaintenance": "1800"
+    },
+    {
+      "type": "account",
+      "id": "tfsa",
+      "name": "TFSA",
+      "accountType": "tfsa",
+      "annualReturn": "0.05",
+      "openingBalance": "60000"
+    },
+    {
+      "type": "account",
+      "id": "rrsp",
+      "name": "RRSP",
+      "accountType": "rrsp",
+      "annualReturn": "0.055",
+      "openingBalance": "180000"
+    },
+    {
+      "type": "account",
+      "id": "nonreg",
+      "name": "Brokerage",
+      "accountType": "nonRegistered",
+      "annualReturn": "0.04",
+      "openedDate": "2028-01-01",
+      "openingBalance": "40000",
+      "openingFrom": "cash"
+    },
+    {
+      "type": "account",
+      "id": "spec",
+      "name": "Speculative",
+      "accountType": "nonRegistered",
+      "annualReturn": "-0.03",
+      "openedDate": "2031-01-01",
+      "openingBalance": "15000",
+      "openingFrom": "outside"
+    },
+    {
+      "type": "account",
+      "id": "lira",
+      "name": "LIRA",
+      "accountType": "rrsp",
+      "annualReturn": "0.045",
+      "openingBalance": "50000",
+      "withdrawalTaxRate": "0.25"
+    },
+    {
+      "type": "pension",
+      "id": "bridge",
+      "name": "Bridge benefit",
+      "amount": "1200",
+      "per": "month",
+      "startDate": "2030-01-01",
+      "endsAtRetirement": true,
+      "taxable": true
+    },
+    {
+      "type": "pension",
+      "id": "db",
+      "name": "DB pension",
+      "amount": "36000",
+      "per": "year",
+      "startDate": "",
+      "indexing": "inflation"
+    },
+    {
+      "type": "pension",
+      "id": "annuity",
+      "name": "Small annuity",
+      "amount": "500",
+      "per": "month",
+      "startDate": "2033-01-01",
+      "endDate": "2036-12-01",
+      "indexing": "custom",
+      "indexRate": "0.01",
+      "taxable": false
+    },
+    {
+      "type": "contribution",
+      "id": "rrsp-contrib",
+      "name": "RRSP payroll",
+      "account": "rrsp",
+      "startDate": "2026-01-01",
+      "amount": "1500",
+      "per": "month",
+      "indexing": "inflation",
+      "employerMatch": "0.5",
+      "endsAtRetirement": true
+    },
+    {
+      "type": "contribution",
+      "id": "tfsa-contrib",
+      "name": "TFSA yearly",
+      "account": "tfsa",
+      "startDate": "2026-01-01",
+      "endDate": "2031-12-01",
+      "amount": "7000",
+      "per": "year"
+    },
+    {
+      "type": "contribution",
+      "id": "db-contrib",
+      "name": "DB plan contribution",
+      "account": "db",
+      "startDate": "2026-01-01",
+      "amount": "800",
+      "per": "month",
+      "endsAtRetirement": true
+    },
+    {
+      "type": "transfer",
+      "id": "transfer-tfsa",
+      "name": "Retirement top-up",
+      "account": "tfsa",
+      "atRetirement": true,
+      "amount": "50000"
+    },
+    {
+      "type": "transfer",
+      "id": "transfer-rrsp",
+      "name": "Severance to RRSP",
+      "account": "rrsp",
+      "transferDate": "2026-02-01",
+      "amount": "120000"
+    },
+    {
+      "type": "withdrawal",
+      "id": "nonreg-pct",
+      "name": "Brokerage 4%",
+      "account": "nonreg",
+      "method": "percent",
+      "annualRate": "0.04",
+      "startDate": "2028-01-01"
+    },
+    {
+      "type": "withdrawal",
+      "id": "rrsp-even",
+      "name": "RRSP drawdown",
+      "account": "rrsp",
+      "method": "even",
+      "startDate": ""
+    },
+    {
+      "type": "withdrawal",
+      "id": "lira-amount",
+      "name": "LIRA income",
+      "account": "lira",
+      "method": "amount",
+      "amount": "1000",
+      "per": "month",
+      "startDate": "2032-01-01",
+      "indexing": "inflation"
+    },
+    {
+      "type": "withdrawal",
+      "id": "tfsa-quarterly",
+      "name": "TFSA quarterly",
+      "account": "tfsa",
+      "method": "amount",
+      "amount": "6000",
+      "per": "quarter",
+      "startDate": "2034-01-01",
+      "endDate": "2036-12-01"
+    },
+    {
+      "type": "retirement",
+      "id": "retire",
+      "name": "Retirement",
+      "retirementDate": "2032-01-01"
+    }
+  ]
+}

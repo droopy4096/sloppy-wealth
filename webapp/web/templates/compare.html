@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Compare scenarios{% endblock %}
+{% block content %}
+<h1>Compare scenarios</h1>
+<p>Upload two scenario JSON files with the same horizon. The current scenario is not changed.</p>
+<form method="post" action="{{ url_for('web.compare') }}" enctype="multipart/form-data">
+  <input type="hidden" name="action" value="compare">
+  <label>Scenario A <input type="file" name="a" accept=".json,application/json" required></label>
+  <label>Scenario B <input type="file" name="b" accept=".json,application/json" required></label>
+  <button type="submit">Compare</button>
+</form>
+{% if error %}
+  <div class="flash">{{ error }}</div>
+{% endif %}
+{% if rows %}
+{% set keys = ["cash", "investments", "assets", "debts", "realAssetsNetWorth", "netWorth", "realNetWorth"] %}
+<table>
+  <tr><th></th><th colspan="7">A: {{ a.name }} (inflation {{ (a.annualInflation or "0")|percent }}{% if a.incomeMode == "expensesCovered" %}, income not modelled{% endif %})</th><th></th><th colspan="7">B: {{ b.name }} (inflation {{ (b.annualInflation or "0")|percent }}{% if b.incomeMode == "expensesCovered" %}, income not modelled{% endif %})</th></tr>
+  <tr><th>Month</th>
+    <th>Cash</th><th>Investments</th><th>Property &amp; vehicles</th><th>Debts</th><th>Assets net worth ({{ summaries.a.dollarsOf }} $)</th><th>Net worth</th><th>Net worth ({{ summaries.a.dollarsOf }} $)</th>
+    <th>&Delta; net worth (B &minus; A)</th>
+    <th>Cash</th><th>Investments</th><th>Property &amp; vehicles</th><th>Debts</th><th>Assets net worth ({{ summaries.b.dollarsOf }} $)</th><th>Net worth</th><th>Net worth ({{ summaries.b.dollarsOf }} $)</th></tr>
+  {% for ra, rb in rows %}
+  {% set delta = rb.netWorth - ra.netWorth %}
+  <tr>
+    <td>{{ ra.month }}</td>
+    {% for key in keys %}<td class="num{% if ra[key] < zero %} neg{% endif %}">{{ ra[key]|money }}</td>{% endfor %}
+    <td class="num{% if delta < zero %} neg{% endif %}"><b>{{ delta|money }}</b></td>
+    {% for key in keys %}<td class="num{% if rb[key] < zero %} neg{% endif %}">{{ rb[key]|money }}</td>{% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

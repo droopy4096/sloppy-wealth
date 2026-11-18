@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "Rent",
+  "horizon": {
+    "start": "2027-01-01",
+    "end": "2051-12-01"
+  },
+  "openingCash": "150000",
+  "items": [
+    {
+      "type": "income",
+      "id": "income",
+      "name": "Free income",
+      "startDate": "2027-01-01",
+      "endDate": "",
+      "amount": "3500",
+      "per": "month",
+      "taxable": false
+    },
+    {
+      "type": "expense",
+      "id": "rent",
+      "name": "Rent",
+      "startDate": "2027-01-01",
+      "endDate": "",
+      "amount": "2600",
+      "per": "month"
+    }
+  ]
+}

@@ -45,3 +45,9 @@ rates. A formula would be either too crude or too speculative.
 ## Amendment (2026-11-09): penalty source with outside lump sums (C-M12)
 - A penalty is always paid from the loan's `paymentFrom`, even when the lump sum itself
   comes from outside (ADR-0044). Outside money only reduces the loan.
+
+## Amendment 2026-11-18 (ADR-0073, Q-49 d)
+A mortgage or renewal may now describe its penalty as a formula for its term
+(`termMonths` and a method: flat amount, % of the interest left in the term, or N months'
+interest). A real sale or lump-sum payoff uses it when its own manual penalty is blank;
+a manual amount still wins. Files without a term are unchanged.

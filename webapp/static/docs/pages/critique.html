@@ -1,0 +1,151 @@
+<h1 id="adversarial-review-planning-main-and-poc-poc-python-flask">Adversarial review: planning (main) and PoC (poc/python-flask)</h1>
+<p>Date: 2026-11-08. Scope: ADR-0001..0053, glossary, open questions, domain/output models; PoC up to commit c5aea66.</p>
+<table>
+<tr><th>Role</th><th>Focus</th></tr>
+<tr><td>CRITIC-PLAN</td><td>Canadian economics, tax, personal finance: the ADRs and model</td></tr>
+<tr><td>CRITIC-POC</td><td>Math, economics, accounting: the PoC code and numbers</td></tr>
+<tr><td>DEFENDER</td><td>Defends decisions from the ADRs and docs</td></tr>
+<tr><td>ARBITER</td><td>Main session: final rulings</td></tr>
+<tr><td>PLANNER</td><td>Work plan from the rulings</td></tr>
+</table>
+<p><strong>Exchange (5 turns):</strong></p>
+<ol><li>Critics raise findings.</li><li>Defender answers.</li><li>Critics rebut.</li><li>Defender replies.</li><li>CRITIC-PLAN has the final word on the one item still contested (C-P11).</li></ol>
+<p><strong>Column keys:</strong></p>
+<ul><li>Defence: D = defend, C = concede, P = partial concession.</li><li>Rebuttal: A = accept, M = maintain, N = narrow.</li><li>Reply: H = hold, C = concede, AN = agree narrowed.</li></ul>
+<p><strong>Ruling keys:</strong></p>
+<ul><li>UPHELD: fix needed.</li><li>DOC: ADR or SPEC text only.</li><li>USER: an earlier user decision is reopened for the user.</li><li>REJECTED: the defence stands.</li></ul>
+<h2 id="outcome">Outcome</h2>
+<ul><li><strong>37 findings:</strong> 20 against the plan, 17 against the PoC.</li><li><strong>Rulings:</strong></li></ul>
+<table>
+<tr><th>Ruling</th><th>Plan</th><th>PoC</th><th>Total</th></tr>
+<tr><td>UPHELD</td><td>15</td><td>11</td><td>26</td></tr>
+<tr><td>DOC</td><td>1 (C-P9)</td><td>3 (C-M7, C-M8, C-M13)</td><td>4</td></tr>
+<tr><td>USER</td><td>2 (C-P3, C-P4)</td><td>1 (C-M3)</td><td>3</td></tr>
+<tr><td>REJECTED</td><td>2 (C-P18, C-P19)</td><td>2 (C-M12, C-M17)</td><td>4</td></tr>
+</table>
+<p>See the arbitration lists below.</p>
+<ul><li><strong>Verified correct (CRITIC-POC):</strong><ul><li>The ledger reconciles every holding in every month on all samples and on a private real-life scenario.</li><li>NW = cash + investments + assets − debts holds throughout.</li><li>Mortgage payment 2882.31 matches an independent float calculation.</li><li>The final payment (2882.70) clears the 0.39 remainder.</li><li>Renewal recalculation: 3158.55, exact.</li><li>Tax arithmetic is correct.</li><li>The percent-withdrawal amount is correct.</li><li>Pension real value at the base date: 608,000 = 2000 × 304.</li><li>110/110 tests pass.</li></ul></li></ul>
+<h2 id="a-plan-canadian-economics-critic-plan">A. Plan: Canadian economics (CRITIC-PLAN)</h2>
+<table>
+<tr><th>ID</th><th>Sev</th><th>Source</th><th>Critique</th><th>Defence</th><th>Rebuttal</th><th>Reply</th><th>Ruling</th></tr>
+<tr><td>C-P1</td><td>High</td><td>ADR-0017 amendment, ADR-0004</td><td>Taxable-account returns are taxed in full every month at the flat rate: no deferral, no 50% inclusion, no cost basis. Property gains get inclusion and are taxed only at sale. This biases rent vs buy.</td><td>P: deliberate (Q-09); concedes the asymmetry</td><td>M: "deliberate" doesn't make it neutral</td><td>C</td><td>UPHELD High</td></tr>
+<tr><td>C-P2</td><td>High</td><td>ADR-0020 × ADR-0048</td><td>With net income (the JSON default), deductions = 0. An RRSP or DB contribution gets no refund (about $1.8k/yr on $500/mo at 30%).</td><td>P: the UI pre-fills gross; concedes the JSON case</td><td>M: a warning isn't enough; needs a refund credit</td><td>C</td><td>UPHELD High</td></tr>
+<tr><td>C-P3</td><td>High</td><td>ADR-0039</td><td>Even drawdown (balance ÷ months, fixed) ignores returns. At 5% over 25 years the residual is about 1.43× the start (nominal), and real income falls about 45%. The ADR's "small balance remains" claim is false.</td><td>P: the user chose fixed; concedes the false claim</td><td>M: the decision rested on the false claim</td><td>C</td><td>USER High</td></tr>
+<tr><td>C-P4</td><td>High</td><td>ADR-0052 Q-36 amendment</td><td>The pension value is undiscounted and pre-tax, beside after-tax TFSA balances. The rationale "mirrors even drawdown" is wrong. The value is about 1.3–1.6× a commuted value.</td><td>P: explicit decision; concedes the rationale</td><td>M: no figure ever shows it after tax; real goals use the overstated value</td><td>C</td><td>USER High</td></tr>
+<tr><td>C-P5</td><td>High</td><td>ADR-0052 + ADR-0038/0041</td><td>A DB pension moves with the retirement date at the same amount: no early-retirement reduction, no extra accrual. CPP and OAS adjustment factors are missing. Sweeps are biased toward early retirement.</td><td>P: CPP/OAS with their own start don't move; concedes DB</td><td>M</td><td>C</td><td>UPHELD High</td></tr>
+<tr><td>C-P6</td><td>High</td><td>ADR-0017 amendment, 0035, 0031</td><td>One flat rate also covers large one-offs: a non-principal-residence sale, an RRIF collapse, the deemed disposition at death. That misstates tax by six figures (about 30% vs 45–53%).</td><td>P: flat is core; concedes one-offs</td><td>N: a per-sale override plus a terminal rate</td><td>AN</td><td>UPHELD High</td></tr>
+<tr><td>C-P7</td><td>High→Med</td><td>ADR-0020</td><td>Rent is taxed gross, with no deductions (interest, property tax, CCA).</td><td>D: enter it as two flows (net taxable + rest)</td><td>N: the workaround drifts as interest falls; a loss can't be entered</td><td>AN</td><td>UPHELD Med (document now, tagging later)</td></tr>
+<tr><td>C-P8</td><td>High→Med</td><td>ADR-0030, 0048, Q-06</td><td>No TFSA/RRSP room, so sweeps make all surplus tax-free.</td><td>D: recorded gap; the user picks the target</td><td>N: a room cap and overflow, or a warning</td><td>AN</td><td>UPHELD Med</td></tr>
+<tr><td>C-P9</td><td>Med</td><td>ADR-0036, 0052, Q-06</td><td>No OAS clawback, GIS or pension splitting.</td><td>D: per-person rules are out of scope (ADR-0002)</td><td>N: at least record the bias in an ADR</td><td>AN</td><td>DOC Med</td></tr>
+<tr><td>C-P10</td><td>Med→Low</td><td>ADR-0036, 0049, Q-13</td><td>No RRIF minimums or forced conversion at 71.</td><td>D: user responsibility; segmented rate</td><td>N: the segments work; an authoring preset and an after-71 flag are needed</td><td>AN</td><td>UPHELD Low-Med</td></tr>
+<tr><td>C-P11</td><td>Med→Low</td><td>ADR-0040</td><td>Carrying costs and selling cost default silently to 0, which favours owning.</td><td>P: concedes sellingCostRate</td><td>N: carrying costs too</td><td>H: a single "monthly expenses" flow risks double counting</td><td>Turn 5 N: a warning, since the applied-defaults list can't catch an absent cost → UPHELD Low-Med</td></tr>
+<tr><td>C-P12</td><td>Med→Low</td><td>ADR-0025, 0046</td><td>No closing costs (land transfer tax, CMHC, GST/HST).</td><td>D: a zero-value improvement raises cost basis</td><td>N: it also raises acquisitionPrice; the order within a month is undefined</td><td>AN (confirmed)</td><td>UPHELD Low</td></tr>
+<tr><td>C-P13</td><td>Med</td><td>ADR-0017</td><td>The principal-residence flag is all or nothing: no designated years, no +1 formula, no anti-flipping rule.</td><td>P</td><td>M</td><td>C</td><td>UPHELD Med</td></tr>
+<tr><td>C-P14</td><td>Med</td><td>ADR-0013 vs ADR-0052</td><td>The pension amount is in baseDate dollars, so changing a reporting date changes pension cash flows.</td><td>P</td><td>M</td><td>C</td><td>UPHELD Med</td></tr>
+<tr><td>C-P15</td><td>Med→Low</td><td>ADR-0019, 0024, 0029</td><td>No fixed-payment variable mortgage (trigger rate), no interest-only loan.</td><td>P: monthly compounding is expressible</td><td>N</td><td>AN</td><td>UPHELD Low-Med</td></tr>
+<tr><td>C-P16</td><td>Med→Low</td><td>ADR-0005, 0049, 0039</td><td>Deterministic only; no sequence-risk shock for accounts.</td><td>P: a segmented series exists</td><td>N: a one-month crash needs about −98.6%/yr</td><td>AN (confirmed)</td><td>UPHELD Low-Med</td></tr>
+<tr><td>C-P17</td><td>Low</td><td>ADR-0028 amendment, 0014</td><td>Set-level real goals across scenarios use different deflators.</td><td>P</td><td>N</td><td>AN</td><td>UPHELD Low</td></tr>
+<tr><td>C-P18</td><td>Low</td><td>ADR-0017, 0034</td><td>No capital-loss credit or carry-forward.</td><td>D: stated simplification</td><td>A (PoC C-M9 contradicts it)</td><td>—</td><td>REJECTED</td></tr>
+<tr><td>C-P19</td><td>Low</td><td>ADR-0022</td><td>Variable costs are based on acquisition price, not current value.</td><td>D: custom indexing covers it</td><td>A</td><td>—</td><td>REJECTED</td></tr>
+<tr><td>C-P20</td><td>Low</td><td>ADR-0047</td><td>A break inside a term with no penalty entered shows $0.</td><td>D: a default was rejected on purpose</td><td>N: a termAt() warning</td><td>AN</td><td>UPHELD Low</td></tr>
+</table>
+<h2 id="b-poc-math-and-accounting-critic-poc">B. PoC: math and accounting (CRITIC-POC)</h2>
+<table>
+<tr><th>ID</th><th>Sev</th><th>Source</th><th>Critique</th><th>Defence</th><th>Rebuttal</th><th>Reply</th><th>Ruling</th></tr>
+<tr><td>C-M1</td><td>High</td><td>engine.py withdraw()</td><td>A percent withdrawal raises KeyError 'monthly' when the account is empty or not yet open in its start or anniversary month.</td><td>C</td><td>—</td><td>—</td><td>UPHELD High (bug)</td></tr>
+<tr><td>C-M2</td><td>High</td><td>engine.py validate/events</td><td>A sale before the horizon start is accepted but never carried out; the asset and its costs stay (e.g. 692k house).</td><td>C</td><td>—</td><td>—</td><td>UPHELD High (bug)</td></tr>
+<tr><td>C-M3</td><td>High→Med</td><td>engine.py, ADR-0039</td><td>Even drawdown: 100k at 7% over 30 years withdraws 100,000.80 and leaves 436,374.57.</td><td>P: the code follows the ADR</td><td>N: the defect is in the ADR</td><td>AN</td><td>USER Med (with C-P3)</td></tr>
+<tr><td>C-M4</td><td>Med</td><td>engine.py account setup</td><td>An account opened inside the horizon gets its balance from outside (in a private scenario, net worth jumped by the balance with no source). A pre-horizon account enters at face value without growth, unlike assets.</td><td>P</td><td>N</td><td>AN (confirmed)</td><td>UPHELD Med</td></tr>
+<tr><td>C-M5</td><td>Med</td><td>engine.py, SPEC</td><td>No mortgage before the horizon; the workaround fakes a LOAN_ADVANCE (cash overstated by the principal).</td><td>P: documented</td><td>N: SPEC warning</td><td>AN</td><td>UPHELD Med (warn now, feature later)</td></tr>
+<tr><td>C-M6</td><td>Med</td><td>engine.py, ADR-0029</td><td>A late firstPaymentDate doesn't recalculate the payment, causing a balloon (final payment 10,696 vs 4,429).</td><td>C</td><td>—</td><td>—</td><td>UPHELD Med (bug)</td></tr>
+<tr><td>C-M7</td><td>Med→Low</td><td>ADR-0029 vs ADR-0043</td><td>A renewal turns prepayment savings into a lower payment (2882.31→2565.67; payoff 2048-12→2052-01).</td><td>D: ADR-0043 Consequences decide it</td><td>N: ADR-0029 wording ("shortens") is wrong after a renewal</td><td>AN</td><td>DOC Low</td></tr>
+<tr><td>C-M8</td><td>Med→Low</td><td>engine.py sale, ADR-0017</td><td>No capital-gains tax on sales; investment property sells tax-free.</td><td>P: deliberate scope</td><td>N: SPEC must list the gap</td><td>AN</td><td>DOC Low</td></tr>
+<tr><td>C-M9</td><td>Med</td><td>engine.py tax</td><td>A negative non-registered return offsets salary tax (tax 0 instead of 3,000), contradicting ADR-0017.</td><td>C</td><td>—</td><td>—</td><td>UPHELD Med (bug)</td></tr>
+<tr><td>C-M10</td><td>Low</td><td>engine.py</td><td>Renewal and sale in the same month: the renewal penalty is silently lost.</td><td>C</td><td>—</td><td>—</td><td>UPHELD Low (bug)</td></tr>
+<tr><td>C-M11</td><td>Low</td><td>engine.py</td><td>Amortization truncated by int(): 0 months causes a division error, or is ignored on a renewal.</td><td>C</td><td>—</td><td>—</td><td>UPHELD Low</td></tr>
+<tr><td>C-M12</td><td>Low</td><td>engine.py, ADR-0047</td><td>A lump-sum penalty comes from cash even when the lump sum is paidFrom outside.</td><td>D: the loan's paymentFrom (ADR-0047/0044)</td><td>A</td><td>—</td><td>REJECTED</td></tr>
+<tr><td>C-M13</td><td>Low</td><td>engine.py pension value</td><td>Pension value deflates by whole years; drift within a year is up to about 2%.</td><td>P</td><td>A (document it)</td><td>—</td><td>DOC Low</td></tr>
+<tr><td>C-M14</td><td>Low</td><td>engine.py contributions</td><td>A pension contribution goes in, then a −REVALUATION reverses it (phantom inflow).</td><td>P: economics right</td><td>A (cosmetic)</td><td>—</td><td>UPHELD Low</td></tr>
+<tr><td>C-M15</td><td>Low</td><td>engine.py validate</td><td>A pension ending before its effective start silently has value 0.</td><td>C</td><td>—</td><td>—</td><td>UPHELD Low</td></tr>
+<tr><td>C-M16</td><td>Low</td><td>engine.py validate</td><td>Indexing on percent or even withdrawals is silently ignored.</td><td>C</td><td>—</td><td>—</td><td>UPHELD Low</td></tr>
+<tr><td>C-M17</td><td>Low</td><td>SPEC, ADR-0015</td><td>Negative cash is free financing (a private scenario ended below zero).</td><td>D: documented PoC simplification</td><td>A</td><td>—</td><td>REJECTED</td></tr>
+</table>
+<h2 id="c-work-plan-planner">C. Work plan (PLANNER)</h2>
+<h3 id="phase-0-poc-bugs-and-validation-one-commit-each-with-tests">Phase 0: PoC bugs and validation (one commit each, with tests)</h3>
+<table>
+<tr><th>#</th><th>Resolves</th><th>Item</th></tr>
+<tr><td>0.1</td><td>C-M1</td><td>Set the percent-withdrawal yearly amount in the first month with a balance and on each anniversary; missing = 0</td></tr>
+<tr><td>0.2</td><td>C-M2</td><td>Reject sales dated before the horizon start</td></tr>
+<tr><td>0.3</td><td>C-M9</td><td>Non-registered return goes into taxable income as max(0, return)</td></tr>
+<tr><td>0.4</td><td>C-M6</td><td>Recalculate the payment at a late firstPaymentDate</td></tr>
+<tr><td>0.5</td><td>C-M4a</td><td>An account opened inside the horizon is funded from cash</td></tr>
+<tr><td>0.6</td><td>C-M10</td><td>Renewal and sale of the same property in the same month: charge the penalty, or reject</td></tr>
+<tr><td>0.7</td><td>C-M11</td><td>Validate amortization ≥ 1 whole month</td></tr>
+<tr><td>0.8</td><td>C-M15</td><td>Validate pension end ≥ effective start</td></tr>
+<tr><td>0.9</td><td>C-M16</td><td>Reject indexing on percent or even withdrawals</td></tr>
+<tr><td>0.10</td><td>C-M14</td><td>Book pension contributions as cash → outside</td></tr>
+</table>
+<h3 id="phase-1-documentation-only">Phase 1: documentation only</h3>
+<table>
+<tr><th>#</th><th>Resolves</th><th>Item</th></tr>
+<tr><td>1.1</td><td>C-P3, C-M3</td><td>ADR-0039 amendment: correct the residual claim</td></tr>
+<tr><td>1.2</td><td>C-M7</td><td>ADR-0029/0043: prepayments shorten amortization "until the next renewal"</td></tr>
+<tr><td>1.3</td><td>C-P12</td><td>ADR-0018: a purchase comes before an improvement in the same month</td></tr>
+<tr><td>1.4</td><td>C-P7</td><td>ADR-0020: the two-flow rent workaround and its drift; deductible tagging goes to open questions</td></tr>
+<tr><td>1.5</td><td>C-P9</td><td>ADR-0054: OAS clawback / GIS bias as a known limitation</td></tr>
+<tr><td>1.6</td><td>C-M13</td><td>ADR-0052 + SPEC: pension value drift within a year</td></tr>
+<tr><td>1.7</td><td>C-M8</td><td>SPEC: no capital-gains tax on sales (known gap)</td></tr>
+<tr><td>1.8</td><td>C-M5</td><td>SPEC: warn about the fake LOAN_ADVANCE workaround</td></tr>
+<tr><td>1.9</td><td>C-M4b</td><td>SPEC: a pre-horizon account enters at face value</td></tr>
+</table>
+<h3 id="phase-2-questions-for-the-user-one-at-a-time-recommended-option-in-bold">Phase 2: questions for the user (one at a time, recommended option in bold)</h3>
+<table>
+<tr><th>Q</th><th>Resolves</th><th>Question</th><th>Options</th></tr>
+<tr><td>Q1</td><td>C-P1</td><td>How are taxable-account returns taxed?</td><td>(a) all taxed monthly; (b) a taxable share of the return; <strong>(c) yield taxed yearly + growth against a cost basis, taxed at inclusion on withdrawal or liquidation</strong></td></tr>
+<tr><td>Q2</td><td>C-P2</td><td>How does the contribution deduction work?</td><td>(a) offset against modelled income only; <strong>(b) refund credit = rate × own contribution, whether or not income is modelled</strong>; (c) warning only</td></tr>
+<tr><td>Q3</td><td>C-P3, C-M3</td><td>Which even-drawdown method?</td><td>(a) keep fixed; (b) recompute yearly; <strong>(c) annuity at the expected return, recomputed on each anniversary, optionally indexed</strong></td></tr>
+<tr><td>Q4</td><td>C-P4</td><td>How does pension value appear in net worth?</td><td>(a) undiscounted, labelled pre-tax; (b) discounted at the expected real return; <strong>(c) discounted at a real-rate parameter (default about 2%), labelled pre-tax</strong></td></tr>
+<tr><td>Q5</td><td>C-P5</td><td>How does a DB pension respond when the retirement date moves?</td><td>(a) same amount; <strong>(b) per-month reduction or increase vs a reference date, with CPP/OAS presets</strong>; (c) an amount per sweep variant</td></tr>
+<tr><td>Q6</td><td>C-P14</td><td>What date is the pension amount stated in?</td><td>(a) baseDate; <strong>(b) PensionEntitlement.amountAsOf (statement date)</strong></td></tr>
+<tr><td>Q7</td><td>C-P13</td><td>How does the principal-residence exemption work?</td><td>(a) boolean; (b) a count of designated years; <strong>(c) a list of designated years, the +1 formula, one designation per year across assets</strong></td></tr>
+<tr><td>Q8</td><td>C-P6</td><td>How are large one-offs rated?</td><td>(a) flat rate; <strong>(b) per-SaleEvent rate + Scenario.terminalTaxRate for liquidation</strong>; (c) (b) + a deemed disposition at horizon end</td></tr>
+<tr><td>Q9</td><td>C-P8</td><td>How is contribution room handled?</td><td><strong>(a) annual room cap on sweeps with an overflow target</strong>; (b) a warning only</td></tr>
+<tr><td>Q10</td><td>C-P11</td><td>Selling cost and carrying costs for real estate?</td><td><strong>(a) sellingCostRate essential + a no-costs warning</strong>; (b) a warning only</td></tr>
+<tr><td>Q11</td><td>C-P17</td><td>Which deflator do set-level real goals use?</td><td>(a) each scenario's own; <strong>(b) a set-level deflator</strong></td></tr>
+</table>
+<h3 id="phase-3-adr-additions-with-no-decision-needed-main">Phase 3: ADR additions with no decision needed (main)</h3>
+<table>
+<tr><th>#</th><th>Resolves</th><th>Item</th></tr>
+<tr><td>3.1</td><td>C-P12</td><td>ADR-0025: PurchaseEvent.closingCosts (cost basis only)</td></tr>
+<tr><td>3.2</td><td>C-M5</td><td>ADR-0024: existing loan with a current balance, no advance</td></tr>
+<tr><td>3.3</td><td>C-P10</td><td>ADR-0049: RRIF-minimum age preset; warning after 71</td></tr>
+<tr><td>3.4</td><td>C-P16</td><td>ADR-0033: one-off percentage Revaluation on Accounts</td></tr>
+<tr><td>3.5</td><td>C-P15</td><td>ADR-0024/0029: fixed-payment variable mortgage (trigger rate) and interest-only loan</td></tr>
+<tr><td>3.6</td><td>C-P20</td><td>ADR-0047: termAt() warning for an in-term closure with no penalty</td></tr>
+<tr><td>3.7</td><td>—</td><td>Record the answers to Q1–Q11</td></tr>
+</table>
+<h3 id="phase-4-poc-features">Phase 4: PoC features</h3>
+<p>Ordered by impact on rent vs buy (RvB) and retirement readiness (Ret).</p>
+<table>
+<tr><th>#</th><th>Resolves</th><th>Feature</th><th>Depends on</th></tr>
+<tr><td>4.1</td><td>C-P1</td><td>Return split with cost basis and deferred gains (RvB, L)</td><td>Q1</td></tr>
+<tr><td>4.2</td><td>C-P2</td><td>Refund credit (M)</td><td>Q2</td></tr>
+<tr><td>4.3</td><td>C-P3</td><td>New drawdown method (Ret, M)</td><td>Q3</td></tr>
+<tr><td>4.4</td><td>C-P5</td><td>Pension early/late adjustment (Ret, M)</td><td>Q5</td></tr>
+<tr><td>4.5</td><td>C-M8, C-P6, C-P13</td><td>Capital-gains tax on sale, principal-residence years, rate overrides (L)</td><td>Q7, Q8, 3.1</td></tr>
+<tr><td>4.6</td><td>C-P8</td><td>Room cap with overflow (M)</td><td>Q9, 4.1</td></tr>
+<tr><td>4.7</td><td>C-P4</td><td>Pension discount and label (S)</td><td>Q4</td></tr>
+<tr><td>4.8</td><td>C-P14</td><td>amountAsOf (S)</td><td>Q6</td></tr>
+<tr><td>4.9</td><td>C-P11</td><td>sellingCostRate essential + warning (S)</td><td>Q10</td></tr>
+<tr><td>4.10</td><td>C-M5</td><td>Existing loans (M)</td><td>3.2</td></tr>
+<tr><td>4.11</td><td>C-P12</td><td>closingCosts (S)</td><td>—</td></tr>
+<tr><td>4.12</td><td>C-P10</td><td>RRIF preset (S)</td><td>—</td></tr>
+<tr><td>4.13</td><td>C-P16</td><td>Account revaluation (S)</td><td>—</td></tr>
+<tr><td>4.14</td><td>C-P15</td><td>Trigger-rate and interest-only loans (M)</td><td>—</td></tr>
+<tr><td>4.15</td><td>C-P17</td><td>Set-level deflator (S)</td><td>Q11</td></tr>
+<tr><td>4.16</td><td>C-P20</td><td>In-term closure warning (S)</td><td>—</td></tr>
+</table>
+<p><strong>Sequencing:</strong></p>
+<ol><li>Phases 0 and 1 can run in parallel.</li><li>Phase 2 goes one question at a time.</li><li>Each recorded answer (3.7) unlocks its Phase 4 item.</li></ol>
+<h2 id="walkthrough-decisions">Walkthrough decisions</h2>
+<p>The user's answers, one finding at a time, are kept in CRITIQUE_RESPONSES.md.</p>

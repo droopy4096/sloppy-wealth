@@ -1,0 +1,16 @@
+{
+  "name": "Invalid: sale without property (KeyError in the reference)",
+  "description": "Rejected by validate with a KeyError (sale without property).",
+  "horizon": {
+    "start": "2026-01-01",
+    "end": "2027-12-01"
+  },
+  "openingCash": "1000",
+  "items": [
+    {
+      "type": "sale",
+      "id": "s",
+      "saleDate": "2027-01-01"
+    }
+  ]
+}

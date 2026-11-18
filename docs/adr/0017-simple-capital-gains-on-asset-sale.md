@@ -46,3 +46,10 @@ accounts.
 - The principal-residence flag is the initial designation only. The designation moves
   with `ResidenceSwitchEvent` (ADR-0056); a sale is exempt in the share
   (1 + designated years) ÷ owned years, capped at 1.
+
+## Amendment (2026-11-11): tax per person (ADR-0061)
+Taxable income is accumulated per person, each with their own flat rate (person's
+`effectiveTaxRate` / `retirementTaxRate`, default the scenario's). Investment income of
+an account is taxed to the account's owner. Gains on household assets (properties,
+vehicles) use the sale's `taxRate` or the scenario rate and are charged to the first
+person (assets have no owner). Still one flat rate per person, no brackets.

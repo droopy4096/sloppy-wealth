@@ -44,3 +44,9 @@ annual rate converted to monthly.
 - Not allowed on a PensionEntitlement (its value is computed, ADR-0052).
 - Purpose: sequence-of-returns stress tests (a crash near retirement), tagged `market`
   and time-shiftable like other events.
+
+## Amendment (2026-11-11): vehicles too (ADR-0062)
+`marketAdjustment` may name a vehicle as well as a property: a percentage of its value or a
+new value at the end of that month (no depreciation that month), and depreciation
+continues from it. Cash flow amounts are adjusted by the separate `adjustment` item
+(ADR-0062).
