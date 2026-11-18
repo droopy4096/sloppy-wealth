@@ -1,0 +1,436 @@
+---
+title: ScenarioSet input, conceptual domain model (DRAFT v0.46)
+---
+classDiagram
+    direction TB
+
+    %% ---------- Root ----------
+    class ScenarioSet {
+        +schemaVersion
+        +horizon : Horizon (shared by all scenarios)
+    }
+    ScenarioSet "1" *-- "1..*" Scenario
+    ScenarioSet "1" *-- "*" Goal : set-level
+    class Scenario {
+        +id
+        +name
+        +schemaVersion
+        +jurisdiction : JurisdictionCode
+        +horizon : Horizon
+        +inflation : RateGenerator
+        +effectiveTaxRate : RateGenerator
+        +taxPaidFrom : Account = operating
+        +operatingAccount : Account (implicit "cash")
+        +incomeMode : MODELLED | EXPENSES_COVERED = MODELLED (ADR-0044)
+        +baseDate : Period [0..1] = horizon start (input dollars; ADR-0013)
+        +retirementTaxRate : RateGenerator = effectiveTaxRate (from retirement; ADR-0059)
+        +pensionDiscountRate : RateGenerator = 2% real (ADR-0052)
+        +liquidationTaxRate : RateGenerator = effectiveTaxRate (ADR-0031)
+    }
+    class EconomicUnit {
+        +name
+        +referenceBirthDate : Date [0..1]
+    }
+    class Horizon {
+        +start : Period
+        +end : Period
+    }
+    Scenario "1" *-- "1" EconomicUnit
+    Scenario "1" *-- "1" Horizon
+    Scenario "1" *-- "*" Holding
+    Scenario "1" *-- "*" CashFlow
+    Scenario "1" *-- "*" Event
+    Scenario "1" *-- "*" EventGenerator
+    Scenario "1" *-- "*" RateGenerator : assumptions
+    Scenario "1" *-- "*" Goal : scenario-level
+    Scenario "1" *-- "*" Tally
+    Scenario "1" *-- "*" SweepRule : ordered
+    class SweepRule {
+        +from : Account
+        +buffer : Money
+        +to : Account
+    }
+
+    %% ---------- Value types ----------
+    class Period {
+        <<value>>
+        +year
+        +month
+    }
+    class Money {
+        <<value>>
+        +amount : Decimal(2dp, half-even)
+    }
+    class TimeShiftable {
+        <<interface>>
+        +shift(months) TimeShiftable
+    }
+    class Taggable {
+        <<interface>>
+        +tags : Set~String~
+    }
+
+    %% ---------- Holdings (ADR-0011) ----------
+    class Holding {
+        <<abstract>>
+        +id
+        +name
+        +openingValue : Money
+        +openedOn : Period
+        +compounding : Compounding
+        +owned : bool = true
+    }
+    class Account {
+        +taxTreatment : TaxTreatment
+        +openingFrom : CASH | OUTSIDE (essential if opened in horizon; ADR-0057)
+        +returnRate : RateGenerator
+        +withdrawalTaxRate : RateGenerator [0..1]
+        +incomeYield : RateGenerator [0..1] (TAXABLE, default returnRate; ADR-0054)
+        +openingCostBasis : Money [0..1] (TAXABLE, default opening balance)
+    }
+    class Asset {
+        <<abstract>>
+        +valueRate : RateGenerator (essential)
+        +acquisitionPrice : Money
+        +openingCostBasis : Money
+        +sellingCostRate : Decimal
+    }
+    class RealEstate {
+        +principalResidence : bool (initial designation; ADR-0056)
+        sellingCostRate essential; carrying costs go in expenses (ADR-0040)
+    }
+    class Vehicle
+    class PensionEntitlement {
+        +amount : Money (per month, in today's / base-date dollars)
+        +indexing : Indexing
+        +start : Period [0..1] = retirementDate
+        +end : Period [0..1] = horizon end
+        bridge benefit = end set; CPP/OAS = start set (ADR-0052)
+        value = PV of remaining payments at pensionDiscountRate, base-date $ (ADR-0052)
+    }
+    class Liability {
+        <<abstract>>
+        +interestRate : RateGenerator
+    }
+    class Loan {
+        +amortizationMonths
+        +firstPaymentDate : Period [0..1] (default: month after advance)
+        +paymentFrom : Account
+        scheduledPayment(period) Money (derived)
+        +securedBy : Asset [0..1]
+        +prepaymentOptions : PrepaymentOptions
+        +balanceAtHorizonStart : Money [0..1] (pre-horizon loan; ADR-0058)
+        compounding = MONTHLY (default)
+    }
+    class Mortgage {
+        +interestRate : TermScheduleRate
+        compounding = SEMI_ANNUAL (default)
+    }
+    class TaxTreatment {
+        <<enumeration>>
+        TAX_FREE
+        TAX_DEFERRED
+        TAXABLE
+    }
+    Holding <|-- Account
+    Holding <|-- Asset
+    Holding <|-- Liability
+    Holding <|-- PensionEntitlement
+    Asset <|-- RealEstate
+    Asset <|-- Vehicle
+    Liability <|-- Loan
+    Loan <|-- Mortgage
+    Account --> TaxTreatment
+    Mortgage --> RealEstate : securedBy
+    TimeShiftable <|.. Holding
+
+    %% ---------- Cash flows (ADR-0012, ADR-0013) ----------
+    class CashFlow {
+        +id
+        +name
+        +start : Period
+        +end : Period [0..1]
+        +amount : Money
+        +per : MONTH | QUARTER | YEAR = MONTH (spread evenly, ADR-0021)
+        +amountIn : START | BASE = START (dollars of start or base date, ADR-0013)
+        +indexing : Indexing
+        +taxable : bool = false
+        +endsAtRetirement : bool = false (ADR-0052)
+        +startsAtRetirement : bool = false (ADR-0052)
+        +netOf : CashFlow|Loan [*] (ADR-0042, deferred)
+        +from : Holding [0..1]
+        +to : Holding [0..1]
+    }
+    class DrawdownCashFlow {
+        +from : Account
+        +indexed : bool = false
+        amount = annuity to zero at horizon end at returnRate, recomputed yearly (ADR-0039)
+    }
+    class Contribution {
+        +to : Account | PensionEntitlement
+        +employerMatch : Decimal [0..1] (ADR-0051)
+    }
+    class PercentWithdrawal {
+        +from : Account
+        +annualRate : RateGenerator
+        yearly amount = opening balance x rate on start and each anniversary, paid 1/12 monthly (ADR-0049)
+    }
+    class Cost {
+        <<abstract>>
+        +attachedTo : Asset
+    }
+    class FixedCost
+    class VariableCost {
+        +percentOfAcquisitionPrice : RateGenerator
+        monthly = rate x acquisitionPrice / 12, then indexed
+    }
+    class Indexing {
+        <<abstract>>
+    }
+    class FixedNominal
+    class InflationIndexed
+    class CustomRate {
+        +rate : RateGenerator
+    }
+    CashFlow <|-- Cost
+    CashFlow <|-- DrawdownCashFlow
+    CashFlow <|-- PercentWithdrawal
+    CashFlow <|-- Contribution
+    Cost <|-- FixedCost
+    Cost <|-- VariableCost
+    Indexing <|-- FixedNominal
+    Indexing <|-- InflationIndexed
+    Indexing <|-- CustomRate
+    CashFlow --> Indexing
+    TimeShiftable <|.. CashFlow
+
+    %% ---------- Events (ADR-0007, ADR-0012) ----------
+    class Event {
+        <<abstract>>
+        +id
+        +date : Period
+    }
+    class PurchaseEvent {
+        +holding : Holding
+        +price : Money [0..1]
+        +marketValue : Money [0..1] (value starts here; cost basis = price)
+        +paidFrom : Account
+        +financedBy : Loan [0..1]
+        price default = current value if not owned
+    }
+    class ImprovementEvent {
+        +asset : Asset
+        +cost : Money
+        +paidFrom : Account
+        +financedBy : Loan [0..1]
+        +valueAdded : Money [0..1] = cost
+        cost basis and acquisition price += cost (ADR-0046)
+    }
+    class Revaluation {
+        +target : Asset | Account (Account: percent only; ADR-0033)
+        +percent : Decimal [0..1]
+        +newValue : Money [0..1]
+        exactly one of percent / newValue
+    }
+    class OneOffTransfer {
+        +amount : Money
+        +from : Account [0..1]
+        +to : Holding [0..1]
+        +atRetirement : bool = false (instead of a date, ADR-0059)
+    }
+    class RetirementEvent {
+        at most one; triggers retirement-tied items and retirementTaxRate (ADR-0059)
+    }
+    class ResidenceSwitchEvent {
+        +to : RealEstate
+        exempt share at sale = min(1, (1 + designated yrs) / owned yrs) (ADR-0056)
+    }
+    class SaleEvent {
+        +holding : Holding
+        +price : Money [0..1]
+        +proceedsTo : Account
+        +penalty : Money [0..1] (per settled loan, ADR-0047)
+        +taxRate : Decimal [0..1] = effectiveTaxRate (ADR-0017)
+        +atRetirement : bool = false (instead of a date, ADR-0059)
+    }
+    class LumpSumPrepayment {
+        +liability : Liability
+        +amount : Money [0..1]
+        +payOff : bool = false (whole balance, ADR-0059)
+        +atRetirement : bool = false (instead of a date, ADR-0059)
+        +paidFrom : Account | OUTSIDE = operating (ADR-0044)
+        +penalty : Money [0..1] (ADR-0047)
+    }
+    class CashFlowAdjustment {
+        +cashFlow : CashFlow
+        +newAmount / changeRate
+    }
+    class EventGenerator {
+        <<abstract>>
+        +id
+        +generate(horizon) Event[*]
+    }
+    class AnnualAdjustmentGenerator {
+        +target : CashFlow
+        +rate
+        +firstOn : Period
+        +until : Period [0..1]
+    }
+    Event <|-- PurchaseEvent
+    Event <|-- SaleEvent
+    Event <|-- LumpSumPrepayment
+    Event <|-- OneOffTransfer
+    Event <|-- Revaluation
+    Event <|-- ImprovementEvent
+    Event <|-- CashFlowAdjustment
+    Event <|-- ResidenceSwitchEvent
+    Event <|-- RetirementEvent
+    EventGenerator <|-- AnnualAdjustmentGenerator
+    EventGenerator ..> Event : produces
+    TimeShiftable <|.. Event
+    TimeShiftable <|.. EventGenerator
+
+    %% ---------- Assumptions (ADR-0005) ----------
+    class RateGenerator {
+        <<interface>>
+        +id
+        +name
+        +rateFor(period) Decimal (annual, full precision)
+    }
+    class ConstantRate {
+        +rate : Decimal
+    }
+    class SegmentedRate
+    class RateSegment {
+        +from : Period
+        +rate : Decimal
+    }
+    class TermScheduleRate {
+        +termAt(period) MortgageTerm
+    }
+    class MortgageTerm {
+        +start : Period
+        +lengthMonths
+        +rate : Decimal
+        +amortizationMonths [0..1] (resets at term start, ADR-0043)
+        +keepPayment : bool = false (excl. with amortizationMonths, ADR-0043)
+        +penalty : Money [0..1] (switch inside a term, ADR-0047)
+    }
+    class Compounding {
+        <<enumeration>>
+        MONTHLY
+        SEMI_ANNUAL
+        ANNUAL
+    }
+    RateGenerator <|.. ConstantRate
+    RateGenerator <|.. SegmentedRate
+    RateGenerator <|.. TermScheduleRate
+    SegmentedRate "1" *-- "1..*" RateSegment
+    TermScheduleRate "1" *-- "1..*" MortgageTerm
+    TimeShiftable <|.. RateGenerator
+    Taggable <|.. Holding
+    Taggable <|.. CashFlow
+    Taggable <|.. Event
+    Taggable <|.. EventGenerator
+    Taggable <|.. RateGenerator
+
+    %% ---------- Tallies and goals (ADR-0014, ADR-0027, ADR-0028) ----------
+    class Tally {
+        <<abstract>>
+        +id
+        value(period) Money
+    }
+    class HoldingMetricTally {
+        +holding : Holding
+        +metric : HoldingMetric
+    }
+    class NetWorthTally {
+        +liquidationAdjusted : bool
+    }
+    class TagSumTally {
+        +tag
+        +direction : IN | OUT | NET
+        +window : PERIOD | CUMULATIVE
+    }
+    class DerivedTally {
+        +expression over Tally refs
+    }
+    class HoldingMetric {
+        <<enumeration>>
+        VALUE
+        BALANCE
+        COST_BASIS
+        SHORTFALL
+    }
+    Tally <|-- HoldingMetricTally
+    Tally <|-- NetWorthTally
+    Tally <|-- TagSumTally
+    Tally <|-- DerivedTally
+    HoldingMetricTally --> HoldingMetric
+    DerivedTally --> Tally : reads
+    class Goal {
+        <<abstract>>
+        +id
+        +name
+        +kind : GoalKind
+        +condition : TallyCondition
+        +activeFrom : Period [0..1]
+        +activeUntil : Period [0..1]
+        +basis : ValueBasis [0..1] (fixed for Global/Local)
+        basis() ValueBasis
+    }
+    class GlobalGoal {
+        on a NetWorthTally
+        basis() = REAL (fixed)
+    }
+    class LocalGoal {
+        on a HoldingMetricTally
+        basis() = NOMINAL (fixed)
+    }
+    class TallyCondition {
+        <<abstract>>
+    }
+    class Threshold {
+        +tally : TallyRef
+        +operator
+        +threshold : Money
+    }
+    class TallyComparison {
+        +left : TallyRef
+        +operator
+        +right : TallyRef
+    }
+    class TallyRef {
+        <<value>>
+        +scenarioId [0..1]
+        +tallyId
+    }
+    class GoalKind {
+        <<enumeration>>
+        REACH
+        MAINTAIN
+    }
+    class ValueBasis {
+        <<enumeration>>
+        NOMINAL
+        REAL
+    }
+    Goal <|-- GlobalGoal
+    Goal <|-- LocalGoal
+    Goal --> GoalKind
+    Goal --> ValueBasis
+    Goal --> TallyCondition
+    TallyCondition <|-- Threshold
+    TallyCondition <|-- TallyComparison
+    Threshold --> TallyRef
+    TallyComparison --> TallyRef
+    TallyRef ..> Tally : resolves to
+
+    %% ---------- Engine-side seam referenced by the scenario (ADR-0004, ADR-0017) ----------
+    class TaxRules {
+        <<interface>>
+        +taxOn(movement, treatment, period) Money
+        +taxOnSale(asset, price, period) Money
+        +inclusionRate(period) Decimal
+    }
+    Scenario ..> TaxRules : jurisdiction resolves to

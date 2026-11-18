@@ -1,0 +1,59 @@
+---
+title: One month step (ADR-0018 revision 2, Accepted)
+---
+sequenceDiagram
+    autonumber
+    participant MS as MonthlySteppingStage
+    participant RG as RateGenerators
+    participant H as Holdings
+    participant TX as TaxRules
+    participant L as Period ledger (movements)
+
+    MS->>H: 1 open P: carry closed balances and values from P-1
+    MS->>RG: 2 rateFor(P) for each rate, converted to monthly via the holding's compounding
+    MS->>MS: 2 resolve cash flow amounts for P (indexing + adjustment events)
+
+    MS->>H: 3 credit inflows first (salary net, rent taxable)
+    MS->>L: record movements (each rounded 2dp, half-even)
+
+    rect rgb(240,240,255)
+    Note over MS,L: 4 events, after income
+    opt Revaluation event in P (ADR-0033)
+        MS->>H: adjust asset value by % or to a set value
+    end
+    opt P = 2034-05 (Sale H1, Sale H2)
+        MS->>H: sale price (event price, or value carried from P-1)
+        MS->>RG: termAt(P) for M1 and M2
+        MS->>H: deduct selling costs (price x sellingCostRate)
+        MS->>H: pay off secured loans + penalty amount if entered (ADR-0047)
+        alt proceeds after loans negative (negative equity, ADR-0034)
+            MS->>H: debit deficit from proceedsTo, capped, shortfall on the sale
+        end
+        MS->>TX: taxOnSale(H2, price, P) gives (price - costBasis) x inclusion x effective rate
+        Note right of TX: H1 is a principal residence, so no tax
+        MS->>H: remainder to bank (proceedsTo)
+        MS->>H: H1, H2, M1, M2 closed: their cash flows stop
+        MS->>L: record sale, payoff, penalty, tax movements
+    end
+    end
+
+    rect rgb(255,240,240)
+    Note over MS,L: 5 debits by priority, each capped at available funds
+    loop priority: derived loan payments (ADR-0029), then costs, then expenses, then transfers, then withdrawals
+        alt funds cover the amount
+            MS->>H: debit full amount
+        else funds below the amount (e.g. pension draw, late in the horizon)
+            MS->>H: debit available funds (balance = 0)
+            MS->>L: record SHORTFALL (amount - available)
+        end
+    end
+    end
+
+    MS->>H: 6 growth and interest on OPENING balances (revalue assets, account returns, mortgage interest)
+    MS->>TX: 7 tax on taxable effects (flagged income, taxable account returns, tax-deferred withdrawals)
+    MS->>H: 7 debit tax (same capping and shortfall rule)
+    MS->>H: 7a sweep rules: anything above buffer moves from bank to investments (ADR-0030)
+    MS->>L: 8 close P: snapshot balances, values, cost basis, cumulative shortfall
+    Note over MS,L: after steps 1-8 for every scenario in the set (ADR-0028)
+    MS->>L: 9 update tallies (holding metrics, net worth, tag sums, derived)
+    MS->>L: 10 evaluate scenario-level goals, then set-level goals (REACH / MAINTAIN)

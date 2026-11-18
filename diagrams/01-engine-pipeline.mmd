@@ -1,0 +1,22 @@
+---
+title: Engine pipeline (ADR-0010, ADR-0027, ADR-0028)
+---
+flowchart LR
+    IN[/"ScenarioSet input (JSON)\nscenarios + set-level goals"/] --> TL1
+
+    subgraph TL1["Whole-timeline stages (per scenario)"]
+        S1["Calendar\nmonthly periods\nshared horizon"] --> S2["Event placement\nexpand generators,\nplace events and cash flows"]
+    end
+
+    TL1 --> STEP
+
+    subgraph STEP["Monthly stepping stage: all scenarios in lockstep, for each month M"]
+        direction TB
+        P1["per scenario: steps 1-8\n(ADR-0018)"] --> P2["per scenario:\nupdate tallies"]
+        P2 --> P3["scenario-level goals"]
+        P3 --> P4["set-level goals\n(read tallies across scenarios)"]
+        P4 -. "next month" .-> P1
+    end
+
+    STEP --> S6["Result assembly\nper-scenario results, goal outcomes,\ncomparison"]
+    S6 --> OUT[/"ScenarioSet result (JSON)"/]

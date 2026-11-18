@@ -1,0 +1,32 @@
+---
+title: Pipeline run, two-houses scenario (ADR-0010)
+---
+sequenceDiagram
+    autonumber
+    actor C as Caller (controller / CLI / lambda)
+    participant E as Engine
+    participant CAL as CalendarStage
+    participant EVP as EventPlacementStage
+    participant MS as MonthlySteppingStage
+    participant GO as GoalObservationStage
+    participant RA as ResultAssemblyStage
+
+    C->>E: run(Scenario JSON)
+    E->>E: validate schemaVersion, resolve TaxRules(jurisdiction = CA)
+    E->>CAL: apply(state0)
+    CAL-->>E: state1 (+ periods 2026-11 to 2055-03, 341 months)
+    E->>EVP: apply(state1)
+    Note over EVP: expand EventGenerators (e.g. salary raises) into Events.<br/>Place Events and CashFlows on the periods they touch.<br/>e.g. 2034-05: Sale(H1), Sale(H2), 2037-03: salary ends, pension draw starts
+    EVP-->>E: state2 (+ timeline of scheduled items)
+    E->>MS: apply(state2)
+    loop each period P from 2026-11 to 2055-03
+        MS->>MS: step(P) reads closed P-1 (see 04-sequence-month-step)
+    end
+    MS-->>E: state3 (+ closed periods: balances, movements, shortfalls)
+    E->>GO: apply(state3)
+    Note over GO: G1 MAINTAIN bank SHORTFALL = 0 gives "held throughout" or first violated P.<br/>G2 REACH M1 BALANCE = 0 gives first met P (here: settled by sale 2034-05)
+    GO-->>E: state4 (+ goal observations)
+    E->>RA: apply(state4)
+    Note over RA: net worth per period (nominal, and real deflated to 2026-11)
+    RA-->>E: state5 = ProjectionResult
+    E-->>C: ProjectionResult JSON
