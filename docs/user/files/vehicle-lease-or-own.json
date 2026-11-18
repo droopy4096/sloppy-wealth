@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 1,
+  "name": "Lease or own a vehicle for 20 years",
+  "jurisdiction": "CA",
+  "horizon": {
+    "start": "2027-01-01",
+    "end": "2046-12-01"
+  },
+  "openingCash": "350000",
+  "effectiveTaxRate": "0",
+  "annualInflation": "0.025",
+  "dollarsOf": "2027-01-01",
+  "items": [
+    {
+      "type": "vehicle",
+      "id": "own",
+      "name": "A. SUV, bought and kept",
+      "purchaseDate": "2027-01-01",
+      "price": "45000",
+      "annualDepreciation": "0.15"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "own-insurance",
+      "name": "Insurance",
+      "parent": "own",
+      "amount": "1800",
+      "per": "year",
+      "indexing": "inflation"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "own-fuel",
+      "name": "Fuel",
+      "parent": "own",
+      "amount": "250",
+      "per": "month",
+      "indexing": "inflation"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "own-maintenance",
+      "name": "Maintenance and repairs",
+      "parent": "own",
+      "amount": "500",
+      "per": "year",
+      "indexing": "inflation"
+    },
+    {
+      "type": "adjustment",
+      "id": "own-maint-2030",
+      "name": "Maintenance from year 4",
+      "flow": "own-maintenance",
+      "adjustmentDate": "2030-01-01",
+      "amount": "1290",
+      "per": "year"
+    },
+    {
+      "type": "adjustment",
+      "id": "own-maint-2033",
+      "name": "Maintenance from year 7",
+      "flow": "own-maintenance",
+      "adjustmentDate": "2033-01-01",
+      "amount": "2320",
+      "per": "year"
+    },
+    {
+      "type": "adjustment",
+      "id": "own-maint-2037",
+      "name": "Maintenance from year 11",
+      "flow": "own-maintenance",
+      "adjustmentDate": "2037-01-01",
+      "amount": "3840",
+      "per": "year"
+    },
+    {
+      "type": "adjustment",
+      "id": "own-maint-2041",
+      "name": "Maintenance from year 15",
+      "flow": "own-maintenance",
+      "adjustmentDate": "2041-01-01",
+      "amount": "5650",
+      "per": "year"
+    },
+    {
+      "type": "expense",
+      "id": "leases",
+      "name": "B. SUV leases, back to back (48 months each)",
+      "startDate": "2027-01-01",
+      "endDate": "2046-12-01",
+      "amount": "650",
+      "per": "month",
+      "indexing": "none",
+      "enabled": false
+    },
+    {
+      "type": "adjustment",
+      "id": "lease-2",
+      "name": "Lease 2",
+      "flow": "leases",
+      "adjustmentDate": "2031-01-01",
+      "amount": "717",
+      "per": "month"
+    },
+    {
+      "type": "adjustment",
+      "id": "lease-3",
+      "name": "Lease 3",
+      "flow": "leases",
+      "adjustmentDate": "2035-01-01",
+      "amount": "792",
+      "per": "month"
+    },
+    {
+      "type": "adjustment",
+      "id": "lease-4",
+      "name": "Lease 4",
+      "flow": "leases",
+      "adjustmentDate": "2039-01-01",
+      "amount": "874",
+      "per": "month"
+    },
+    {
+      "type": "adjustment",
+      "id": "lease-5",
+      "name": "Lease 5",
+      "flow": "leases",
+      "adjustmentDate": "2043-01-01",
+      "amount": "965",
+      "per": "month"
+    },
+    {
+      "type": "associatedCost",
+      "id": "leases-fee-1",
+      "name": "Acquisition fee, lease 1",
+      "parent": "leases",
+      "at": "start",
+      "amount": "1000"
+    },
+    {
+      "type": "associatedCost",
+      "id": "leases-fee-2",
+      "name": "Disposition + acquisition fees, lease 2",
+      "parent": "leases",
+      "at": "date",
+      "costDate": "2031-01-01",
+      "amount": "1400"
+    },
+    {
+      "type": "associatedCost",
+      "id": "leases-fee-3",
+      "name": "Disposition + acquisition fees, lease 3",
+      "parent": "leases",
+      "at": "date",
+      "costDate": "2035-01-01",
+      "amount": "1500"
+    },
+    {
+      "type": "associatedCost",
+      "id": "leases-fee-4",
+      "name": "Disposition + acquisition fees, lease 4",
+      "parent": "leases",
+      "at": "date",
+      "costDate": "2039-01-01",
+      "amount": "1650"
+    },
+    {
+      "type": "associatedCost",
+      "id": "leases-fee-5",
+      "name": "Disposition + acquisition fees, lease 5",
+      "parent": "leases",
+      "at": "date",
+      "costDate": "2043-01-01",
+      "amount": "1800"
+    },
+    {
+      "type": "associatedCost",
+      "id": "leases-fee-end",
+      "name": "Disposition fee, last lease",
+      "parent": "leases",
+      "at": "end",
+      "amount": "450"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "leases-insurance",
+      "name": "Insurance",
+      "parent": "leases",
+      "amount": "2100",
+      "per": "year",
+      "indexing": "inflation"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "leases-fuel",
+      "name": "Fuel",
+      "parent": "leases",
+      "amount": "230",
+      "per": "month",
+      "indexing": "inflation"
+    },
+    {
+      "type": "expense",
+      "id": "lease-once",
+      "name": "C. SUV lease, then buy out (48 months)",
+      "startDate": "2027-01-01",
+      "endDate": "2030-12-01",
+      "amount": "650",
+      "per": "month",
+      "indexing": "none",
+      "enabled": false
+    },
+    {
+      "type": "associatedCost",
+      "id": "lease-once-fee",
+      "name": "Acquisition fee",
+      "parent": "lease-once",
+      "at": "start",
+      "amount": "1000"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "lease-once-insurance",
+      "name": "Insurance",
+      "parent": "lease-once",
+      "amount": "2100",
+      "per": "year",
+      "indexing": "inflation"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "lease-once-fuel",
+      "name": "Fuel",
+      "parent": "lease-once",
+      "amount": "230",
+      "per": "month",
+      "indexing": "inflation"
+    },
+    {
+      "type": "vehicle",
+      "id": "bought-out",
+      "name": "C. SUV, bought out at the lease's end",
+      "purchaseDate": "2031-01-01",
+      "price": "24750",
+      "annualDepreciation": "0.12",
+      "enabled": false
+    },
+    {
+      "type": "associatedExpense",
+      "id": "bought-out-insurance",
+      "name": "Insurance",
+      "parent": "bought-out",
+      "amount": "1990",
+      "per": "year",
+      "indexing": "inflation"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "bought-out-fuel",
+      "name": "Fuel",
+      "parent": "bought-out",
+      "amount": "275",
+      "per": "month",
+      "indexing": "inflation"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "bought-out-maintenance",
+      "name": "Maintenance and repairs",
+      "parent": "bought-out",
+      "amount": "1320",
+      "per": "year",
+      "indexing": "inflation"
+    },
+    {
+      "type": "adjustment",
+      "id": "bo-maint-2034",
+      "name": "Maintenance from age 7",
+      "flow": "bought-out-maintenance",
+      "adjustmentDate": "2034-01-01",
+      "amount": "2380",
+      "per": "year"
+    },
+    {
+      "type": "adjustment",
+      "id": "bo-maint-2038",
+      "name": "Maintenance from age 11",
+      "flow": "bought-out-maintenance",
+      "adjustmentDate": "2038-01-01",
+      "amount": "3940",
+      "per": "year"
+    },
+    {
+      "type": "adjustment",
+      "id": "bo-maint-2042",
+      "name": "Maintenance from age 15",
+      "flow": "bought-out-maintenance",
+      "adjustmentDate": "2042-01-01",
+      "amount": "5790",
+      "per": "year"
+    }
+  ]
+}

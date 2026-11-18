@@ -300,7 +300,7 @@ CARD_ADDS = {
                "associatedCost", "trigger"],
     "pension": ["associatedIncome", "associatedOneOff", "associatedExpense", "trigger"],
     "account": ["contribution", "withdrawal", "transfer", "associatedExpense", "trigger"],
-    "expense": ["adjustment", "associatedExpense", "trigger"],
+    "expense": ["adjustment", "associatedExpense", "associatedCost", "trigger"],
 }
 # The flat builder's "+ Add" bar, by category (ADR-0070 amendment); every type once.
 # Sale and market adjustment work for properties and vehicles alike; they are listed
