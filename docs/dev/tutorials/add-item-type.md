@@ -175,23 +175,6 @@ if __name__ == "__main__":
 .venv/bin/python -m unittest state_machine.tests.test_gift
 ```
 
-### 6. Update one golden value
-A WP test keeps a hash of the `REQUIRED` table, so adding a type changes it. The full
-suite reports:
-
-```
-FAIL: test_constants (state_machine.tests.test_wp1_validation.Mutations.test_constants)
-AssertionError: golden value test_wp1_validation.Mutations.test_constants#1 differs: expected REQUIRED:...
-```
-
-That change is intended. Regenerate the stored values and check that only that key
-changed:
-
-```
-.venv/bin/python state_machine/tools/update_golden.py --values
-git diff state_machine/tests/golden/values.json     # one line: ...test_constants#1 "REQUIRED:..."
-```
-
 ## Test it
 Run the three gates:
 

@@ -119,9 +119,10 @@ class ResultsGolden(unittest.TestCase):
         self.assertEqual(list(mtg[0]), ["month", "opening", "closing", "rate", "interest",
                                         "paid", "principalPaid"])
         self.assertEqual(repr(mtg[0]["interest"]), "Decimal('0')")
-        self.assertEqual(list(r["rows"][0]), ["month", "cash", "investments", "assets", "debts",
-                                              "assetsNetWorth", "netWorth", "realNetWorth",
-                                              "realAssetsNetWorth"])
+        # The core columns, in this order; new columns may follow (Q-51).
+        core = ["month", "cash", "investments", "assets", "debts", "assetsNetWorth",
+                "netWorth", "realNetWorth", "realAssetsNetWorth"]
+        self.assertEqual([k for k in r["rows"][0] if k in core], core)
 
     def test_cash_only_and_dollars_of(self):
         for extra in ({}, {"annualInflation": "0.02"},

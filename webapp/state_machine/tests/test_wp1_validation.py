@@ -434,6 +434,10 @@ MUTATIONS = [
 ]
 
 
+# Mutations whose message lists account types (it grows with every new account type).
+LISTS_ACCOUNT_TYPES = {"accountType bad"}
+
+
 class Mutations(unittest.TestCase):
     def test_base_is_valid(self):
         self.assertIsNone(outcome(validation.validate, base()))
@@ -445,6 +449,10 @@ class Mutations(unittest.TestCase):
                 mutate(s)
                 new = outcome(validation.validate, s)
                 self.assertEqual(new[0] if new else None, expected, f"outcome {new}")
+                if label in LISTS_ACCOUNT_TYPES:
+                    # The message lists the jurisdiction's account types, which grow (Q-51):
+                    # pin only what does not change.
+                    new = (new[0], new[1].split(" one of ")[0])
                 assert_golden(self, label, new)
 
     def test_check_amortization_direct(self):
@@ -455,12 +463,15 @@ class Mutations(unittest.TestCase):
                               outcome(lambda i: validation.check_amortization(i, "item X"), item))
 
     def test_constants(self):
-        # Canada's (ADR-0071): the core's item types plus its own, its account types.
-        from state_machine import jurisdictions
+        """Every item type Canada offers (the core's plus its own, ADR-0071) has its
+        required fields; no stray entries. Checked structurally, not as a frozen hash, so
+        adding an item type or an account type does not break this test (Q-51)."""
+        from state_machine import compiler, jurisdictions
         canada = jurisdictions.get("CA")
-        assert_golden(self, "REQUIRED", list(validation.required_fields(canada).items()))
-        assert_golden(self, "ACCOUNT_TYPES", tuple(canada.account_types))
-        assert_golden(self, "WITHDRAWAL_METHODS", validation.WITHDRAWAL_METHODS)
+        elsewhere = {t for t, code in jurisdictions.own_item_types().items() if code != "CA"}
+        offered = set(compiler.registered_types()) - elsewhere
+        self.assertEqual(set(validation.required_fields(canada)), offered)
+        self.assertEqual(validation.WITHDRAWAL_METHODS, ("amount", "percent", "annuity"))
 
     def test_shared_helpers_not_redefined(self):
         from state_machine import arith, dates

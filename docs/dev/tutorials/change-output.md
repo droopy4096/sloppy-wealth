@@ -154,16 +154,6 @@ Only now regenerate, the scenario hashes and the WP tests' stored values:
 Commit the golden files with the change. The message must say why: "rows gain a
 `liquid` column; no value changed (holdings, ledger, tax hashes identical)".
 
-### 7. Fix the test that pins the row keys
-`state_machine/tests/test_wp8_results.py`, `test_kitchen_sink`, checks the exact key
-order of a row. Add `"liquid"` after `"netWorth"`:
-
-```python
-        self.assertEqual(list(r["rows"][0]), ["month", "cash", "investments", "assets", "debts",
-                                              "assetsNetWorth", "netWorth", "liquid", "realNetWorth",
-                                              "realAssetsNetWorth"])
-```
-
 ## Test it
 ```
 .venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs

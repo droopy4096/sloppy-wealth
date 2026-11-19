@@ -98,12 +98,10 @@ First look, without writing:
 ```
 
 ```
-jurisdictions/ca/sample.json: lastNetWorth differs
-  golden:  '553661.41'
-  current: '577513.98'
-tests/Accounts.test_validation_and_cascade_37f125db: error differs
-  golden:  {'message': 'item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp', ...}
-  current: {... 'message': 'item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp, fhsa'}
+jurisdictions/ca/sample.json: lastNetWorth, rows, holdings, ledger, tax differ
+  lastNetWorth: golden '553661.41', current '577513.98'
+tests/Accounts.test_validation_and_cascade_37f125db: error differ
+  error: golden {'message': 'item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp', ...}, current {... 'message': 'item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp, fhsa'}
 CA: 241 scenarios, 2 changed/new, 0 removed
 ```
 
@@ -124,20 +122,7 @@ The golden suite is the project's regression guard. Its files are committed with
 change, and the commit message must say why the results changed. Never regenerate to
 silence a difference you cannot explain.
 
-### 6. Fix the tests that pin the list
-Two more places pin Canada's account types:
-
-- `state_machine/tests/test_jurisdictions.py`,
-  `test_canada_is_registered_and_the_default`: add `"fhsa"` to the expected list.
-- Two WP golden values (`test_wp1_validation`: the `ACCOUNT_TYPES` tuple and the
-  "accountType bad" message). Regenerate them and check that only those two keys moved:
-
-```
-.venv/bin/python state_machine/tools/update_golden.py --values
-git diff state_machine/tests/golden/values.json   # test_constants#2 and test_mutation_table#119
-```
-
-### 7. Test the treatment
+### 6. Test the treatment
 Create `state_machine/tests/test_fhsa.py`:
 
 ```python
