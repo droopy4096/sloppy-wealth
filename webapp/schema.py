@@ -53,12 +53,12 @@ FIELDS = {
     # Ties a target's start or end to an event item's date (ADR-0065).
     "trigger": ["event", "on", "target", "action"],
     # Items that live with a parent item (ADR-0067): an amount, or a rate of a basis.
-    "associatedExpense": ["parent", "amount", "per", "indexing", "indexRate", "annualRate",
-                          "basis", "alsoWhenRenting"],
+    "associatedExpense": ["parent", "amount", "per", "amountIn", "indexing", "indexRate",
+                          "annualRate", "basis", "alsoWhenRenting"],
     "associatedCost": ["parent", "at", "costDate", "amount", "rate", "basis"],
     # Income that lives with an income or a pension (ADR-0068): an amount or a % of it.
-    "associatedIncome": ["parent", "amount", "per", "paid", "indexing", "indexRate",
-                         "annualRate"],
+    "associatedIncome": ["parent", "amount", "per", "amountIn", "paid", "indexing",
+                         "indexRate", "annualRate"],
     "associatedOneOff": ["parent", "at", "paymentDate", "amount", "rate"],
 }
 

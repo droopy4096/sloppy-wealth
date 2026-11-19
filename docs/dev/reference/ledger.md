@@ -167,8 +167,9 @@ maintenance and selling costs now give `EXPENSE` and `COST` lines, see `upgrade.
 - `holdings/account.py` `AccountOpening`. Step `ACQUIRE`. No tax effect, no limit.
 
 ### OPENING_TRANSFER
-- cash → account (`openingFrom: cash`). Capped by the jurisdiction's limits. Source: the
-  account id.
+- cash → account (`openingFrom: cash`). The whole opening balance: it is the account's
+  current state, not a contribution, so it is not capped by limits and uses no room
+  (ADR-0060 amendment). Source: the account id.
 - `holdings/account.py` `AccountOpening`. Step `ACQUIRE`. Not deducted and no RESP grant
   (`on_contribute` is not called).
 

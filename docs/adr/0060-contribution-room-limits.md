@@ -50,8 +50,8 @@ Canadian rules (to be parameterised, not hard-coded):
 ### Mechanics (defaults following the CRA rules; not separate owner decisions)
 - **What uses room:** contributions (the own part first, then the employer match, both
   within the room; a match beyond the room is not paid), one-off transfers into the
-  account, and an opening balance moved from cash (`openingFrom: cash`). Opening
-  balances at the horizon start or from outside, and returns, do not.
+  account. Opening balances (at the horizon start, from outside or moved from cash) and
+  returns do not (amended 2026-11-18, below).
 - **Timeline:** the room given is the room available in the month of its as-of date.
   Movements before that month are not checked. Each following January 1 adds the new
   room (RRSP: min(rate × the previous calendar year's earned income, the year's
@@ -82,3 +82,14 @@ is used by the owner's accounts, or by the `contributor` of a spousal RRSP. RRSP
 grows from that person's own earned income; TFSA withdrawals add back to the owner's
 room. "Spousal plans" are no longer in the not-modelled list. The room columns in the
 results show the household total per type.
+
+## Amendment 2026-11-18: an opening balance is current state, not a contribution
+Owner's decision (Q-51, found while writing the developer guide): an account opened with
+its balance moved from cash (`openingFrom: cash`) was capped by the room and used it up,
+though it was neither deducted nor granted. A user enters the current state of an account
+(its balance) and of the room separately, so an opening balance, from cash or from
+outside, is not a contribution: moved in full, never capped, uses no room, no deduction,
+no grant (RESP, ADR-0072). Money put in after the opening is a contribution or transfer
+as before. Alternative: keep capping openings from cash (rejected: it would require
+inflating the room to make the current state match).
+

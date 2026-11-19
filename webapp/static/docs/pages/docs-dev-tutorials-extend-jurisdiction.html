@@ -40,12 +40,10 @@ AssertionError: Items in the second set but not the first: ...</code></pre>
 <p>First look, without writing:</p>
 <pre><code>.venv/bin/python state_machine/tools/update_golden.py --check --jurisdiction CA \
     --add state_machine/jurisdictions/ca/sample.json</code></pre>
-<pre><code>jurisdictions/ca/sample.json: lastNetWorth differs
-  golden:  &#x27;553661.41&#x27;
-  current: &#x27;577513.98&#x27;
-tests/Accounts.test_validation_and_cascade_37f125db: error differs
-  golden:  {&#x27;message&#x27;: &#x27;item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp&#x27;, ...}
-  current: {... &#x27;message&#x27;: &#x27;item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp, fhsa&#x27;}
+<pre><code>jurisdictions/ca/sample.json: lastNetWorth, rows, holdings, ledger, tax differ
+  lastNetWorth: golden &#x27;553661.41&#x27;, current &#x27;577513.98&#x27;
+tests/Accounts.test_validation_and_cascade_37f125db: error differ
+  error: golden {&#x27;message&#x27;: &#x27;item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp&#x27;, ...}, current {... &#x27;message&#x27;: &#x27;item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp, fhsa&#x27;}
 CA: 241 scenarios, 2 changed/new, 0 removed</code></pre>
 <p>Explain every line before you accept it:</p>
 <ul><li>the sample changed because you added an account to it (more savings, so a higher net worth);</li><li>an old error message now lists one more account type.</li></ul>
@@ -53,12 +51,7 @@ CA: 241 scenarios, 2 changed/new, 0 removed</code></pre>
 <pre><code>.venv/bin/python state_machine/tools/update_golden.py --jurisdiction CA \
     --add state_machine/jurisdictions/ca/sample.json</code></pre>
 <p>The golden suite is the project's regression guard. Its files are committed with the change, and the commit message must say why the results changed. Never regenerate to silence a difference you cannot explain.</p>
-<h3 id="6-fix-the-tests-that-pin-the-list">6. Fix the tests that pin the list</h3>
-<p>Two more places pin Canada's account types:</p>
-<ul><li><code>state_machine/tests/test_jurisdictions.py</code>, <code>test_canada_is_registered_and_the_default</code>: add <code>&quot;fhsa&quot;</code> to the expected list.</li><li>Two WP golden values (<code>test_wp1_validation</code>: the <code>ACCOUNT_TYPES</code> tuple and the "accountType bad" message). Regenerate them and check that only those two keys moved:</li></ul>
-<pre><code>.venv/bin/python state_machine/tools/update_golden.py --values
-git diff state_machine/tests/golden/values.json   # test_constants#2 and test_mutation_table#119</code></pre>
-<h3 id="7-test-the-treatment">7. Test the treatment</h3>
+<h3 id="6-test-the-treatment">6. Test the treatment</h3>
 <p>Create <code>state_machine/tests/test_fhsa.py</code>:</p>
 <pre><code>import unittest
 from decimal import Decimal

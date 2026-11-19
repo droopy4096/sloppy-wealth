@@ -99,7 +99,7 @@ Details: [jurisdictions.md](jurisdictions.md#hooks).
 
 | Method | Called from |
 |---|---|
-| `cap(household, account, amount, match=False)` | `accept_contribution` (own share, then match with `match=True`), `Transfer.apply`, `AccountOpening.apply` (opening from cash) |
+| `cap(household, account, amount, match=False)` | `accept_contribution` (own share, then match with `match=True`), `Transfer.apply` (not an opening balance: current state, ADR-0060 amendment) |
 | `note_earned(household, amount, person)` | `Income.apply` when the income is earned |
 | `note_withdrawal(household, account, amount)` | `Withdrawal.apply` |
 | `remaining(household)` | `results.row`: the limit columns of each row |

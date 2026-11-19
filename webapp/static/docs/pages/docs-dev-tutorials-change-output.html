@@ -84,11 +84,6 @@ US changed beyond rows: []</code></pre>
 <pre><code>.venv/bin/python state_machine/tools/update_golden.py
 .venv/bin/python state_machine/tools/update_golden.py --values</code></pre>
 <p>Commit the golden files with the change. The message must say why: "rows gain a <code>liquid</code> column; no value changed (holdings, ledger, tax hashes identical)".</p>
-<h3 id="7-fix-the-test-that-pins-the-row-keys">7. Fix the test that pins the row keys</h3>
-<p><code>state_machine/tests/test_wp8_results.py</code>, <code>test_kitchen_sink</code>, checks the exact key order of a row. Add <code>&quot;liquid&quot;</code> after <code>&quot;netWorth&quot;</code>:</p>
-<pre><code>        self.assertEqual(list(r[&quot;rows&quot;][0]), [&quot;month&quot;, &quot;cash&quot;, &quot;investments&quot;, &quot;assets&quot;, &quot;debts&quot;,
-                                              &quot;assetsNetWorth&quot;, &quot;netWorth&quot;, &quot;liquid&quot;, &quot;realNetWorth&quot;,
-                                              &quot;realAssetsNetWorth&quot;])</code></pre>
 <h2 id="test-it">Test it</h2>
 <pre><code>.venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
 .venv/bin/python -m unittest discover -s state_machine/tests -t .

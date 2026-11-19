@@ -236,8 +236,9 @@ Mortgage prepayments (added later) refer to a mortgage by its `id`:
   it adds new room: RRSP min(incomeRate × the previous calendar year's earned income, the
   year's maximum); TFSA the year's maximum plus the previous year's TFSA withdrawals. The
   year's maximum is `yearlyMax` indexed from `maxYear` and rounded to $10 (RRSP) or $500
-  (TFSA). Contributions (own share, then the match on the share paid), transfers and
-  opening balances moved from cash into an account of that type are capped at the room;
+  (TFSA). Contributions (own share, then the match on the share paid) and transfers into
+  an account of that type are capped at the room (an opening balance, from cash or from
+  outside, is the account's current state: never capped, uses no room);
   the excess stays in cash (a match beyond it is not paid) and only the amount
   contributed is deducted. Income items count as earned income when `earnedIncome`
   (default: `taxable`). Rows gain `rrspRoom` / `tfsaRoom` (room left at month end; null
@@ -359,7 +360,10 @@ Mortgage prepayments (added later) refer to a mortgage by its `id`:
   true/false is rejected. The builder offers it as "no: lower the payment" (default) /
   "yes: keep the payment, shorten the amortization".
 - Rates are **fractions** in JSON (`0.0379`); the builder form takes percentages
-  (`3.79`) and converts them. The engine rejects rates outside (−1, 1).
+  (`3.79`) and converts them. The engine rejects rates outside (−1, 1), except the
+  shares of a parent income's yearly amount (`associatedIncome.annualRate`,
+  `associatedOneOff.rate`): 0 < rate ≤ 10, since a one-off such as severance can exceed a
+  year's pay.
 - Income and expense items (added later) give `amount` with `per`: `month` (default) or
   `year`; a yearly amount is spread evenly, amount / 12 each month. Older files with
   `monthlyAmount` still load (per month).
@@ -428,7 +432,9 @@ Mortgage prepayments (added later) refer to a mortgage by its `id`:
   OPEN (retirement) · INCOME · PENSION_PAY · ACQUIRE (purchases, loan advances, account
   openings) · IMPROVE · ADJUST (market adjustments) · SELL (sales, then each secured
   loan's payoff and the penalty) · TRANSFER · SERVICE_DEBT (renewal, interest, scheduled
-  payment, prepayments) · EXPENSE · MAINTAIN · CONTRIBUTE · WITHDRAW · GROW (appreciation
+  payment, prepayments) · EXPENSE (expenses and associated expenses) · MAINTAIN (reserved:
+  nothing runs there since vehicle maintenance became an associated expense, ADR-0067) ·
+  CONTRIBUTE · WITHDRAW · GROW (appreciation
   and account returns on the month's **opening** balances) · REVALUE_PENSIONS · TAX ·
   CLOSE (results). Full contract: `state_machine/INTERFACES.md` §10.
 - Monthly rates: property `(1 + annualAppreciation)^(1/12) − 1`; vehicle
@@ -518,7 +524,7 @@ Scenarios are upgraded from older forms on arrival (`upgrade.py`).
 - Views (`state_machine/views.py`) answer `{ok, messages, ...}`: `POST /api/view/builder
   {scenario}` (starts, display order, off items, trigger-set dates, choices);
   `POST /api/run {scenario}` -> `{scenario (as sent), result: {rows, holdings, ledger,
-  tax, events}}`; `POST /api/view/ledger {scenario, month}`; `POST /api/timeline
+  tax, events}, summary: {dollarsOf, retirement, retirements}}`; `POST /api/view/ledger {scenario, month}`; `POST /api/timeline
   {scenario}` (the model, ADR-0066); `POST /api/compare {a, b}` (rows of both, same
   horizon).
 - Limits: a body over 1 MB is refused (413); a scenario with more than 1,000 items or a

@@ -39,7 +39,8 @@ class Order(IntEnum):
     TRANSFER = 7 * ORDER_STEP           # one-off transfers into accounts
     SERVICE_DEBT = 8 * ORDER_STEP       # mortgage service incl. renewal, extras
     EXPENSE = 9 * ORDER_STEP            # expense flows
-    MAINTAIN = 10 * ORDER_STEP          # vehicle maintenance
+    MAINTAIN = 10 * ORDER_STEP          # reserved (vehicle maintenance is an associated
+                                        # expense since ADR-0067; kept for the numbering)
     CONTRIBUTE = 11 * ORDER_STEP        # contributions (account / pension)
     WITHDRAW = 12 * ORDER_STEP          # withdrawals
     GROW = 13 * ORDER_STEP              # appreciation, account return

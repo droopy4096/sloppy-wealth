@@ -231,7 +231,7 @@ Income that lives with an income or a pension: a bonus, a 13th payment (ADR-0068
 | per | no | choice | Default `month`. With `paid: lump` it must be `quarter` or `year`. |
 | paid | no | choice `monthly`, `lump` | Default `monthly`. `lump`: the sum of a period's monthly shares, paid in arrears on each quarterly or yearly anniversary of the parent's start; a partial last period is not paid. |
 | indexing, indexRate | no | as income | For `amount`. |
-| amountIn | no | as income | Accepted by the engine for `amount`; not on the form. |
+| amountIn | no | as income | For `amount`: dollars of its start (default) or of the base date. |
 
 - Taxable, earned income and owner are the parent's.
 - Run: `INCOME` step: [INCOME](ledger.md#income), source = this item. Not paid in
@@ -293,7 +293,7 @@ How it is taxed comes from the type's treatment: see [jurisdictions.md](jurisdic
   expenses (basis `balance`) and costs.
 - Run: opened on or before the horizon start: exists before the first month with
   `openingBalance`, no ledger line. Opened later: in that month (`ACQUIRE`)
-  [OPENING_TRANSFER](ledger.md#opening_transfer) from cash (capped by limits) or
+  [OPENING_TRANSFER](ledger.md#opening_transfer) from cash (in full; not a contribution) or
   [OPENING_BALANCE](ledger.md#opening_balance) from outside. Every month it existed at the
   start of (`GROW`): [RETURN](ledger.md#return) = opening balance × monthly rate, then the
   jurisdiction's `on_return`.
@@ -677,7 +677,7 @@ A recurring cost paid while its parent exists: property tax, insurance, account 
 | parent | yes | id | A `property`, `vehicle`, `account`, `mortgage`, `income`, `expense`, `contribution`, `withdrawal`, `pension`, `extraPayment` or another `associatedExpense`. |
 | amount | one of amount / annualRate | decimal | Per `per`, indexed from the parent's start (also before the horizon). |
 | per, indexing, indexRate | no | as expense | For `amount`. |
-| amountIn | no | as income | Accepted for `amount`; not on the form. |
+| amountIn | no | as income | For `amount`: dollars of its start (default) or of the base date. |
 | annualRate | one of amount / annualRate | fraction in (0, 1) | basis × rate / 12, re-set on the first month and each anniversary of the parent's start; not indexed. |
 | basis | with annualRate | choice | property / vehicle: `value` (value at the start of the month; at its sale, the sale price) or `price`; account: `balance`; mortgage: `principal` or `balance`; income: `amount` (its yearly amount). Other parents take no rate. |
 | alsoWhenRenting | no | bool | Default `false`. `true`: a renter pays it too; left out of the break-even's ownership variant. No effect on the run. |

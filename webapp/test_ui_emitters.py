@@ -57,6 +57,21 @@ def fake_events(result, month):
     return dict(result, events=events)
 
 
+class EveryItemTypeIsWired(unittest.TestCase):
+    def test_every_item_type_has_dates_for_triggers_and_the_timeline(self):
+        """Q-51: an item type registered with @item_type but unknown to triggers and the
+        timeline would silently get no trigger-set date and no mark on the timeline.
+        Each type is dated (triggers.START_FIELD), dated by its parent (an associated
+        lane), or explicitly has no dates (timeline.SKIPPED)."""
+        import timeline
+        from state_machine import compiler, triggers
+        unwired = sorted(set(compiler.registered_types()) - set(triggers.START_FIELD)
+                         - set(timeline.ASSOCIATED_LANES) - set(timeline.SKIPPED))
+        self.assertEqual(unwired, [], "add each to state_machine/triggers.py START_FIELD "
+                         "(the field holding its date; RECURRING too if it has an endDate), "
+                         "or to timeline.py SKIPPED if it has no dates")
+
+
 class AppUsesTheEventEmitterEngine(unittest.TestCase):
     def test_default_engine_and_events_table(self):
         import state_machine.engine
@@ -525,6 +540,28 @@ class VehicleLoanInTheApp(unittest.TestCase):
         self.assertIn("Car loan", card)
         page = client.get("/run/vehicle-cost?vehicle=car").data.decode()
         self.assertIn(">Loan interest</th>", page)
+
+
+class AssociatedAmountsInTodaysDollars(unittest.TestCase):
+    def test_amount_in_is_offered_and_honoured(self):
+        """Q-51 (5): an associated expense's form offers amountIn; "today's dollars" makes
+        a cost starting later grow with inflation from the base date."""
+        s = {"schemaVersion": 1, "name": "t", "jurisdiction": "CA",
+             "horizon": {"start": "2027-01-01", "end": "2031-02-01"}, "openingCash": "100000",
+             "annualInflation": "0.025", "dollarsOf": "2027-01-01",
+             "items": [{"type": "vehicle", "id": "car", "name": "Car",
+                        "purchaseDate": "2031-01-01", "price": "20000",
+                        "annualDepreciation": "0.1"}]}
+        client = client_with(s)
+        form = section(client.get("/").data.decode(), 'id="form-associatedExpense"', "</template>")
+        self.assertIn('name="amountIn"', form)
+        client.post("/items/add", data={"type": "associatedExpense", "parent": "car",
+                                         "name": "Insurance", "amount": "1200", "per": "year",
+                                         "amountIn": "base", "indexing": "inflation"})
+        self.assertEqual(client.scenario["items"][-1]["amountIn"], "base")
+        paid = [x["amount"] for x in engine.run_detailed(client.scenario)["ledger"]
+                if x["kind"] == "EXPENSE"]
+        self.assertEqual(paid[0], Decimal("110.38"))            # 100 x 1.025^4
 
 
 class ItemIdsLikeResultFields(unittest.TestCase):

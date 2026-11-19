@@ -41,8 +41,9 @@ class Registry(unittest.TestCase):
         self.assertIn("CA", jurisdictions.registered())
         self.assertEqual(jurisdictions.of({}).name, "Canada")
         self.assertEqual(jurisdictions.of({"jurisdiction": "CA"}).code, "CA")
-        self.assertEqual(list(jurisdictions.get("CA").account_types),
-                         ["tfsa", "rrsp", "nonRegistered", "resp"])
+        # At least these; a new Canadian account type does not break this test (Q-51).
+        self.assertLessEqual({"tfsa", "rrsp", "nonRegistered", "resp"},
+                             set(jurisdictions.get("CA").account_types))
 
     def test_an_unknown_jurisdiction_is_refused(self):
         self.assertIn("jurisdiction must be one of", _refusal(scenario(jurisdiction="XX")))

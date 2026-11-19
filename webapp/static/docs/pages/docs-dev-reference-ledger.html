@@ -89,7 +89,7 @@
 <h3 id="opening-balance">OPENING_BALANCE</h3>
 <ul><li>outside → account: an existing balance not modelled before (account opened inside the horizon, <code>openingFrom: outside</code>). Source: the account id.</li><li><code>holdings/account.py</code> <code>AccountOpening</code>. Step <code>ACQUIRE</code>. No tax effect, no limit.</li></ul>
 <h3 id="opening-transfer">OPENING_TRANSFER</h3>
-<ul><li>cash → account (<code>openingFrom: cash</code>). Capped by the jurisdiction's limits. Source: the account id.</li><li><code>holdings/account.py</code> <code>AccountOpening</code>. Step <code>ACQUIRE</code>. Not deducted and no RESP grant (<code>on_contribute</code> is not called).</li></ul>
+<ul><li>cash → account (<code>openingFrom: cash</code>). The whole opening balance: it is the account's current state, not a contribution, so it is not capped by limits and uses no room (ADR-0060 amendment). Source: the account id.</li><li><code>holdings/account.py</code> <code>AccountOpening</code>. Step <code>ACQUIRE</code>. Not deducted and no RESP grant (<code>on_contribute</code> is not called).</li></ul>
 <h3 id="contribution">CONTRIBUTION</h3>
 <ul><li>cash → account (outside → account in <code>expensesCovered</code> mode), capped by limits. Source: the contribution id.</li><li><code>InvestmentAccount.accept_contribution</code>. Step <code>CONTRIBUTE</code>.</li><li>Tax: a deduction of the account's contributor (owner, or spousal RRSP contributor) for deductible types, not in <code>expensesCovered</code> mode.</li></ul>
 <h3 id="employer-match">EMPLOYER_MATCH</h3>

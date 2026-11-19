@@ -70,14 +70,19 @@ def fingerprint(engine, scenario):
 
 
 def mismatch(key, expected, actual):
-    """A readable description of the first difference, or None if equal."""
+    """A readable description of every difference (each field that differs, so a change
+    confined to rows is told apart from one that also moves the ledger), or None."""
     if expected == actual:
         return None
-    for field in ("error", "rowCount", "lastNetWorth") + SECTIONS:
-        if expected.get(field) != actual.get(field):
-            return (f"{key}: {field} differs\n  golden:  {expected.get(field)!r}\n"
-                    f"  current: {actual.get(field)!r}")
-    return f"{key}: differs\n  golden:  {expected!r}\n  current: {actual!r}"
+    fields = [f for f in ("error", "rowCount", "lastNetWorth") + SECTIONS
+              if expected.get(f) != actual.get(f)]
+    if not fields:
+        return f"{key}: differs\n  golden:  {expected!r}\n  current: {actual!r}"
+    lines = [f"{key}: {', '.join(fields)} differ"]
+    for f in fields:
+        if f not in SECTIONS:                   # hashes say nothing; show readable values
+            lines.append(f"  {f}: golden {expected.get(f)!r}, current {actual.get(f)!r}")
+    return "\n".join(lines)
 
 
 def golden_dir(code="CA"):
@@ -135,6 +140,11 @@ def update_values():
                            "state_machine/tests", "-t", "."], cwd=POC,
                           env=dict(os.environ, GOLDEN_UPDATE="1"))
     print(f"written: {values} ({len(json.loads(values.read_text()))} values)")
+    if done.returncode:
+        # A failure that is not a golden value (an ordinary assertion or an error) stays
+        # failing after an update: say so, the output above lists it.
+        print("WARNING: some tests failed while recording (see above); values were written "
+              "for the rest. Fix those failures, then run the suite again.")
     return done.returncode
 
 
