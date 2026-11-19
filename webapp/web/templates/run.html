@@ -10,8 +10,8 @@
 {% set retirement = summary.retirement %}{% if retirement and not retirements %}<p>Retirement: {{ retirement[:7] }} (income marked "ends at retirement" stops the month before; pensions and withdrawals without a start date begin{% if scenario.retirementTaxRate %}; tax switches to {{ scenario.retirementTaxRate|percent }}{% endif %}).</p>{% endif %}
 <p>Income tax {{ (scenario.effectiveTaxRate or "0")|percent }} on taxable income. Inflation {{ (scenario.annualInflation or "0")|percent }} a year; real values in dollars of {{ summary.dollarsOf }}.</p>
 <p>Details: <a href="{{ url_for('web.run_holdings') }}">per holding</a> &middot; <a href="{{ url_for('web.run_ledger') }}">ledger of movements</a> &middot; <a href="{{ url_for('web.run_break_even') }}">property break-even</a> &middot; <a href="{{ url_for('web.run_vehicle_cost') }}">vehicle cost of ownership</a> (or click a month).</p>
-<table>
-  <tr><th>Month</th><th>Cash</th><th>Investments</th><th>Property &amp; vehicles</th><th>Debts</th><th>Assets net worth ({{ summary.dollarsOf }} $)</th><th>Net worth</th><th>Net worth ({{ summary.dollarsOf }} $)</th>{% set rooms = [] %}{% if rows %}{% for k, heading in jurisdiction.columns.items() %}{% if k in rows[0] %}{% set _ = rooms.append(k) %}<th>{{ heading }}</th>{% endif %}{% endfor %}{% endif %}</tr>
+<table class="sticky">
+  <thead><tr><th>Month</th><th>Cash</th><th>Investments</th><th>Property &amp; vehicles</th><th>Debts</th><th>Assets net worth ({{ summary.dollarsOf }} $)</th><th>Net worth</th><th>Net worth ({{ summary.dollarsOf }} $)</th>{% set rooms = [] %}{% if rows %}{% for k, heading in jurisdiction.columns.items() %}{% if k in rows[0] %}{% set _ = rooms.append(k) %}<th>{{ heading }}</th>{% endif %}{% endfor %}{% endif %}</tr></thead>
   {% for row in rows %}
   <tr>
     <td><a href="{{ url_for('web.run_ledger', month=row.month) }}">{{ row.month }}</a></td>

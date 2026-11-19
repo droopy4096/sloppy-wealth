@@ -72,6 +72,34 @@ class EveryItemTypeIsWired(unittest.TestCase):
                          "or to timeline.py SKIPPED if it has no dates")
 
 
+class StickyTableHeaders(unittest.TestCase):
+    def test_long_tables_have_a_sticky_header(self):
+        """Month-by-month tables keep their header at the top while scrolling (owner
+        request 2026-11-18): the header rows are a <thead> of a table.sticky."""
+        import io
+        docs = HERE.parent / "docs" / "user" / "files"
+        house = json.loads((docs / "house-break-even.json").read_text())
+        car = json.loads((docs / "vehicle-cost-of-ownership.json").read_text())
+        pages = [(house, "/run", 1), (house, "/run/holdings", 1),
+                 (house, "/run/break-even?property=house", 1),
+                 (car, "/run/vehicle-cost?vehicle=car", 1)]
+        for scenario, url, header_rows in pages:
+            with self.subTest(url):
+                page = client_with(scenario).get(url).data.decode()
+                table = section(page, '<table class="sticky">', "</table>")
+                head = section(table, "<thead>", "</thead>")
+                self.assertEqual(head.count("<tr"), header_rows)
+                self.assertIn("<td", table.split("</thead>", 1)[1])     # rows after it
+        data = json.dumps(house).encode()
+        page = client_with(house).post("/compare", content_type="multipart/form-data", data={
+            "action": "compare", "a": (io.BytesIO(data), "a.json"),
+            "b": (io.BytesIO(data), "b.json")}).data.decode()
+        head = section(section(page, '<table class="sticky">', "</table>"), "<thead>", "</thead>")
+        self.assertEqual(head.count("<tr"), 2)          # scenario names, then the columns
+        css = (HERE / "web" / "templates" / "base.html").read_text()
+        self.assertIn("table.sticky thead { position: sticky; top: 0;", css)
+
+
 class AppUsesTheEventEmitterEngine(unittest.TestCase):
     def test_default_engine_and_events_table(self):
         import state_machine.engine

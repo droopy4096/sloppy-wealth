@@ -34,8 +34,8 @@ its formula. Nominal dollars (ADR-0074).</p>
   ("Paid so far", "purchase price (or value at the horizon start) + every expense and cost of the vehicle so far + the interest of its loan"),
   ("Cost/mo", "(Paid so far - (Value - Sale costs)) / Owned (mo): the cost of ownership per month"),
 ] %}
-<table>
-  <tr>{% for title, tip in heads %}{% if title == "Paid so far" and view.financed %}<th title="interest paid on the loan that finances the vehicle, so far (included in Paid so far)">Loan interest</th>{% endif %}<th title="{{ tip }}">{{ title }}</th>{% endfor %}</tr>
+<table class="sticky">
+  <thead><tr>{% for title, tip in heads %}{% if title == "Paid so far" and view.financed %}<th title="interest paid on the loan that finances the vehicle, so far (included in Paid so far)">Loan interest</th>{% endif %}<th title="{{ tip }}">{{ title }}</th>{% endfor %}</tr></thead>
   {% for r in view.rows %}
   <tr>
     <td><a href="{{ url_for('web.run_ledger', month=r.month) }}">{{ r.month }}</a></td>
