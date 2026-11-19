@@ -1,0 +1,86 @@
+<h1 id="run-outputs">Run outputs</h1>
+<p><code>state_machine.engine.run_detailed(scenario)</code> (facade <code>state_machine/api.py</code>) validates the scenario (<code>ValueError</code> with a readable message if invalid), compiles and runs it, and returns:</p>
+<pre><code>{&quot;rows&quot;: [...], &quot;holdings&quot;: [...], &quot;ledger&quot;: [...], &quot;tax&quot;: {...}, &quot;events&quot;: [...]}</code></pre>
+<p><code>run(scenario)</code> returns only <code>rows</code>. <code>simulate(scenario)</code> runs without validating and returns the <code>Household</code> (for tests). The result is assembled by <code>results.assemble</code> (<code>state_machine/results.py</code>); <code>events</code> is added by <code>run_detailed</code>.</p>
+<p>Amounts are <code>Decimal</code>. The JSON API (<code>POST /api/run</code>) sends them as decimal strings; <code>web/client.py</code> turns the known numeric keys back into <code>Decimal</code>.</p>
+<h2 id="rows">rows</h2>
+<p>One dict per month of the horizon, the state at the <strong>end</strong> of the month (after the tax step and cash balances), recorded by <code>results.Recorder</code> at <code>Order.CLOSE</code>.</p>
+<table>
+<tr><th>Column</th><th>Meaning</th></tr>
+<tr><td>month</td><td><code>&quot;YYYY-MM&quot;</code>.</td></tr>
+<tr><td>cash</td><td>Cash balance. May be negative.</td></tr>
+<tr><td>investments</td><td>Sum of account balances and pension values.</td></tr>
+<tr><td>assets</td><td>Sum of property and vehicle values.</td></tr>
+<tr><td>debts</td><td>Sum of mortgage balances (positive = owed).</td></tr>
+<tr><td>assetsNetWorth</td><td>investments + assets − debts (wealth held outside cash, ADR-0050).</td></tr>
+<tr><td>netWorth</td><td>cash + assetsNetWorth.</td></tr>
+<tr><td><em>limit columns</em></td><td>Only when the scenario has a limits item: CA <code>rrspRoom</code>, <code>tfsaRoom</code> (room left at month end; <code>None</code> before the room's as-of month); US <code>k401Limit</code>, <code>iraLimit</code>, <code>hsaLimit</code> (left this calendar year; <code>None</code> before <code>limitYear</code>). Household totals over persons. From <code>jurisdiction.limits.remaining</code>.</td></tr>
+<tr><td>realNetWorth</td><td>netWorth in dollars of the base date (<code>dollarsOf</code>, default horizon start): netWorth / (1 + annualInflation)^((m − base)/12), rounded. Equal to netWorth without inflation.</td></tr>
+<tr><td>realAssetsNetWorth</td><td>assetsNetWorth deflated the same way.</td></tr>
+</table>
+<h2 id="holdings">holdings</h2>
+<p>One entry per holding, in slot order: cash first, then each holding item (account, pension, mortgage, property, vehicle) at the position of its first item. Holdings that never come into existence still have an entry with empty <code>points</code>.</p>
+<table>
+<tr><th>Key</th><th>Meaning</th></tr>
+<tr><td>id</td><td><code>&quot;cash&quot;</code> or the item id.</td></tr>
+<tr><td>name</td><td>Display name.</td></tr>
+<tr><td>kind</td><td><code>cash</code>, <code>property</code>, <code>vehicle</code>, <code>mortgage</code>, <code>account</code>, <code>pension</code>.</td></tr>
+<tr><td>group</td><td><code>cash</code>, <code>property</code> (property and vehicle), <code>debts</code>, <code>investments</code> (account and pension).</td></tr>
+<tr><td>points</td><td>One per month the holding exists, see below.</td></tr>
+</table>
+<p>Point fields:</p>
+<table>
+<tr><th>Field</th><th>Holdings</th><th>Meaning</th></tr>
+<tr><td>month</td><td>all</td><td><code>&quot;YYYY-MM&quot;</code>.</td></tr>
+<tr><td>opening</td><td>all</td><td>Balance at the start of the month; <code>None</code> in the month it was created.</td></tr>
+<tr><td>closing</td><td>all</td><td>Balance at the end of the month.</td></tr>
+<tr><td>rate</td><td>all</td><td>Monthly rate (property, vehicle, account, mortgage: the current one, after renewals); the annual indexing rate for a pension; <code>None</code> for cash.</td></tr>
+<tr><td>interest</td><td>mortgage</td><td>LOAN_INTEREST of the month.</td></tr>
+<tr><td>paid</td><td>mortgage</td><td>LOAN_PAYMENT + PREPAYMENT + LOAN_PAYOFF + INTEREST_ADJUSTMENT of the month.</td></tr>
+<tr><td>principalPaid</td><td>mortgage</td><td>paid − interest.</td></tr>
+<tr><td>closingPenalty</td><td>mortgage with a term</td><td>The penalty if the loan were closed after this month (ADR-0073).</td></tr>
+</table>
+<h2 id="ledger">ledger</h2>
+<p>Every movement, in order. Format and kinds: <a href="/docs/docs-dev-reference-ledger">ledger.md</a>.</p>
+<h2 id="tax">tax</h2>
+<p><code>{&quot;YYYY-MM&quot;: detail}</code>, one detail per month, written by <code>TaxRule</code> (<code>rules/tax.py</code>):</p>
+<table>
+<tr><th>Key</th><th>Meaning</th></tr>
+<tr><td>taxable</td><td>Taxable income of the month.</td></tr>
+<tr><td>deductions</td><td>Deductions of the month.</td></tr>
+<tr><td>poolIn</td><td>Carried-forward deductions before the step.</td></tr>
+<tr><td>used</td><td>Deductions used against taxable income.</td></tr>
+<tr><td>poolOut</td><td>Carried forward to next month.</td></tr>
+<tr><td>rate</td><td>Rate applied (<code>None</code> in the household sum when there are several persons).</td></tr>
+<tr><td>retired</td><td>Whether the person was retired (<code>None</code> in the household sum).</td></tr>
+<tr><td>incomeTax</td><td>rate × (taxable − used), rounded.</td></tr>
+<tr><td>ownRateTax</td><td>Tax at accounts' own withdrawal rates.</td></tr>
+<tr><td>total</td><td>incomeTax + ownRateTax (the TAX movement).</td></tr>
+<tr><td>persons</td><td>Only with several persons: <code>{person id: detail}</code>; the other keys are then household sums.</td></tr>
+</table>
+<h2 id="events">events</h2>
+<p>The event log (D-E4): every applied event in order (<code>emitters.EventLog.records</code>).</p>
+<table>
+<tr><th>Key</th><th>Meaning</th></tr>
+<tr><td>month</td><td><code>&quot;YYYY-MM&quot;</code>, or <code>None</code> for the INITIAL step (holdings existing at the start).</td></tr>
+<tr><td>key</td><td>Order key <code>(order, ordinal, sub)</code> of the emitter (a list in JSON).</td></tr>
+<tr><td>emitter</td><td>Emitter class name, e.g. <code>IncomeEmitter</code>.</td></tr>
+<tr><td>event</td><td>Event class name, e.g. <code>Income</code>.</td></tr>
+<tr><td>kind</td><td><code>lifecycle</code>, <code>flow</code>, <code>valuation</code> or <code>state</code>.</td></tr>
+<tr><td>source</td><td>Item id (or <code>None</code> for scenario-level events).</td></tr>
+<tr><td>cause</td><td>Index of the event that produced it as a follow-up, else <code>None</code>.</td></tr>
+<tr><td>ledger</td><td><code>(start, end)</code>: the ledger lines it produced, <code>ledger[start:end]</code>.</td></tr>
+<tr><td>detail</td><td>One-line description, e.g. <code>&quot;income 5000.00 taxable&quot;</code>.</td></tr>
+</table>
+<h2 id="derived-views">Derived views</h2>
+<p>Computed from a scenario or a run; nothing here changes the run.</p>
+<table>
+<tr><th>View</th><th>Module</th><th>API</th><th>What it gives</th></tr>
+<tr><td>Builder view</td><td><code>state_machine/views.py</code> <code>builder_view</code></td><td><code>POST /api/view/builder</code></td><td>Each item's effective start (<code>starts</code>), display order with modifiers under their host (<code>ordered</code>), off items and why (<code>off</code>), dates set by triggers (<code>set_by</code>), choices for reference fields (<code>names</code>), <code>summary</code>, <code>cards</code>, the upgraded items by id.</td></tr>
+<tr><td>Cards and estimates</td><td><code>state_machine/cards.py</code> <code>cards</code></td><td>inside the builder view</td><td>Items grouped by person and category; per item an estimated monthly figure for the base month (own indexing, percentages of their stated basis, mortgage payments from their terms; taxable inflows after tax). No engine run.</td></tr>
+<tr><td>Summary</td><td><code>views.summary</code></td><td>builder view, run, compare</td><td><code>dollarsOf</code> (base month), <code>retirement</code> (first person's), <code>retirements</code> per person when several.</td></tr>
+<tr><td>Ledger month</td><td><code>views.ledger_month</code></td><td><code>POST /api/view/ledger</code></td><td>One month: movements with signed <code>cash</code>, <code>net_cash</code>, balances, tax detail, events with follow-up depth.</td></tr>
+<tr><td>Break-even</td><td><code>state_machine/break_even.py</code> <code>break_even</code></td><td><code>POST /api/view/break-even</code></td><td>Per month a property is owned: hypothetical sale's net proceeds (value − selling costs − mortgage balance − closing penalty) vs net investment, in variants <code>ownership</code> (without <code>alsoWhenRenting</code> expenses) and <code>all</code>; break-even and rent equivalent (ADR-0073).</td></tr>
+<tr><td>Vehicle cost of ownership</td><td><code>state_machine/vehicle_cost.py</code> <code>cost_of_ownership</code></td><td><code>POST /api/view/vehicle-cost</code></td><td>Per month a vehicle is owned: paid so far (purchase or carried-in value, associated expenses and costs, loan interest and penalties), net value, cost per month = (paid − net value) / months owned (ADR-0074).</td></tr>
+<tr><td>Timeline</td><td><code>webapp/timeline.py</code> <code>layout</code></td><td><code>POST /api/timeline</code></td><td>Lanes, links, dots, arrows, guides of every item on a time axis (ADR-0066); drawn by <code>web/timeline_draw.py</code>.</td></tr>
+</table>

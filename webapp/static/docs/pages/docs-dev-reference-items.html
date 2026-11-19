@@ -1,0 +1,445 @@
+<h1 id="scenario-items">Scenario items</h1>
+<p>A scenario is one JSON object: some settings and a list of <code>items</code>. Each item has a <code>type</code>. This page lists every item type the engine registers (<code>compiler.registered_types()</code>), with its fields, links, run behaviour and code. <code>webapp/SPEC.md</code> is the longer spec; where it and the code differ, this page follows the code.</p>
+<p>Conventions used in the tables:</p>
+<table>
+<tr><th>Format</th><th>Meaning</th></tr>
+<tr><td>decimal</td><td>A decimal string, e.g. <code>&quot;1500&quot;</code> or <code>&quot;1500.50&quot;</code>. JSON numbers are also read (through <code>str</code>), but an optional field holding the number <code>0</code> counts as "not given".</td></tr>
+<tr><td>fraction</td><td>A rate as a decimal string fraction: <code>&quot;0.035&quot;</code> is 3.5 %. The builder form shows percentages; <code>web/pages.py</code> converts them (ADR-0045).</td></tr>
+<tr><td>date</td><td><code>&quot;YYYY-MM-DD&quot;</code>. Only year and month are used (ADR-0007).</td></tr>
+<tr><td>bool</td><td>JSON <code>true</code> / <code>false</code> (not strings).</td></tr>
+<tr><td>id</td><td>The <code>id</code> of another item.</td></tr>
+<tr><td>choice</td><td>One of the listed strings.</td></tr>
+</table>
+<p>"Required" means validation (<code>state_machine/validation.py</code>) refuses the item without it. Many dates are required but may come from a <a href="#trigger">trigger</a> instead of the item itself. Order names (<code>INCOME</code>, <code>SERVICE_DEBT</code>, ...) are the steps of the month: see <a href="/docs/docs-dev-reference-modules#month-order">modules.md#month-order</a>. Ledger kinds link to <a href="/docs/docs-dev-reference-ledger">ledger.md</a>.</p>
+<p>Contents: <a href="#scenario-settings">Scenario settings</a> · <a href="#common-item-fields">Common item fields</a> · People &amp; settings (<a href="#person">person</a>, <a href="#retirement">retirement</a>, <a href="#cashbalance">cashBalance</a>) · Income &amp; pensions (<a href="#income">income</a>, <a href="#pension">pension</a>, <a href="#associatedincome">associatedIncome</a>, <a href="#associatedoneoff">associatedOneOff</a>) · Accounts (<a href="#account">account</a>, <a href="#contribution">contribution</a>, <a href="#withdrawal">withdrawal</a>, <a href="#transfer">transfer</a>) · Properties &amp; mortgages (<a href="#property">property</a>, <a href="#mortgage">mortgage</a>, <a href="#renewal">renewal</a>, <a href="#extrapayment">extraPayment</a>, <a href="#lumpsum">lumpSum</a>, <a href="#improvement">improvement</a>, <a href="#marketadjustment">marketAdjustment</a>, <a href="#sale">sale</a>) · Vehicles (<a href="#vehicle">vehicle</a>) · Expenses &amp; associated items (<a href="#expense">expense</a>, <a href="#associatedexpense">associatedExpense</a>, <a href="#associatedcost">associatedCost</a>) · Triggers &amp; adjustments (<a href="#trigger">trigger</a>, <a href="#adjustment">adjustment</a>) · Jurisdiction-specific (<a href="#contributionroom">contributionRoom</a>, <a href="#contributionlimit">contributionLimit</a>)</p>
+<hr>
+<h2 id="scenario-settings">Scenario settings</h2>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>schemaVersion</td><td>for <code>/api/load</code></td><td><code>1</code></td><td>File format version. <code>POST /api/load</code> refuses any other value; the engine itself ignores it.</td></tr>
+<tr><td>name</td><td>no</td><td>string</td><td>Scenario name. Default in new scenarios: <code>&quot;Untitled&quot;</code>.</td></tr>
+<tr><td>jurisdiction</td><td>no</td><td>choice <code>CA</code>, <code>US</code></td><td>Tax jurisdiction (<a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>). Missing: <code>CA</code> (<code>upgrade.py</code> inserts it).</td></tr>
+<tr><td>horizon</td><td>yes</td><td><code>{&quot;start&quot;: date, &quot;end&quot;: date}</code></td><td>First and last month of the run, inclusive. <code>end</code> may not be before <code>start</code>. The API refuses horizons over 100 years.</td></tr>
+<tr><td>openingCash</td><td>yes</td><td>decimal</td><td>Cash at the start. Cash has no return and may go negative.</td></tr>
+<tr><td>items</td><td>yes</td><td>list</td><td>The items. The API refuses more than 1,000.</td></tr>
+<tr><td>annualInflation</td><td>no</td><td>fraction in (-1, 1)</td><td>Default 0. Used by <code>indexing: inflation</code>, <code>amountIn: base</code>, pension values and the real columns.</td></tr>
+<tr><td>dollarsOf</td><td>no</td><td>date</td><td>Base date of real values and pension amounts. Default: horizon start.</td></tr>
+<tr><td>effectiveTaxRate</td><td>no</td><td>fraction in [0, 1)</td><td>Flat income tax rate. Default 0.</td></tr>
+<tr><td>retirementTaxRate</td><td>no</td><td>fraction in [0, 1)</td><td>Rate from a person's retirement. Blank: no switch.</td></tr>
+<tr><td>incomeMode</td><td>no</td><td>choice <code>modelled</code>, <code>expensesCovered</code></td><td>Default <code>modelled</code>. <code>expensesCovered</code> (ADR-0044): income items are ignored; expenses, associated expenses, loan payments, extra payments and contributions are paid from outside (no cash change); one-off events still move cash.</td></tr>
+<tr><td>retirementDate</td><td>no</td><td>date</td><td>Older form. Converted on load to a <a href="#retirement">retirement</a> item. Having both is an error.</td></tr>
+</table>
+<pre><code>{&quot;schemaVersion&quot;: 1, &quot;name&quot;: &quot;Example&quot;, &quot;jurisdiction&quot;: &quot;CA&quot;,
+ &quot;horizon&quot;: {&quot;start&quot;: &quot;2027-01-01&quot;, &quot;end&quot;: &quot;2050-12-01&quot;},
+ &quot;openingCash&quot;: &quot;20000&quot;, &quot;annualInflation&quot;: &quot;0.02&quot;, &quot;dollarsOf&quot;: &quot;2027-01-01&quot;,
+ &quot;effectiveTaxRate&quot;: &quot;0.30&quot;, &quot;retirementTaxRate&quot;: &quot;0.20&quot;, &quot;incomeMode&quot;: &quot;modelled&quot;,
+ &quot;items&quot;: []}</code></pre>
+<h2 id="common-item-fields">Common item fields</h2>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>type</td><td>yes</td><td>choice</td><td>The item type (sections below). Unknown types are refused; a type of another jurisdiction is refused with its name.</td></tr>
+<tr><td>id</td><td>no (yes for <code>person</code>)</td><td>string</td><td>Unique in the scenario. Other items refer to it. Without one the compiler uses <code>item&lt;index&gt;</code>; <code>/api/load</code> and <code>/api/items/add</code> assign 8 hex characters.</td></tr>
+<tr><td>name</td><td>no</td><td>string</td><td>Display name. <code>/api/items/add</code> fills in the type name.</td></tr>
+<tr><td>enabled</td><td>no</td><td>bool</td><td>Default <code>true</code>. <code>false</code> leaves the item out of the run, together with every item that refers to it through <code>property</code>, <code>mortgage</code>, <code>account</code>, <code>flow</code>, <code>event</code>, <code>target</code>, <code>parent</code>, <code>owner</code>, <code>contributor</code> or <code>retirementOf</code>, and every item a start trigger on it would start (<code>enabled.py</code>, ADR-0064).</td></tr>
+<tr><td>owner</td><td>no</td><td>id of a <a href="#person">person</a></td><td>Only on <code>income</code>, <code>account</code>, <code>pension</code>, <code>retirement</code>, and the jurisdiction's own <code>contributionRoom</code> / <code>contributionLimit</code>. Blank: the first person. Contributions and withdrawals take their account's owner.</td></tr>
+<tr><td>retirementOf</td><td>no</td><td>id of a person</td><td>Whose retirement an item follows when its start is blank (pension, withdrawal) or in older at-retirement forms. Default: the owner, else the first person.</td></tr>
+</table>
+<p>Older forms are converted on input by <code>state_machine/upgrade.py</code> (<code>monthlyAmount</code> on flows, withdrawal method <code>even</code>, <code>startsAtRetirement</code> / <code>endsAtRetirement</code> / <code>atRetirement</code>, an expense's <code>attachedTo</code>, a vehicle's <code>annualMaintenance</code>, a property's <code>saleDate</code>, a sale's <code>sellingCostRate</code>). The engine reads only the current forms below.</p>
+<p>Each item type is compiled by one factory registered with <code>@item_type(&quot;&lt;type&gt;&quot;)</code>. The factory returns emitters; emitters produce events each month; events record ledger movements. See <a href="/docs/docs-dev-reference-modules">modules.md</a>.</p>
+<hr>
+<h1 id="people-settings">People &amp; settings</h1>
+<h2 id="person">person</h2>
+<p>A member of the household with own tax rates, retirement, accounts and limits (ADR-0061).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>id</td><td>yes</td><td>string</td><td>Unique among persons. <code>owner</code> fields refer to it.</td></tr>
+<tr><td>birthDate</td><td>no</td><td>date</td><td>For age rules (US catch-up contributions).</td></tr>
+<tr><td>effectiveTaxRate</td><td>no</td><td>fraction in [0, 1)</td><td>Blank: the scenario's.</td></tr>
+<tr><td>retirementTaxRate</td><td>no</td><td>fraction in [0, 1)</td><td>Blank: the scenario's <code>retirementTaxRate</code>, else the person's working rate.</td></tr>
+</table>
+<ul><li>Links: none. Other items link to it through <code>owner</code>, <code>contributor</code>, <code>retirementOf</code>.</li><li>Run: no emitters. <code>Household</code> builds one <code>Person</code> per person item (<code>household.build_persons</code>), each with its own tax accumulator and deduction pool. Each person pays a separate <code>TAX</code> movement. A scenario without person items has one implicit person, id <code>self</code>.</li><li>Code: <code>state_machine/rules/person.py</code> (<code>compile_person</code>, returns nothing); <code>state_machine/persons.py</code> (owner rules); <code>state_machine/household.py</code> (<code>Person</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;person&quot;, &quot;id&quot;: &quot;alex&quot;, &quot;name&quot;: &quot;Alex&quot;, &quot;birthDate&quot;: &quot;1980-05-01&quot;,
+ &quot;effectiveTaxRate&quot;: &quot;0.30&quot;, &quot;retirementTaxRate&quot;: &quot;0.20&quot;}</code></pre>
+<h2 id="retirement">retirement</h2>
+<p>The month a person retires (ADR-0059). At most one per person.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>retirementDate</td><td>yes</td><td>date</td><td>Within the horizon (older files converted by <code>upgrade.py</code> may carry <code>&quot;outsideHorizon&quot;: true</code> instead).</td></tr>
+<tr><td>owner</td><td>no</td><td>id</td><td>Whose retirement. Blank: the first person.</td></tr>
+</table>
+<ul><li>Links: triggers use it as <code>event</code> to start or end other items.</li><li>Run: in the retirement month (<code>OPEN</code> step) a <code>Retirement</code> state event marks the person retired, so their tax rate switches to the retirement rate. Pensions and withdrawals of that person without a <code>startDate</code> begin in that month. No ledger movement.</li><li>Code: <code>state_machine/events/retirement.py</code>. <code>compile_retirement</code> returns nothing; the scenario setup hook <code>setup_retirement_and_tax</code> yields one <code>RetirementEmitter</code> per retiring person (and the <code>TaxEmitter</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;retirement&quot;, &quot;id&quot;: &quot;ret&quot;, &quot;name&quot;: &quot;Alex retires&quot;, &quot;owner&quot;: &quot;alex&quot;,
+ &quot;retirementDate&quot;: &quot;2045-01-01&quot;}</code></pre>
+<h2 id="cashbalance">cashBalance</h2>
+<p>Sets cash to an actual statement balance at the end of a month (ADR-0063).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>balanceDate</td><td>yes</td><td>date</td><td>Within the horizon.</td></tr>
+<tr><td>balance</td><td>yes</td><td>decimal</td><td>Cash at the end of that month.</td></tr>
+</table>
+<ul><li>Links: none.</li><li>Run: after the tax step (order <code>TAX + 50</code>), records the difference as <a href="/docs/docs-dev-reference-ledger#cash_reconciliation">CASH_RECONCILIATION</a> (from or to outside). Not income, not taxed. Several in one month: the last in item order wins.</li><li>Code: <code>state_machine/events/cash_balance.py</code> (<code>compile_cash_balance</code>, <code>CashBalanceEmitter</code>, <code>CashReconciled</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;cashBalance&quot;, &quot;id&quot;: &quot;stmt&quot;, &quot;name&quot;: &quot;Bank statement&quot;,
+ &quot;balanceDate&quot;: &quot;2028-06-01&quot;, &quot;balance&quot;: &quot;25000&quot;}</code></pre>
+<hr>
+<h1 id="income-pensions">Income &amp; pensions</h1>
+<h2 id="income">income</h2>
+<p>A recurring income (salary, rent received, ...).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>startDate</td><td>yes</td><td>date</td><td>Own, or set by a trigger.</td></tr>
+<tr><td>endDate</td><td>no</td><td>date</td><td>Last month. Blank: horizon end.</td></tr>
+<tr><td>amount</td><td>yes</td><td>decimal</td><td>Per <code>per</code>, in dollars of <code>startDate</code> (see <code>amountIn</code>).</td></tr>
+<tr><td>per</td><td>no</td><td>choice <code>month</code>, <code>quarter</code>, <code>year</code></td><td>Default <code>month</code>. A quarterly or yearly amount is paid as amount/3 or amount/12 each month.</td></tr>
+<tr><td>amountIn</td><td>no</td><td>choice <code>start</code>, <code>base</code></td><td>Default <code>start</code>. <code>base</code>: the amount is in dollars of the base date (<code>dollarsOf</code>) and is inflated to the start: amount × (1 + annualInflation)^((start − base)/12).</td></tr>
+<tr><td>taxable</td><td>no</td><td>bool</td><td>Default <code>false</code> (amount already after tax). <code>true</code>: added to the owner's taxable income.</td></tr>
+<tr><td>earnedIncome</td><td>no</td><td>bool</td><td>Default: same as <code>taxable</code>. Counts for limits that depend on earned income (CA RRSP room).</td></tr>
+<tr><td>indexing</td><td>no</td><td>choice <code>none</code>, <code>inflation</code>, <code>custom</code></td><td>Default <code>none</code>.</td></tr>
+<tr><td>indexRate</td><td>with <code>custom</code></td><td>fraction in (-1, 1)</td><td>Yearly rate for <code>custom</code>.</td></tr>
+<tr><td>owner</td><td>no</td><td>id</td><td>Person.</td></tr>
+</table>
+<ul><li>Links: can be the <code>parent</code> of associated items, the <code>flow</code> of an adjustment, a trigger's event or target.</li><li>Run: every month from start to end (<code>INCOME</code> step): <a href="/docs/docs-dev-reference-ledger#income">INCOME</a> outside → cash. The amount steps up once a year on the anniversary of the start: amount × (1 + rate)^(full years) / divisor, rounded to cents (ADR-0013). Adjustments replace the amount from their month. Nothing in <code>expensesCovered</code> mode.</li><li>Code: <code>state_machine/flows/income_expense.py</code> (<code>compile_income</code>, <code>IncomeEmitter</code>, <code>Income</code>); amounts by <code>rules/indexing.py</code> <code>IndexingRule</code>.</li></ul>
+<pre><code>{&quot;type&quot;: &quot;income&quot;, &quot;id&quot;: &quot;salary&quot;, &quot;name&quot;: &quot;Salary&quot;, &quot;owner&quot;: &quot;alex&quot;,
+ &quot;startDate&quot;: &quot;2027-01-01&quot;, &quot;endDate&quot;: &quot;2044-12-01&quot;, &quot;amount&quot;: &quot;90000&quot;, &quot;per&quot;: &quot;year&quot;,
+ &quot;taxable&quot;: true, &quot;indexing&quot;: &quot;inflation&quot;}</code></pre>
+<h2 id="pension">pension</h2>
+<p>A guaranteed (defined-benefit or government) pension (ADR-0052). Its value counts in investments.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>amount</td><td>yes</td><td>decimal</td><td>Per <code>per</code>, in dollars of the base date (<code>dollarsOf</code>).</td></tr>
+<tr><td>per</td><td>no</td><td>choice</td><td>Default <code>month</code>.</td></tr>
+<tr><td>startDate</td><td>no</td><td>date</td><td>Blank: the owner's retirement month (a retirement item is then required).</td></tr>
+<tr><td>endDate</td><td>no</td><td>date</td><td>Blank: horizon end. May not be before the effective start.</td></tr>
+<tr><td>taxable</td><td>no</td><td>bool</td><td>Default <code>true</code>.</td></tr>
+<tr><td>indexing, indexRate</td><td>no</td><td>as income</td><td>Yearly step on the anniversary of the base date.</td></tr>
+<tr><td>owner</td><td>no</td><td>id</td><td>Person.</td></tr>
+</table>
+<ul><li>Links: can be the <code>account</code> of a contribution and the <code>parent</code> of associated income.</li><li>Run: created before the first month (<code>INITIAL</code>) with its value. Each month from start to end (<code>PENSION_PAY</code>): <a href="/docs/docs-dev-reference-ledger#pension_payment">PENSION_PAYMENT</a> pension → cash, amount = base × (1 + rate)^(full years since base date) / divisor; paid also in <code>expensesCovered</code> mode; taxable income if <code>taxable</code>. Every month (<code>REVALUE_PENSIONS</code>): <a href="/docs/docs-dev-reference-ledger#revaluation">REVALUATION</a> to its value = the payments still to come in base-date dollars, undiscounted, expressed in the month's dollars.</li><li>Code: <code>state_machine/holdings/pension.py</code> (<code>compile_pension</code>, <code>Pension</code>, <code>PensionCreation</code>, <code>PensionPayment</code>, <code>PensionRevaluation</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;pension&quot;, &quot;id&quot;: &quot;db&quot;, &quot;name&quot;: &quot;Work pension&quot;, &quot;owner&quot;: &quot;alex&quot;,
+ &quot;amount&quot;: &quot;2000&quot;, &quot;per&quot;: &quot;month&quot;, &quot;taxable&quot;: true, &quot;indexing&quot;: &quot;inflation&quot;}</code></pre>
+<h2 id="associatedincome">associatedIncome</h2>
+<p>Income that lives with an income or a pension: a bonus, a 13th payment (ADR-0068).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>parent</td><td>yes</td><td>id of an <code>income</code> or <code>pension</code></td><td>Runs from the parent's first to its last month.</td></tr>
+<tr><td>amount</td><td>one of amount / annualRate</td><td>decimal</td><td>Indexed from the parent's start as an income.</td></tr>
+<tr><td>annualRate</td><td>one of amount / annualRate</td><td>fraction in (0, 10]</td><td>Share of the parent's yearly amount, taken on the parent's start and each anniversary.</td></tr>
+<tr><td>per</td><td>no</td><td>choice</td><td>Default <code>month</code>. With <code>paid: lump</code> it must be <code>quarter</code> or <code>year</code>.</td></tr>
+<tr><td>paid</td><td>no</td><td>choice <code>monthly</code>, <code>lump</code></td><td>Default <code>monthly</code>. <code>lump</code>: the sum of a period's monthly shares, paid in arrears on each quarterly or yearly anniversary of the parent's start; a partial last period is not paid.</td></tr>
+<tr><td>indexing, indexRate</td><td>no</td><td>as income</td><td>For <code>amount</code>.</td></tr>
+<tr><td>amountIn</td><td>no</td><td>as income</td><td>Accepted by the engine for <code>amount</code>; not on the form.</td></tr>
+</table>
+<ul><li>Taxable, earned income and owner are the parent's.</li><li>Run: <code>INCOME</code> step: <a href="/docs/docs-dev-reference-ledger#income">INCOME</a>, source = this item. Not paid in <code>expensesCovered</code> mode for an income parent; paid for a pension parent. A lump for the last full period is paid the month after the parent's last month, if within the horizon.</li><li>Code: <code>state_machine/flows/associated_income.py</code> (<code>compile_associated_income</code>, <code>AssociatedIncomeEmitter</code>; event <code>Income</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;associatedIncome&quot;, &quot;id&quot;: &quot;bonus&quot;, &quot;name&quot;: &quot;Bonus&quot;, &quot;parent&quot;: &quot;salary&quot;,
+ &quot;annualRate&quot;: &quot;0.10&quot;, &quot;per&quot;: &quot;year&quot;, &quot;paid&quot;: &quot;lump&quot;}</code></pre>
+<h2 id="associatedoneoff">associatedOneOff</h2>
+<p>A one-off income tied to an income or pension: signing bonus, severance (ADR-0068).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>parent</td><td>yes</td><td>id of an <code>income</code> or <code>pension</code></td><td></td></tr>
+<tr><td>at</td><td>no</td><td>choice <code>start</code>, <code>end</code>, <code>date</code></td><td>Default <code>start</code>. <code>end</code> = the parent's last month, only if the parent has an <code>endDate</code>.</td></tr>
+<tr><td>paymentDate</td><td>with <code>at: date</code></td><td>date</td><td>Within the horizon.</td></tr>
+<tr><td>amount</td><td>one of amount / rate</td><td>decimal ≥ 0</td><td></td></tr>
+<tr><td>rate</td><td>one of amount / rate</td><td>fraction in (0, 10]</td><td>Share of the parent's yearly amount that month.</td></tr>
+</table>
+<ul><li>Run: once (<code>INCOME</code> step): <a href="/docs/docs-dev-reference-ledger#income">INCOME</a>, taxed as the parent. Dropped if the month is outside the parent's window or the horizon, or the amount is 0. Covered mode as associatedIncome.</li><li>Code: <code>state_machine/flows/associated_income.py</code> (<code>compile_associated_one_off</code>, <code>AssociatedOneOffEmitter</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;associatedOneOff&quot;, &quot;id&quot;: &quot;severance&quot;, &quot;name&quot;: &quot;Severance&quot;, &quot;parent&quot;: &quot;salary&quot;,
+ &quot;at&quot;: &quot;end&quot;, &quot;amount&quot;: &quot;20000&quot;}</code></pre>
+<hr>
+<h1 id="accounts">Accounts</h1>
+<h2 id="account">account</h2>
+<p>An investment account of one of the jurisdiction's account types (ADR-0011, ADR-0071). How it is taxed comes from the type's treatment: see <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>accountType</td><td>yes</td><td>choice</td><td>A code of the scenario's jurisdiction (CA: <code>tfsa</code>, <code>rrsp</code>, <code>nonRegistered</code>, <code>resp</code>; US: <code>traditional401k</code>, <code>roth401k</code>, <code>traditionalIra</code>, <code>rothIra</code>, <code>hsa</code>, <code>brokerage</code>).</td></tr>
+<tr><td>annualReturn</td><td>yes</td><td>fraction in (-1, 1)</td><td>Monthly rate = (1 + annualReturn)^(1/12) − 1.</td></tr>
+<tr><td>openingBalance</td><td>no</td><td>decimal ≥ 0</td><td>Default 0. Opened on or before the horizon start: the balance at the horizon start (ADR-0057).</td></tr>
+<tr><td>openedDate</td><td>no</td><td>date</td><td>Default: horizon start. Not after the horizon end.</td></tr>
+<tr><td>openingFrom</td><td>if opened inside the horizon with a balance</td><td>choice <code>cash</code>, <code>outside</code></td><td><code>cash</code>: moved from cash. <code>outside</code>: an existing balance not modelled before.</td></tr>
+<tr><td>withdrawalTaxRate</td><td>no</td><td>fraction in [0, 1)</td><td>Own tax rate on withdrawals. Used only for types whose withdrawals are taxed (RRSP, traditional 401(k)/IRA).</td></tr>
+<tr><td>contributor</td><td>no</td><td>id of a person</td><td>CA <code>rrsp</code> only (spousal RRSP): whose room and deduction; not the owner.</td></tr>
+<tr><td>unusedGrantRoom, grantReceived, contributedSoFar</td><td>no</td><td>decimal ≥ 0</td><td>CA <code>resp</code> only (ADR-0072): history before the horizon, default 0.</td></tr>
+<tr><td>owner</td><td>no</td><td>id</td><td>Person.</td></tr>
+</table>
+<ul><li>Links: <code>account</code> of contributions, withdrawals and transfers; <code>parent</code> of associated expenses (basis <code>balance</code>) and costs.</li><li>Run: opened on or before the horizon start: exists before the first month with <code>openingBalance</code>, no ledger line. Opened later: in that month (<code>ACQUIRE</code>) <a href="/docs/docs-dev-reference-ledger#opening_transfer">OPENING_TRANSFER</a> from cash (capped by limits) or <a href="/docs/docs-dev-reference-ledger#opening_balance">OPENING_BALANCE</a> from outside. Every month it existed at the start of (<code>GROW</code>): <a href="/docs/docs-dev-reference-ledger#return">RETURN</a> = opening balance × monthly rate, then the jurisdiction's <code>on_return</code>.</li><li>Code: <code>state_machine/holdings/account.py</code> (<code>compile_account</code>, <code>AccountSpec</code>, <code>InvestmentAccount</code>, <code>AccountAtStartEmitter</code>, <code>AccountOpeningEmitter</code>, <code>AccountReturnEmitter</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;account&quot;, &quot;id&quot;: &quot;rrsp&quot;, &quot;name&quot;: &quot;RRSP&quot;, &quot;owner&quot;: &quot;alex&quot;, &quot;accountType&quot;: &quot;rrsp&quot;,
+ &quot;openingBalance&quot;: &quot;50000&quot;, &quot;annualReturn&quot;: &quot;0.05&quot;}</code></pre>
+<h2 id="contribution">contribution</h2>
+<p>Regular saving into an account or a pension plan.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>account</td><td>yes</td><td>id of an <code>account</code> or <code>pension</code></td><td></td></tr>
+<tr><td>startDate</td><td>yes</td><td>date</td><td>Own or set by a trigger.</td></tr>
+<tr><td>endDate</td><td>no</td><td>date</td><td>Blank: horizon end.</td></tr>
+<tr><td>amount</td><td>yes</td><td>decimal</td><td>Per <code>per</code>.</td></tr>
+<tr><td>per</td><td>no</td><td>choice</td><td>Default <code>month</code>.</td></tr>
+<tr><td>employerMatch</td><td>no</td><td>fraction in [0, 1]</td><td>Share of each contribution added from outside.</td></tr>
+<tr><td>indexing, indexRate</td><td>no</td><td>as income</td><td></td></tr>
+</table>
+<ul><li>Run: every month in the window while the target exists (<code>CONTRIBUTE</code>). Into an account: <a href="/docs/docs-dev-reference-ledger#contribution">CONTRIBUTION</a> from cash (from outside in <code>expensesCovered</code> mode), capped by the jurisdiction's limits; then <code>on_contribute</code> (deduction of the contributor for deductible types, not in <code>expensesCovered</code> mode; CA RESP grant); then <a href="/docs/docs-dev-reference-ledger#employer_match">EMPLOYER_MATCH</a> = match × the share paid, capped (CA room; not capped in the US). Into a pension: <a href="/docs/docs-dev-reference-ledger#pension_contribution">PENSION_CONTRIBUTION</a> cash → outside, a deduction; nothing in <code>expensesCovered</code> mode; the match is ignored.</li><li>Code: <code>state_machine/flows/contribution.py</code> (<code>compile_contribution</code>, <code>ContributionEmitter</code>, <code>Contribution</code>); <code>InvestmentAccount.accept_contribution</code>, <code>Pension.accept_contribution</code>.</li></ul>
+<pre><code>{&quot;type&quot;: &quot;contribution&quot;, &quot;id&quot;: &quot;rrsp-save&quot;, &quot;name&quot;: &quot;RRSP saving&quot;, &quot;account&quot;: &quot;rrsp&quot;,
+ &quot;startDate&quot;: &quot;2027-01-01&quot;, &quot;endDate&quot;: &quot;2044-12-01&quot;, &quot;amount&quot;: &quot;500&quot;,
+ &quot;employerMatch&quot;: &quot;0.5&quot;}</code></pre>
+<h2 id="withdrawal">withdrawal</h2>
+<p>Regular draws from an account into cash.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>account</td><td>yes</td><td>id of an <code>account</code></td><td></td></tr>
+<tr><td>method</td><td>yes</td><td>choice <code>amount</code>, <code>percent</code>, <code>annuity</code></td><td>See below.</td></tr>
+<tr><td>startDate</td><td>no</td><td>date</td><td>Blank: the owner's retirement month (a retirement item is then required). <code>percent</code> and <code>annuity</code> may not start before the account opens.</td></tr>
+<tr><td>endDate</td><td>no</td><td>date</td><td>Blank: horizon end.</td></tr>
+<tr><td>amount</td><td>with <code>amount</code></td><td>decimal</td><td>Per <code>per</code>, indexed.</td></tr>
+<tr><td>per</td><td>no</td><td>choice</td><td>Default <code>month</code>.</td></tr>
+<tr><td>annualRate</td><td>with <code>percent</code></td><td>fraction in (0, 1)</td><td></td></tr>
+<tr><td>indexing, indexRate</td><td>no</td><td>as income</td><td>Not allowed with <code>percent</code>.</td></tr>
+</table>
+<p>Methods (<code>flows/withdrawal.py</code>):</p>
+<ul><li><code>amount</code>: the indexed amount.</li><li><code>percent</code>: on the start and each anniversary, annualRate / 12 × the balance at the start of that month; paid monthly for a year (ADR-0049). An empty account at an anniversary pays 0 that year.</li><li><code>annuity</code>: spends the account down by min(endDate, horizon end); set from the balance in the first month with a balance and re-set each anniversary, at the account's own return; with indexing the payment grows yearly by the indexing rate; the final month takes the whole balance (ADR-0039 amendment).</li></ul>
+<ul><li>Run: <code>WITHDRAW</code> step: <a href="/docs/docs-dev-reference-ledger#withdrawal">WITHDRAWAL</a> account → cash, capped at the balance; nothing while the balance is 0. Then <code>on_withdraw</code> (taxable income of the owner, or tax at <code>withdrawalTaxRate</code>) and <code>note_withdrawal</code> (CA TFSA room).</li><li>Code: <code>state_machine/flows/withdrawal.py</code> (<code>compile_withdrawal</code>, <code>WithdrawalEmitter</code>, <code>AmountStrategy</code>, <code>PercentStrategy</code>, <code>AnnuityStrategy</code>, <code>Withdrawal</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;withdrawal&quot;, &quot;id&quot;: &quot;draw&quot;, &quot;name&quot;: &quot;RRSP draw&quot;, &quot;account&quot;: &quot;rrsp&quot;,
+ &quot;method&quot;: &quot;annuity&quot;, &quot;indexing&quot;: &quot;inflation&quot;}</code></pre>
+<h2 id="transfer">transfer</h2>
+<p>A one-off move from cash into an account (ADR-0025).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>account</td><td>yes</td><td>id of an <code>account</code></td><td></td></tr>
+<tr><td>amount</td><td>yes</td><td>decimal &gt; 0</td><td></td></tr>
+<tr><td>transferDate</td><td>yes</td><td>date</td><td>Own or set by a trigger. Within the horizon, not before the account opens.</td></tr>
+</table>
+<ul><li>Run: <code>TRANSFER</code> step (after the month's sales): <a href="/docs/docs-dev-reference-ledger#transfer">TRANSFER</a> cash → account, capped by limits, always from cash (also in <code>expensesCovered</code> mode). Then <code>on_contribute</code>: a deduction for deductible types (not in <code>expensesCovered</code> mode), the RESP grant.</li><li>Code: <code>state_machine/events/transfer.py</code> (<code>compile_transfer</code>, <code>TransferEmitter</code>, <code>Transfer</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;transfer&quot;, &quot;id&quot;: &quot;top-up&quot;, &quot;name&quot;: &quot;Top-up&quot;, &quot;account&quot;: &quot;rrsp&quot;,
+ &quot;amount&quot;: &quot;10000&quot;, &quot;transferDate&quot;: &quot;2030-03-01&quot;}</code></pre>
+<hr>
+<h1 id="properties-mortgages">Properties &amp; mortgages</h1>
+<h2 id="property">property</h2>
+<p>Real estate.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>purchaseDate</td><td>yes</td><td>date</td><td>Not after the horizon end. May be before the start.</td></tr>
+<tr><td>price</td><td>yes</td><td>decimal</td><td>Cash paid.</td></tr>
+<tr><td>marketValue</td><td>no</td><td>decimal ≥ 0</td><td>Value at purchase, if different from the price. Blank: price.</td></tr>
+<tr><td>annualAppreciation</td><td>yes</td><td>fraction in (-1, 1)</td><td>Monthly rate = (1 + a)^(1/12) − 1.</td></tr>
+</table>
+<ul><li>Links: <code>property</code> of mortgages, sales, improvements, market adjustments; <code>parent</code> of associated expenses and costs (basis <code>value</code> or <code>price</code>).</li><li>Run: bought inside the horizon: in its month (<code>ACQUIRE</code>) <a href="/docs/docs-dev-reference-ledger#purchase">PURCHASE</a> cash → property, and <a href="/docs/docs-dev-reference-ledger#revaluation">REVALUATION</a> by marketValue − price if given. Bought before: carried in before the first month at (marketValue or price) × (1 + monthly rate)^(months since purchase), no movement. Every month it existed at the start of (<code>GROW</code>): <a href="/docs/docs-dev-reference-ledger#appreciation">APPRECIATION</a> = opening value × monthly rate, except after its sale and in a month a market adjustment set a <code>newValue</code>.</li><li>Code: <code>state_machine/holdings/real_estate.py</code> (<code>compile_property</code>, <code>RealEstate</code>, <code>AppreciationEmitter</code>); <code>state_machine/events/purchase.py</code> (<code>PurchaseEmitter</code>, <code>CarryInEmitter</code>, <code>Revaluation</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;property&quot;, &quot;id&quot;: &quot;house&quot;, &quot;name&quot;: &quot;House&quot;, &quot;purchaseDate&quot;: &quot;2027-06-01&quot;,
+ &quot;price&quot;: &quot;600000&quot;, &quot;annualAppreciation&quot;: &quot;0.03&quot;}</code></pre>
+<h2 id="mortgage">mortgage</h2>
+<p>A loan, optionally secured by a property or financing a vehicle (ADR-0024, ADR-0029).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>property</td><td>no</td><td>id of a <code>property</code> or <code>vehicle</code></td><td>Secured by / financed asset. Paid off when the asset is sold.</td></tr>
+<tr><td>startDate</td><td>if no <code>property</code></td><td>date</td><td>Blank: the asset's purchase month. Must be within the horizon, not before the purchase, before the asset's sale.</td></tr>
+<tr><td>principal</td><td>yes</td><td>decimal</td><td></td></tr>
+<tr><td>annualRate</td><td>yes</td><td>fraction in [0, 1)</td><td>Monthly rate = (1 + annualRate/2)^(1/6) − 1 (semi-annual compounding, ADR-0019).</td></tr>
+<tr><td>amortizationYears</td><td>yes</td><td>decimal</td><td>× 12 must be a whole number ≥ 1.</td></tr>
+<tr><td>firstPaymentDate</td><td>no</td><td>date</td><td>After the start. Default: the month after the start.</td></tr>
+<tr><td>termMonths</td><td>with penaltyMethod</td><td>whole number &gt; 0</td><td>Term from the start (ADR-0073).</td></tr>
+<tr><td>penaltyMethod</td><td>with termMonths</td><td>choice <code>flat</code>, <code>interestLeft</code>, <code>monthsInterest</code></td><td>Early-closure penalty formula during the term.</td></tr>
+<tr><td>penaltyAmount</td><td>with <code>flat</code></td><td>decimal ≥ 0</td><td></td></tr>
+<tr><td>penaltyRate</td><td>with <code>interestLeft</code></td><td>fraction in [0, 1]</td><td>Share of the schedule's interest left in the term.</td></tr>
+<tr><td>penaltyMonths</td><td>with <code>monthsInterest</code></td><td>decimal ≥ 0</td><td>Months of interest on the balance.</td></tr>
+</table>
+<ul><li>Links: <code>mortgage</code> of renewals, extra payments, lump sums; <code>parent</code> of associated items (basis <code>principal</code> or <code>balance</code>).</li><li>Run: start month (<code>ACQUIRE</code>): <a href="/docs/docs-dev-reference-ledger#loan_advance">LOAN_ADVANCE</a> loan → cash. From the next month (<code>SERVICE_DEBT</code>), while owed: before <code>firstPaymentDate</code>, <a href="/docs/docs-dev-reference-ledger#loan_interest">LOAN_INTEREST</a> on the principal accrues; in the first payment month <a href="/docs/docs-dev-reference-ledger#interest_adjustment">INTEREST_ADJUSTMENT</a> pays it; then each month LOAN_INTEREST on the balance and <a href="/docs/docs-dev-reference-ledger#loan_payment">LOAN_PAYMENT</a> of the fixed annuity payment P = L·r / (1 − (1+r)^−n); the last payment clears the rest. Payments come from outside in <code>expensesCovered</code> mode. A sale of the linked asset pays it off (<a href="/docs/docs-dev-reference-ledger#loan_payoff">LOAN_PAYOFF</a>) and charges the term's penalty unless the sale gives one. Holdings points carry <code>interest</code>, <code>paid</code>, <code>principalPaid</code>, and <code>closingPenalty</code> when a term is given.</li><li>Code: <code>state_machine/events/loan.py</code> (<code>compile_mortgage</code>, <code>LoanAdvanceEmitter</code>, <code>LoanServiceEmitter</code>, events <code>LoanAdvance</code>, <code>AccrueInterest</code>, <code>InterestAdjustment</code>, <code>LoanInterest</code>, <code>ScheduledPayment</code>); <code>state_machine/holdings/mortgage.py</code> (<code>Mortgage</code>, <code>LoanTerms</code>, <code>ClosureTerm</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;mortgage&quot;, &quot;id&quot;: &quot;mtg&quot;, &quot;name&quot;: &quot;Mortgage&quot;, &quot;property&quot;: &quot;house&quot;,
+ &quot;principal&quot;: &quot;480000&quot;, &quot;annualRate&quot;: &quot;0.045&quot;, &quot;amortizationYears&quot;: &quot;25&quot;,
+ &quot;termMonths&quot;: &quot;60&quot;, &quot;penaltyMethod&quot;: &quot;monthsInterest&quot;, &quot;penaltyMonths&quot;: &quot;3&quot;}</code></pre>
+<h2 id="renewal">renewal</h2>
+<p>A mortgage renewal or switch to another lender: a new rate from a month (ADR-0043).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>mortgage</td><td>yes</td><td>id of a <code>mortgage</code></td><td></td></tr>
+<tr><td>startDate</td><td>yes</td><td>date</td><td>After the mortgage start; before the month its asset is sold; one renewal per mortgage per month.</td></tr>
+<tr><td>annualRate</td><td>yes</td><td>fraction in [0, 1)</td><td>New rate.</td></tr>
+<tr><td>keepPayment</td><td>no</td><td>bool</td><td>Default <code>false</code>: the payment is recomputed over the remaining amortization. <code>true</code>: the payment is kept and the remaining months derived; falls back to recomputing if it cannot repay in time.</td></tr>
+<tr><td>amortizationYears</td><td>no</td><td>decimal</td><td>New amortization (not with <code>keepPayment</code>).</td></tr>
+<tr><td>penalty</td><td>no</td><td>decimal ≥ 0</td><td>Penalty for breaking the previous term, in dollars of that date.</td></tr>
+<tr><td>termMonths, penaltyMethod, penaltyAmount, penaltyRate, penaltyMonths</td><td>no</td><td>as mortgage</td><td>The new term's closure penalty.</td></tr>
+</table>
+<ul><li>Run: modifier at the mortgage's slot (<code>SERVICE_DEBT</code>, before the service): <code>Renew</code> changes rate, payment and remaining months (no movement); then <a href="/docs/docs-dev-reference-ledger#penalty">PENALTY</a> if <code>penalty</code>. Lost if the loan is not serviced that month. Later interest and payments carry the renewal id as <code>source</code>.</li><li>Code: <code>state_machine/events/loan.py</code> (<code>compile_renewal</code>, <code>RenewalEmitter</code>, <code>Renew</code>, <code>RenewalPenalty</code>); <code>Mortgage.renew</code>; <code>arith.keep_payment_months</code>.</li></ul>
+<pre><code>{&quot;type&quot;: &quot;renewal&quot;, &quot;id&quot;: &quot;renew1&quot;, &quot;name&quot;: &quot;Renewal&quot;, &quot;mortgage&quot;: &quot;mtg&quot;,
+ &quot;startDate&quot;: &quot;2032-06-01&quot;, &quot;annualRate&quot;: &quot;0.05&quot;, &quot;keepPayment&quot;: true}</code></pre>
+<h2 id="extrapayment">extraPayment</h2>
+<p>A monthly prepayment on a mortgage. It does not change the scheduled payment; the loan ends earlier.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>mortgage</td><td>yes</td><td>id of a <code>mortgage</code></td><td></td></tr>
+<tr><td>startDate</td><td>yes</td><td>date</td><td></td></tr>
+<tr><td>endDate</td><td>no</td><td>date</td><td>Blank: horizon end.</td></tr>
+<tr><td>monthlyAmount</td><td>yes</td><td>decimal &gt; 0</td><td>Note the field name: not <code>amount</code>.</td></tr>
+</table>
+<ul><li>Run: modifier at the mortgage's slot (<code>SERVICE_DEBT</code>, after the service), only in months the scheduled payment was made: <a href="/docs/docs-dev-reference-ledger#prepayment">PREPAYMENT</a>, capped at the balance, from cash (from outside in <code>expensesCovered</code> mode).</li><li>Code: <code>state_machine/events/loan.py</code> (<code>compile_extra_payment</code>, <code>ExtraPaymentEmitter</code>, <code>ExtraPrepayment</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;extraPayment&quot;, &quot;id&quot;: &quot;extra&quot;, &quot;name&quot;: &quot;Extra&quot;, &quot;mortgage&quot;: &quot;mtg&quot;,
+ &quot;startDate&quot;: &quot;2028-01-01&quot;, &quot;endDate&quot;: &quot;2030-12-01&quot;, &quot;monthlyAmount&quot;: &quot;300&quot;}</code></pre>
+<h2 id="lumpsum">lumpSum</h2>
+<p>A one-off prepayment, or the payoff of a mortgage.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>mortgage</td><td>yes</td><td>id of a <code>mortgage</code></td><td></td></tr>
+<tr><td>paymentDate</td><td>yes</td><td>date</td><td>Own or set by a trigger. After the mortgage start.</td></tr>
+<tr><td>amount</td><td>one of amount / payOff</td><td>decimal &gt; 0</td><td></td></tr>
+<tr><td>payOff</td><td>one of amount / payOff</td><td>bool</td><td><code>true</code>: the whole balance left after that month's payment. The form's <code>covers</code> (<code>amount</code> / <code>all</code>) maps to it.</td></tr>
+<tr><td>paidFrom</td><td>no</td><td>choice <code>cash</code>, <code>outside</code></td><td>Default <code>cash</code>. <code>outside</code>: e.g. a gift; reduces the loan, not cash.</td></tr>
+<tr><td>penalty</td><td>no</td><td>decimal ≥ 0</td><td>Blank with <code>payOff</code>: the term's formula. Blank with an amount: none.</td></tr>
+</table>
+<ul><li>Run: modifier at the mortgage's slot (<code>SERVICE_DEBT</code>, after the service), only if the scheduled payment was made that month: <a href="/docs/docs-dev-reference-ledger#prepayment">PREPAYMENT</a>, then <a href="/docs/docs-dev-reference-ledger#penalty">PENALTY</a>. A payoff without a penalty computes the formula penalty first (before the balance drops).</li><li>Code: <code>state_machine/events/loan.py</code> (<code>compile_lump_sum</code>, <code>LumpSumEmitter</code>, <code>LumpSumPrepayment</code>, <code>LumpSumPenalty</code>, <code>ClosurePenalty</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;lumpSum&quot;, &quot;id&quot;: &quot;lump&quot;, &quot;name&quot;: &quot;Bonus prepayment&quot;, &quot;mortgage&quot;: &quot;mtg&quot;,
+ &quot;paymentDate&quot;: &quot;2029-03-01&quot;, &quot;amount&quot;: &quot;10000&quot;, &quot;paidFrom&quot;: &quot;cash&quot;}</code></pre>
+<h2 id="improvement">improvement</h2>
+<p>Construction or renovation of a property (ADR-0046).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>property</td><td>yes</td><td>id of a <code>property</code></td><td>Not a vehicle.</td></tr>
+<tr><td>improvementDate</td><td>yes</td><td>date</td><td>Within the horizon, on or after the purchase, before the sale.</td></tr>
+<tr><td>cost</td><td>yes</td><td>decimal ≥ 0</td><td>Paid from cash.</td></tr>
+<tr><td>valueAdded</td><td>no</td><td>decimal ≥ 0</td><td>Default: the cost.</td></tr>
+</table>
+<ul><li>Run: <code>IMPROVE</code> step, at its own item index: <a href="/docs/docs-dev-reference-ledger#improvement">IMPROVEMENT</a> cash → property, then <a href="/docs/docs-dev-reference-ledger#revaluation">REVALUATION</a> by valueAdded − cost. Growth on the new value starts the next month.</li><li>Code: <code>state_machine/events/improvement.py</code> (<code>compile_improvement</code>, <code>ImprovementEmitter</code>, <code>Improvement</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;improvement&quot;, &quot;id&quot;: &quot;reno&quot;, &quot;name&quot;: &quot;Kitchen&quot;, &quot;property&quot;: &quot;house&quot;,
+ &quot;improvementDate&quot;: &quot;2031-05-01&quot;, &quot;cost&quot;: &quot;40000&quot;, &quot;valueAdded&quot;: &quot;30000&quot;}</code></pre>
+<h2 id="marketadjustment">marketAdjustment</h2>
+<p>A one-off change in a property's or vehicle's value (ADR-0033).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>property</td><td>yes</td><td>id of a <code>property</code> or <code>vehicle</code></td><td></td></tr>
+<tr><td>adjustmentDate</td><td>yes</td><td>date</td><td>Within the horizon, on or after the purchase, before the sale.</td></tr>
+<tr><td>percent</td><td>one of percent / newValue</td><td>fraction in (-1, 1)</td><td>Applied to the value before the month's growth.</td></tr>
+<tr><td>newValue</td><td>one of percent / newValue</td><td>decimal ≥ 0</td><td>The month's closing value; no growth that month.</td></tr>
+</table>
+<ul><li>Run: <code>ADJUST</code> step, at its own item index: <a href="/docs/docs-dev-reference-ledger#market_adjustment">MARKET_ADJUSTMENT</a> outside → asset. Value only: cash and debts unchanged.</li><li>Code: <code>state_machine/events/adjustment.py</code> (<code>compile_market_adjustment</code>, <code>MarketAdjustmentEmitter</code>, <code>MarketAdjustment</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;marketAdjustment&quot;, &quot;id&quot;: &quot;dip&quot;, &quot;name&quot;: &quot;Market dip&quot;, &quot;property&quot;: &quot;house&quot;,
+ &quot;adjustmentDate&quot;: &quot;2029-01-01&quot;, &quot;percent&quot;: &quot;-0.10&quot;}</code></pre>
+<h2 id="sale">sale</h2>
+<p>The sale of a property or vehicle (ADR-0031, ADR-0034). One per asset.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>property</td><td>yes</td><td>id of a <code>property</code> or <code>vehicle</code></td><td></td></tr>
+<tr><td>saleDate</td><td>yes</td><td>date</td><td>Own or set by a trigger. After the purchase, within the horizon.</td></tr>
+<tr><td>salePrice</td><td>no</td><td>decimal ≥ 0</td><td>Blank: the asset's value that month.</td></tr>
+<tr><td>salePenalty</td><td>no</td><td>decimal ≥ 0</td><td>Penalty for the loans it pays off. Blank: the sum of the secured loans' term formulas (0 without terms).</td></tr>
+</table>
+<p>Selling costs are an <a href="#associatedcost">associatedCost</a> with <code>at: end</code> on the asset. An older <code>sellingCostRate</code> on a sale is converted to one on load.</p>
+<ul><li>Run: modifier at the asset's slot (<code>SELL</code>): <a href="/docs/docs-dev-reference-ledger#sale_price_difference">SALE_PRICE_DIFFERENCE</a> if <code>salePrice</code>, then <a href="/docs/docs-dev-reference-ledger#sale">SALE</a> asset → cash at its value; the capital-gains rule (a no-op); then <a href="/docs/docs-dev-reference-ledger#loan_payoff">LOAN_PAYOFF</a> for each loan secured by it, then <a href="/docs/docs-dev-reference-ledger#penalty">PENALTY</a>. The asset stays with balance 0. Cash may go negative.</li><li>Code: <code>state_machine/events/sale.py</code> (<code>compile_sale</code>, <code>SaleEmitter</code>, <code>Sale</code>, <code>LoanPayoff</code>, <code>SalePenalty</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;sale&quot;, &quot;id&quot;: &quot;house-sale&quot;, &quot;name&quot;: &quot;Sell house&quot;, &quot;property&quot;: &quot;house&quot;,
+ &quot;saleDate&quot;: &quot;2046-06-01&quot;}</code></pre>
+<hr>
+<h1 id="vehicles">Vehicles</h1>
+<h2 id="vehicle">vehicle</h2>
+<p>A depreciating asset. Running costs are associated expenses; a loan is a mortgage with <code>property</code> = the vehicle id (ADR-0074 amendment).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>purchaseDate</td><td>yes</td><td>date</td><td>Not after the horizon end. May be before the start.</td></tr>
+<tr><td>price</td><td>yes</td><td>decimal</td><td></td></tr>
+<tr><td>annualDepreciation</td><td>yes</td><td>fraction in (-1, 1)</td><td>Monthly rate = (1 − d)^(1/12) − 1.</td></tr>
+</table>
+<p>No <code>marketValue</code>. Older <code>annualMaintenance</code> / <code>maintenanceIncrease</code> are converted to an associated expense on load.</p>
+<ul><li>Run: as <a href="#property">property</a> (purchase or carry-in, then growth), with negative <a href="/docs/docs-dev-reference-ledger#appreciation">APPRECIATION</a>. Sold by a <a href="#sale">sale</a> item.</li><li>Code: <code>state_machine/holdings/vehicle.py</code> (<code>compile_vehicle</code>, <code>Vehicle</code>); shared code in <code>holdings/real_estate.py</code> (<code>RealAsset</code>, <code>compile_real_asset</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;vehicle&quot;, &quot;id&quot;: &quot;car&quot;, &quot;name&quot;: &quot;Car&quot;, &quot;purchaseDate&quot;: &quot;2025-03-01&quot;,
+ &quot;price&quot;: &quot;35000&quot;, &quot;annualDepreciation&quot;: &quot;0.15&quot;}</code></pre>
+<hr>
+<h1 id="expenses-associated-items">Expenses &amp; associated items</h1>
+<h2 id="expense">expense</h2>
+<p>A recurring household expense.</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>startDate</td><td>yes</td><td>date</td><td>Own or set by a trigger.</td></tr>
+<tr><td>endDate</td><td>no</td><td>date</td><td>Blank: horizon end.</td></tr>
+<tr><td>amount</td><td>yes</td><td>decimal</td><td></td></tr>
+<tr><td>per</td><td>no</td><td>choice</td><td>Default <code>month</code>.</td></tr>
+<tr><td>amountIn</td><td>no</td><td>choice</td><td>As income.</td></tr>
+<tr><td>indexing, indexRate</td><td>no</td><td>as income</td><td></td></tr>
+</table>
+<ul><li>Run: <code>EXPENSE</code> step, every month in the window: <a href="/docs/docs-dev-reference-ledger#expense">EXPENSE</a> cash → outside. Indexed as income. Nothing in <code>expensesCovered</code> mode.</li><li>Code: <code>state_machine/flows/income_expense.py</code> (<code>compile_expense</code>, <code>ExpenseEmitter</code>, <code>Expense</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;expense&quot;, &quot;id&quot;: &quot;living&quot;, &quot;name&quot;: &quot;Living&quot;, &quot;startDate&quot;: &quot;2027-01-01&quot;,
+ &quot;amount&quot;: &quot;3000&quot;, &quot;indexing&quot;: &quot;inflation&quot;}</code></pre>
+<h2 id="associatedexpense">associatedExpense</h2>
+<p>A recurring cost paid while its parent exists: property tax, insurance, account fees (ADR-0067).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>parent</td><td>yes</td><td>id</td><td>A <code>property</code>, <code>vehicle</code>, <code>account</code>, <code>mortgage</code>, <code>income</code>, <code>expense</code>, <code>contribution</code>, <code>withdrawal</code>, <code>pension</code>, <code>extraPayment</code> or another <code>associatedExpense</code>.</td></tr>
+<tr><td>amount</td><td>one of amount / annualRate</td><td>decimal</td><td>Per <code>per</code>, indexed from the parent's start (also before the horizon).</td></tr>
+<tr><td>per, indexing, indexRate</td><td>no</td><td>as expense</td><td>For <code>amount</code>.</td></tr>
+<tr><td>amountIn</td><td>no</td><td>as income</td><td>Accepted for <code>amount</code>; not on the form.</td></tr>
+<tr><td>annualRate</td><td>one of amount / annualRate</td><td>fraction in (0, 1)</td><td>basis × rate / 12, re-set on the first month and each anniversary of the parent's start; not indexed.</td></tr>
+<tr><td>basis</td><td>with annualRate</td><td>choice</td><td>property / vehicle: <code>value</code> (value at the start of the month; at its sale, the sale price) or <code>price</code>; account: <code>balance</code>; mortgage: <code>principal</code> or <code>balance</code>; income: <code>amount</code> (its yearly amount). Other parents take no rate.</td></tr>
+<tr><td>alsoWhenRenting</td><td>no</td><td>bool</td><td>Default <code>false</code>. <code>true</code>: a renter pays it too; left out of the break-even's ownership variant. No effect on the run.</td></tr>
+</table>
+<ul><li>Run: <code>EXPENSE</code> step, every month from the parent's start to its end, and for a holding parent only while it exists, is not sold, and (mortgage) is owed: <a href="/docs/docs-dev-reference-ledger#expense">EXPENSE</a> cash → outside, source = this item. Not paid in <code>expensesCovered</code> mode. Not deductible; not added to the asset's value.</li><li>Code: <code>state_machine/flows/associated.py</code> (<code>compile_associated_expense</code>, <code>AssociatedExpenseEmitter</code>, <code>YearlyPercent</code>, <code>basis_reader</code>, <code>lifetime</code>; event <code>Expense</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;associatedExpense&quot;, &quot;id&quot;: &quot;ptax&quot;, &quot;name&quot;: &quot;Property tax&quot;, &quot;parent&quot;: &quot;house&quot;,
+ &quot;annualRate&quot;: &quot;0.01&quot;, &quot;basis&quot;: &quot;value&quot;}</code></pre>
+<h2 id="associatedcost">associatedCost</h2>
+<p>A one-off cost at its parent's start, end, or a date: closing costs, selling costs (ADR-0067).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>parent</td><td>yes</td><td>id</td><td>As associatedExpense.</td></tr>
+<tr><td>at</td><td>no</td><td>choice <code>start</code>, <code>end</code>, <code>date</code></td><td>Default <code>start</code>. <code>end</code>: an asset's sale month; a mortgage's property's sale month; a recurring item's last month (only with an <code>endDate</code>); never for an account.</td></tr>
+<tr><td>costDate</td><td>with <code>at: date</code></td><td>date</td><td>Within the horizon. Dropped if the parent does not exist then.</td></tr>
+<tr><td>amount</td><td>one of amount / rate</td><td>decimal ≥ 0</td><td></td></tr>
+<tr><td>rate</td><td>one of amount / rate</td><td>fraction in (0, 1)</td><td>× the basis that month (at a sale: the sale price).</td></tr>
+<tr><td>basis</td><td>with rate</td><td>choice</td><td>As associatedExpense.</td></tr>
+</table>
+<ul><li>Run: once, <code>EXPENSE</code> step (after the month's sales and purchases): <a href="/docs/docs-dev-reference-ledger#cost">COST</a> cash → outside. Paid also in <code>expensesCovered</code> mode. Dropped if the month is outside the horizon or the parent's life.</li><li>Code: <code>state_machine/flows/associated.py</code> (<code>compile_associated_cost</code>, <code>AssociatedCostEmitter</code>, <code>Cost</code>, <code>cost_month</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;associatedCost&quot;, &quot;id&quot;: &quot;realtor&quot;, &quot;name&quot;: &quot;Realtor&quot;, &quot;parent&quot;: &quot;house&quot;,
+ &quot;at&quot;: &quot;end&quot;, &quot;rate&quot;: &quot;0.05&quot;, &quot;basis&quot;: &quot;value&quot;}</code></pre>
+<hr>
+<h1 id="triggers-adjustments">Triggers &amp; adjustments</h1>
+<h2 id="trigger">trigger</h2>
+<p>Ties a date of a target item to the date of an event item (ADR-0065).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>event</td><td>yes</td><td>id</td><td>An item with a date (see below).</td></tr>
+<tr><td>target</td><td>yes</td><td>id</td><td>The item whose date is set.</td></tr>
+<tr><td>action</td><td>yes</td><td>choice <code>start</code>, <code>end</code>, <code>startAndEnd</code></td><td><code>start</code>: the target starts or happens in the event's month (replaces its own date). <code>end</code>: its last month is the month before the event (the earlier of that and its own <code>endDate</code>). <code>startAndEnd</code>: only in the event's month. <code>end</code> and <code>startAndEnd</code> only for recurring targets (<code>income</code>, <code>expense</code>, <code>contribution</code>, <code>withdrawal</code>, <code>pension</code>, <code>extraPayment</code>).</td></tr>
+<tr><td>on</td><td>no</td><td>choice <code>start</code>, <code>end</code></td><td>Default <code>start</code>: the event's date. <code>end</code>: the month after its last month (recurring events, needs an <code>endDate</code>) or its sale month (property, vehicle). An event that never ends never fires.</td></tr>
+</table>
+<p>Dated items and the field a trigger reads or sets (<code>triggers.START_FIELD</code>): property, vehicle <code>purchaseDate</code>; mortgage, renewal, income, expense, contribution, withdrawal, pension, extraPayment <code>startDate</code>; account <code>openedDate</code>; retirement <code>retirementDate</code>; sale <code>saleDate</code>; lumpSum <code>paymentDate</code>; improvement <code>improvementDate</code>; marketAdjustment, adjustment <code>adjustmentDate</code>; transfer <code>transferDate</code>; cashBalance <code>balanceDate</code>; associatedCost <code>costDate</code>; associatedOneOff <code>paymentDate</code>.</p>
+<ul><li>Run: resolved before validation and compiling (<code>triggers.resolve</code>, inside <code>triggers.prepared</code>): the target's date fields are written into a copy of the scenario. Errors: unknown ids, a cycle, two triggers setting the same date, an event without a date. A target ended before its own start is left out of the run. In the event's month a <code>Triggered</code> state event is logged (order <code>OPEN + 59</code>); no movement.</li><li>Code: <code>state_machine/triggers.py</code> (<code>resolve</code>, <code>check</code>, <code>event_month</code>); <code>state_machine/events/trigger.py</code> (<code>compile_trigger</code>, <code>TriggerEmitter</code>, <code>Triggered</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;trigger&quot;, &quot;id&quot;: &quot;t-living&quot;, &quot;name&quot;: &quot;Living ends at retirement&quot;,
+ &quot;event&quot;: &quot;ret&quot;, &quot;target&quot;: &quot;living&quot;, &quot;action&quot;: &quot;end&quot;}</code></pre>
+<h2 id="adjustment">adjustment</h2>
+<p>A new amount for a cash flow from a date (ADR-0062).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>flow</td><td>yes</td><td>id</td><td>An <code>income</code>, <code>expense</code>, <code>contribution</code>, <code>withdrawal</code> (method <code>amount</code> or <code>percent</code>, not <code>annuity</code>), <code>associatedExpense</code> or <code>associatedIncome</code>.</td></tr>
+<tr><td>adjustmentDate</td><td>yes</td><td>date</td><td>Within the horizon. Before the flow starts it applies once the flow runs.</td></tr>
+<tr><td>amount</td><td>for amount flows</td><td>decimal ≥ 0</td><td>In dollars of the adjustment date; indexed with the flow's own rate in yearly steps from that date.</td></tr>
+<tr><td>per</td><td>no</td><td>choice</td><td>Default: the flow's <code>per</code>.</td></tr>
+<tr><td>annualRate</td><td>for percent flows</td><td>fraction in (0, 1)</td><td>For a <code>percent</code> withdrawal, or an associated expense or income stated as a rate.</td></tr>
+</table>
+<ul><li>Run: the new amounts are known at compile time (<code>flows/adjustment.steps_for</code>, <code>rate_steps_for</code>) and passed to the flow's <code>IndexingRule</code> or strategy. Several adjustments follow each other; in one month the last in item order wins. In its month an <code>AdjustmentEmitter</code> (order <code>OPEN + 60</code>) logs <code>FlowAdjusted</code>; no movement of its own.</li><li>Code: <code>state_machine/flows/adjustment.py</code> (<code>compile_adjustment</code>, <code>AdjustmentEmitter</code>, <code>FlowAdjusted</code>, <code>target_of</code>, <code>is_percent</code>).</li></ul>
+<pre><code>{&quot;type&quot;: &quot;adjustment&quot;, &quot;id&quot;: &quot;raise&quot;, &quot;name&quot;: &quot;Raise&quot;, &quot;flow&quot;: &quot;salary&quot;,
+ &quot;adjustmentDate&quot;: &quot;2030-01-01&quot;, &quot;amount&quot;: &quot;100000&quot;, &quot;per&quot;: &quot;year&quot;}</code></pre>
+<hr>
+<h1 id="jurisdiction-specific">Jurisdiction-specific</h1>
+<p>These types exist only in one jurisdiction. In another jurisdiction validation refuses them ("… is not available in …"). See <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>.</p>
+<h2 id="contributionroom">contributionRoom</h2>
+<p>Canada (<code>CA</code>) only. Contribution room of one account type for one person, shared by all their accounts of that type (ADR-0060).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>accountType</td><td>yes</td><td>choice <code>rrsp</code>, <code>tfsa</code></td><td></td></tr>
+<tr><td>room</td><td>yes</td><td>decimal ≥ 0</td><td>Room available in the as-of month.</td></tr>
+<tr><td>roomAsOfDate</td><td>yes</td><td>date</td><td>Within the horizon. Before it nothing is checked.</td></tr>
+<tr><td>yearlyMax</td><td>yes</td><td>decimal ≥ 0</td><td>The year's dollar maximum (RRSP) or annual limit (TFSA) in <code>maxYear</code>.</td></tr>
+<tr><td>maxYear</td><td>no</td><td>year, e.g. <code>&quot;2026&quot;</code></td><td>Default: the year of <code>roomAsOfDate</code>.</td></tr>
+<tr><td>incomeRate</td><td>no</td><td>fraction in [0, 1]</td><td>RRSP only. Default 0.18.</td></tr>
+<tr><td>indexing, indexRate</td><td>no</td><td>as income</td><td>How <code>yearlyMax</code> grows.</td></tr>
+<tr><td>owner</td><td>no</td><td>id</td><td>Whose room. One item per (person, accountType).</td></tr>
+</table>
+<ul><li>Run: in the as-of month (order <code>OPEN + 50</code>) the room is set to <code>room</code>. Each January after it, new room is added: RRSP min(incomeRate × last calendar year's earned income, the year's maximum); TFSA the year's maximum plus last year's TFSA withdrawals. The year's maximum is <code>yearlyMax</code> indexed from <code>maxYear</code>, rounded to $10 (RRSP) or $500 (TFSA). Contributions (own share, then match), transfers and opening transfers into an account of that type are capped at the room; the excess stays in cash. No ledger lines. Result columns <code>rrspRoom</code>, <code>tfsaRoom</code> (household total; null before the as-of month).</li><li>Code: <code>state_machine/jurisdictions/ca/room.py</code> (<code>compile_contribution_room</code>, <code>RoomType</code>, <code>RoomLimits</code>, <code>RoomStartEmitter</code>, <code>RoomYearEmitter</code>); checks in <code>jurisdictions/ca/__init__.py</code> <code>Canada.validate_item</code>.</li></ul>
+<pre><code>{&quot;type&quot;: &quot;contributionRoom&quot;, &quot;id&quot;: &quot;rrsp-room&quot;, &quot;name&quot;: &quot;RRSP room&quot;, &quot;owner&quot;: &quot;alex&quot;,
+ &quot;accountType&quot;: &quot;rrsp&quot;, &quot;room&quot;: &quot;20000&quot;, &quot;roomAsOfDate&quot;: &quot;2027-01-01&quot;,
+ &quot;yearlyMax&quot;: &quot;33810&quot;, &quot;maxYear&quot;: &quot;2026&quot;, &quot;indexing&quot;: &quot;inflation&quot;}</code></pre>
+<h2 id="contributionlimit">contributionLimit</h2>
+<p>United States (<code>US</code>) only. The yearly contribution limit of one account group for one person (ADR-0071).</p>
+<table>
+<tr><th>Field</th><th>Required</th><th>Format</th><th>Meaning, default</th></tr>
+<tr><td>limitType</td><td>yes</td><td>choice <code>401k</code>, <code>ira</code>, <code>hsa</code></td><td><code>401k</code> covers traditional and Roth 401(k) together; <code>ira</code> both IRAs; <code>hsa</code> the HSA.</td></tr>
+<tr><td>yearlyLimit</td><td>yes</td><td>decimal ≥ 0</td><td>The employee limit in <code>limitYear</code>.</td></tr>
+<tr><td>limitYear</td><td>no</td><td>year</td><td>Default: the horizon's first year. Years before it are not checked.</td></tr>
+<tr><td>catchUp</td><td>no</td><td>decimal ≥ 0</td><td>Extra from the year the owner turns 50 (HSA 55). Needs the person's <code>birthDate</code>.</td></tr>
+<tr><td>contributedSoFar</td><td>no</td><td>decimal ≥ 0</td><td>Already contributed in the horizon's first year.</td></tr>
+<tr><td>indexing, indexRate</td><td>no</td><td>as income</td><td>Growth of both amounts, rounded down to $500 ($50 for HSA).</td></tr>
+<tr><td>owner</td><td>no</td><td>id</td><td>Whose limit. One item per (person, limitType).</td></tr>
+</table>
+<ul><li>Run: no emitters; the factory stores the limit on the household. Each calendar year, movements into the group's accounts (contribution own share, transfer, opening transfer) are capped at what is left; nothing carries over; the employer match is not capped. Result columns <code>k401Limit</code>, <code>iraLimit</code>, <code>hsaLimit</code> (left this year).</li><li>Code: <code>state_machine/jurisdictions/us/limits.py</code> (<code>compile_contribution_limit</code>, <code>GroupLimit</code>, <code>YearlyLimits</code>); checks in <code>jurisdictions/us/__init__.py</code> <code>UnitedStates.validate_item</code>.</li></ul>
+<pre><code>{&quot;type&quot;: &quot;contributionLimit&quot;, &quot;id&quot;: &quot;k401&quot;, &quot;name&quot;: &quot;401(k) limit&quot;, &quot;owner&quot;: &quot;sam&quot;,
+ &quot;limitType&quot;: &quot;401k&quot;, &quot;yearlyLimit&quot;: &quot;23500&quot;, &quot;limitYear&quot;: &quot;2025&quot;, &quot;catchUp&quot;: &quot;7500&quot;,
+ &quot;indexing&quot;: &quot;inflation&quot;}</code></pre>

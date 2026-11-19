@@ -1,0 +1,134 @@
+<h1 id="tutorial-add-a-new-item-type">Tutorial: add a new item type</h1>
+<p><strong>What you'll build:</strong> a <code>gift</code> item: a one-off amount of cash the household receives on a date (not taxed). It will run in the engine, be checked by validation, and appear in the builder's "+ Add" bar.</p>
+<p>Big picture first? Read the <a href="/docs/docs-dev-readme">developer intro</a>.</p>
+<h2 id="concepts-you-need">Concepts you need</h2>
+<ul><li>A scenario is a JSON file with a list of <strong>items</strong> (<code>income</code>, <code>property</code>, ...). Each item type has a <strong>factory</strong> registered with <code>@item_type(&quot;name&quot;)</code>. It turns the item into one or more <strong>emitters</strong>. See <a href="/docs/docs-dev-reference-items">items.md</a>.</li><li>An <strong>emitter</strong> decides <em>whether</em> something happens in a month (<code>emit()</code>; it only reads state). An <strong>event</strong> does it (<code>apply()</code>). The runner walks the emitters every month in order of their <code>ORDER</code> number (<code>state_machine/clock.py</code>).</li><li>Every balance change goes through <code>household.move(kind, from, to, amount, source)</code>. It writes one ledger line. <code>None</code> means "outside the household". See <a href="/docs/docs-dev-reference-ledger">ledger.md</a>.</li><li>Money is <code>decimal.Decimal</code>, rounded to cents with <code>arith.money</code>.</li><li>New modules under <code>holdings/</code>, <code>events/</code>, <code>flows/</code> and <code>rules/</code> are found automatically. No registry to edit.</li></ul>
+<p>All commands run from <code>webapp/</code>.</p>
+<h2 id="steps">Steps</h2>
+<h3 id="1-write-the-emitter-the-event-and-the-factory">1. Write the emitter, the event and the factory</h3>
+<p>Create <code>state_machine/events/gift.py</code>:</p>
+<pre><code>&quot;&quot;&quot;Gift (``type: &quot;gift&quot;``): a one-off amount of cash received on ``giftDate``.
+Not income, not taxed.&quot;&quot;&quot;
+from ..arith import D, money
+from ..clock import Order
+from ..compiler import item_type
+from ..dates import month_index
+from ..emitters import FlowEvent, OneShotEmitter
+
+
+class GiftReceived(FlowEvent):
+    &quot;&quot;&quot;GIFT: outside -&gt; cash.&quot;&quot;&quot;
+
+    def __init__(self, amount):
+        self.amount = amount
+
+    def apply(self, household):
+        household.move(&quot;GIFT&quot;, None, &quot;cash&quot;, self.amount, self.source)
+
+    def describe(self):
+        return f&quot;gift {self.amount}&quot;
+
+
+class GiftEmitter(OneShotEmitter):
+    ORDER = Order.INCOME + 50        # after income, before pension payments
+
+    def __init__(self, month, amount, **kw):
+        super().__init__(month, **kw)
+        self.amount = amount
+
+    def emit(self, month, household):
+        return (GiftReceived(self.amount),)
+
+
+@item_type(&quot;gift&quot;)
+def compile_gift(item, ctx):
+    yield GiftEmitter(month_index(item[&quot;giftDate&quot;], &quot;giftDate&quot;),
+                      money(D(item[&quot;amount&quot;])))</code></pre>
+<p>Notes:</p>
+<ul><li><code>OneShotEmitter</code> is due in exactly one month. For a monthly flow use <code>RecurringEmitter</code> (see <code>flows/income_expense.py</code>).</li><li><code>Order</code> steps are 100 apart. <code>Order.INCOME + 50</code> puts the gift between two steps.</li><li>The runner fills in <code>self.source</code> (the item id), so the ledger line names the item.</li></ul>
+<h3 id="2-validate-it">2. Validate it</h3>
+<p>In <code>state_machine/validation.py</code>, add the required fields to <code>REQUIRED</code>:</p>
+<pre><code>    # A one-off gift received in cash.
+    &quot;gift&quot;: [&quot;giftDate&quot;, &quot;amount&quot;],</code></pre>
+<p>A field ending in <code>Date</code> is checked as a date, any other as a number. Add the remaining checks in <code>validate()</code>, next to the <code>cashBalance</code> check:</p>
+<pre><code>        if kind == &quot;gift&quot;:
+            if dec(item, &quot;amount&quot;, where) &lt;= 0:
+                raise ValueError(f&quot;{where}: amount must be positive&quot;)
+            if not start &lt;= month_index(item[&quot;giftDate&quot;], where) &lt;= end:
+                raise ValueError(f&quot;{where}: giftDate must be within the horizon&quot;)</code></pre>
+<h3 id="3-put-it-in-the-builder">3. Put it in the builder</h3>
+<p>The builder builds its forms from <code>schema.py</code>. Add the type in four places:</p>
+<pre><code># FIELDS: the form&#x27;s fields, in JSON key order
+    &quot;gift&quot;: [&quot;giftDate&quot;, &quot;amount&quot;],
+
+# LEGENDS: the form&#x27;s title
+    &quot;gift&quot;: &quot;Gift: a one-off amount of cash received (not taxed)&quot;,
+
+# HINTS: optional help after a field label
+    (&quot;gift&quot;, &quot;giftDate&quot;): &quot;the month the cash arrives&quot;,
+
+# ADD_GROUPS: which group of the &quot;+ Add&quot; bar lists it
+    (&quot;Income &amp; pensions&quot;, [&quot;income&quot;, &quot;pension&quot;, &quot;associatedIncome&quot;, &quot;associatedOneOff&quot;, &quot;gift&quot;]),</code></pre>
+<p><code>schema.py</code> asserts that every type in <code>FIELDS</code> is in exactly one <code>ADD_GROUPS</code> entry (and one <code>FORM_GROUPS</code> entry, which picks up new types automatically). If the item belongs on another item's card (like a contribution on an account), also add it to <code>CARD_ADDS</code>, <code>NEEDS</code> and <code>LINK_FIELD</code>.</p>
+<h3 id="4-document-it-in-the-spec">4. Document it in the spec</h3>
+<p><code>webapp/SPEC.md</code> is the binding description of the JSON format. Add a bullet under "Scenario JSON", after "Cash balance":</p>
+<pre><code>- Gift: `{&quot;type&quot;: &quot;gift&quot;, &quot;giftDate&quot;, &quot;amount&quot;}`: a one-off amount (positive) received
+  into cash in the month of `giftDate` (within the horizon), after the month&#x27;s income. A
+  `GIFT` movement from outside: not income, not taxed.</code></pre>
+<p>Then rebuild the in-app documentation tab (<code>test_docs</code> fails when it is stale):</p>
+<pre><code>.venv/bin/python build_docs.py</code></pre>
+<h3 id="5-write-a-unit-test">5. Write a unit test</h3>
+<p>Create <code>state_machine/tests/test_gift.py</code>:</p>
+<pre><code>import unittest
+from decimal import Decimal
+
+from state_machine import engine
+from state_machine.tests.support import scenario
+
+
+def gift(date=&quot;2026-06-01&quot;, amount=&quot;5000&quot;):
+    return {&quot;type&quot;: &quot;gift&quot;, &quot;id&quot;: &quot;g&quot;, &quot;name&quot;: &quot;From grandma&quot;,
+            &quot;giftDate&quot;: date, &quot;amount&quot;: amount}
+
+
+class Gift(unittest.TestCase):
+    def test_cash_arrives_in_its_month(self):
+        r = engine.run_detailed(scenario([gift()]))
+        cash = {row[&quot;month&quot;]: row[&quot;cash&quot;] for row in r[&quot;rows&quot;]}
+        self.assertEqual(cash[&quot;2026-05&quot;], Decimal(&quot;10000&quot;))
+        self.assertEqual(cash[&quot;2026-06&quot;], Decimal(&quot;15000.00&quot;))
+        line = [x for x in r[&quot;ledger&quot;] if x[&quot;kind&quot;] == &quot;GIFT&quot;]
+        self.assertEqual([(x[&quot;from&quot;], x[&quot;to&quot;], x[&quot;amount&quot;], x[&quot;source&quot;]) for x in line],
+                         [(None, &quot;cash&quot;, Decimal(&quot;5000.00&quot;), &quot;g&quot;)])
+
+    def test_validation(self):
+        with self.assertRaisesRegex(ValueError, &quot;amount must be positive&quot;):
+            engine.validate(scenario([gift(amount=&quot;0&quot;)]))
+        with self.assertRaisesRegex(ValueError, &quot;giftDate must be within the horizon&quot;):
+            engine.validate(scenario([gift(date=&quot;2030-01-01&quot;)]))
+        with self.assertRaisesRegex(ValueError, &quot;missing field &#x27;giftDate&#x27;&quot;):
+            engine.validate(scenario([{&quot;type&quot;: &quot;gift&quot;, &quot;amount&quot;: &quot;1&quot;}]))
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()</code></pre>
+<p><code>support.scenario(items)</code> wraps items in a 2026-01 to 2027-12 scenario with 10,000 cash.</p>
+<pre><code>.venv/bin/python -m unittest state_machine.tests.test_gift</code></pre>
+<h3 id="6-update-one-golden-value">6. Update one golden value</h3>
+<p>A WP test keeps a hash of the <code>REQUIRED</code> table, so adding a type changes it. The full suite reports:</p>
+<pre><code>FAIL: test_constants (state_machine.tests.test_wp1_validation.Mutations.test_constants)
+AssertionError: golden value test_wp1_validation.Mutations.test_constants#1 differs: expected REQUIRED:...</code></pre>
+<p>That change is intended. Regenerate the stored values and check that only that key changed:</p>
+<pre><code>.venv/bin/python state_machine/tools/update_golden.py --values
+git diff state_machine/tests/golden/values.json     # one line: ...test_constants#1 &quot;REQUIRED:...&quot;</code></pre>
+<h2 id="test-it">Test it</h2>
+<p>Run the three gates:</p>
+<pre><code>.venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
+.venv/bin/python -m unittest discover -s state_machine/tests -t .
+.venv/bin/python state_machine/tools/update_golden.py --check</code></pre>
+<p>The golden check must print <code>0 changed/new</code> for every set. A new item type is not in any existing scenario, so no existing result changes. If one does, you changed behaviour by accident.</p>
+<p>To see it in the app: <code>.venv/bin/python app.py</code>, open http://127.0.0.1:5000, click "+ Add", pick <code>gift</code> under "Income &amp; pensions", then Run. The ledger page for that month shows a <code>GIFT</code> line and a <code>GiftReceived</code> event.</p>
+<h2 id="optional-polish">Optional polish</h2>
+<ul><li>Let triggers set its date: add <code>&quot;gift&quot;: &quot;giftDate&quot;</code> to <code>START_FIELD</code> in <code>state_machine/triggers.py</code>.</li><li>Show it in the builder card's estimate column: <code>cards.py</code> <code>_estimate()</code>.</li><li>A colour on the timeline: <code>web/timeline_draw.py</code>.</li></ul>
+<h2 id="where-to-go-next">Where to go next</h2>
+<ul><li>Every item type and its fields: <a href="/docs/docs-dev-reference-items">items.md</a>.</li><li>Movement kinds: <a href="/docs/docs-dev-reference-ledger">ledger.md</a>.</li><li>An item that depends on balances: compute the amount in <code>apply()</code>, as <code>events/cash_balance.py</code> does.</li><li>A tax effect: <a href="/docs/docs-dev-tutorials-add-rule">add-rule.md</a>.</li><li>Conventions and the golden suite: <code>CLAUDE.md</code> at the repository root.</li></ul>

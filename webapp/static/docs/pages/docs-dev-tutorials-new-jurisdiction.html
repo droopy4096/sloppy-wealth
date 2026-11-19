@@ -1,0 +1,112 @@
+<h1 id="tutorial-add-a-new-jurisdiction">Tutorial: add a new jurisdiction</h1>
+<p><strong>What you'll build:</strong> a minimal United Kingdom jurisdiction (<code>GB</code>) with two account types, an ISA (tax-free) and a SIPP (tax-deferred pension), its sample scenario and golden set. Users can then pick "United Kingdom" when they start a new scenario.</p>
+<p>Big picture first? Read the <a href="/docs/docs-dev-readme">developer intro</a>.</p>
+<h2 id="concepts-you-need">Concepts you need</h2>
+<ul><li>A scenario names its tax <strong>jurisdiction</strong> (<code>&quot;jurisdiction&quot;: &quot;CA&quot;</code>; no field means Canada). The jurisdiction supplies account types, how each is taxed, contribution limits, own item types and wording. See <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>.</li><li>A jurisdiction is a package <code>state_machine/jurisdictions/&lt;code&gt;/</code> with a class registered by <code>@jurisdiction(&quot;&lt;CODE&gt;&quot;)</code>. The code is ISO 3166 alpha-2 (so <code>GB</code>, not <code>UK</code>). Packages are found automatically; nothing in the core is edited.</li><li>Tax treatment comes from three <code>Treatment</code> flags. <code>DEFERRED</code>, <code>EXEMPT</code> and <code>TAXABLE</code> cover the usual cases.</li><li><code>tests/test_conformance.py</code> checks every registered jurisdiction. It must pass <strong>unchanged</strong>. It needs a <code>sample.json</code> that uses every account type, and a golden set.</li><li>This tutorial walks through steps 1, 5 and 6 of "Contributing a jurisdiction" in <code>state_machine/README.md</code>. Steps 2 to 4 (limits, own item types, wording) are optional.</li></ul>
+<p>All commands run from <code>webapp/</code>.</p>
+<h2 id="steps">Steps</h2>
+<h3 id="1-declare-the-jurisdiction">1. Declare the jurisdiction</h3>
+<p>Create <code>state_machine/jurisdictions/gb/__init__.py</code>:</p>
+<pre><code>&quot;&quot;&quot;United Kingdom (tutorial example): an ISA (tax-free) and a SIPP (personal pension,
+tax-deferred). No contribution limits and no own item types yet.&quot;&quot;&quot;
+from .. import DEFERRED, EXEMPT, AccountType, Jurisdiction, jurisdiction
+
+
+@jurisdiction(&quot;GB&quot;)
+class UnitedKingdom(Jurisdiction):
+    name = &quot;United Kingdom&quot;
+    account_types = {
+        &quot;isa&quot;: AccountType(&quot;isa&quot;, &quot;ISA (tax-free)&quot;, EXEMPT, &quot;ISA&quot;),
+        &quot;sipp&quot;: AccountType(&quot;sipp&quot;, &quot;SIPP (personal pension, tax-deferred)&quot;, DEFERRED, &quot;SIPP&quot;),
+    }
+    labels = {&quot;deductions&quot;: &quot;Deductions this month (SIPP, pension plan)&quot;,
+              &quot;pool&quot;: &quot;SIPP and pension plan contributions&quot;,
+              &quot;earned&quot;: &quot;counts as earned income (salary)&quot;}
+    legends = {&quot;account&quot;: &quot;Account: ISA or SIPP&quot;}</code></pre>
+<ul><li><code>account_types</code>: code -&gt; <code>AccountType(code, label, treatment, short)</code>. The code is what the scenario stores in <code>accountType</code>; the label is the dropdown text.</li><li><code>labels</code>: wording the ledger and forms use. <code>legends</code> overrides a core form title.</li><li>Without <code>limits</code>, nothing is capped.</li></ul>
+<h3 id="2-write-a-sample-scenario">2. Write a sample scenario</h3>
+<p>Create <code>state_machine/jurisdictions/gb/sample.json</code>. Synthetic data only. It must set <code>&quot;jurisdiction&quot;: &quot;GB&quot;</code> and use every account type:</p>
+<pre><code>{
+  &quot;schemaVersion&quot;: 1,
+  &quot;name&quot;: &quot;United Kingdom sample (conformance)&quot;,
+  &quot;jurisdiction&quot;: &quot;GB&quot;,
+  &quot;horizon&quot;: {&quot;start&quot;: &quot;2027-01-01&quot;, &quot;end&quot;: &quot;2031-12-01&quot;},
+  &quot;openingCash&quot;: &quot;20000&quot;,
+  &quot;effectiveTaxRate&quot;: &quot;0.25&quot;,
+  &quot;annualInflation&quot;: &quot;0.02&quot;,
+  &quot;items&quot;: [
+    {&quot;type&quot;: &quot;income&quot;, &quot;id&quot;: &quot;job&quot;, &quot;name&quot;: &quot;Salary&quot;, &quot;startDate&quot;: &quot;2027-01-01&quot;,
+     &quot;amount&quot;: &quot;4500&quot;, &quot;per&quot;: &quot;month&quot;, &quot;taxable&quot;: true, &quot;indexing&quot;: &quot;inflation&quot;},
+    {&quot;type&quot;: &quot;expense&quot;, &quot;id&quot;: &quot;living&quot;, &quot;name&quot;: &quot;Living&quot;, &quot;startDate&quot;: &quot;2027-01-01&quot;,
+     &quot;amount&quot;: &quot;2800&quot;, &quot;per&quot;: &quot;month&quot;, &quot;indexing&quot;: &quot;inflation&quot;},
+    {&quot;type&quot;: &quot;account&quot;, &quot;id&quot;: &quot;isa&quot;, &quot;name&quot;: &quot;Stocks and shares ISA&quot;, &quot;accountType&quot;: &quot;isa&quot;,
+     &quot;openingBalance&quot;: &quot;15000&quot;, &quot;annualReturn&quot;: &quot;0.05&quot;},
+    {&quot;type&quot;: &quot;account&quot;, &quot;id&quot;: &quot;sipp&quot;, &quot;name&quot;: &quot;SIPP&quot;, &quot;accountType&quot;: &quot;sipp&quot;,
+     &quot;openingBalance&quot;: &quot;40000&quot;, &quot;annualReturn&quot;: &quot;0.05&quot;},
+    {&quot;type&quot;: &quot;contribution&quot;, &quot;id&quot;: &quot;c-isa&quot;, &quot;account&quot;: &quot;isa&quot;, &quot;startDate&quot;: &quot;2027-01-01&quot;,
+     &quot;amount&quot;: &quot;500&quot;, &quot;per&quot;: &quot;month&quot;},
+    {&quot;type&quot;: &quot;contribution&quot;, &quot;id&quot;: &quot;c-sipp&quot;, &quot;account&quot;: &quot;sipp&quot;, &quot;startDate&quot;: &quot;2027-01-01&quot;,
+     &quot;amount&quot;: &quot;400&quot;, &quot;per&quot;: &quot;month&quot;},
+    {&quot;type&quot;: &quot;withdrawal&quot;, &quot;id&quot;: &quot;w-isa&quot;, &quot;account&quot;: &quot;isa&quot;, &quot;method&quot;: &quot;amount&quot;,
+     &quot;amount&quot;: &quot;6000&quot;, &quot;per&quot;: &quot;year&quot;, &quot;startDate&quot;: &quot;2030-04-01&quot;, &quot;endDate&quot;: &quot;2030-04-01&quot;}
+  ]
+}</code></pre>
+<p>Item formats: <a href="/docs/docs-dev-reference-items">items.md</a>.</p>
+<h3 id="3-run-the-conformance-test">3. Run the conformance test</h3>
+<pre><code>.venv/bin/python -m unittest state_machine.tests.test_conformance</code></pre>
+<p>Everything passes except:</p>
+<pre><code>FAIL: test_sample_validates_runs_and_is_golden (...) (jurisdiction=&#x27;GB&#x27;)
+AssertionError: &#x27;GB&#x27; not found in [&#x27;CA&#x27;, &#x27;US&#x27;] : a golden set (tests/golden/&lt;code&gt;/)</code></pre>
+<p>So the sample validates and runs; only the golden set is missing.</p>
+<h3 id="4-create-the-golden-set">4. Create the golden set</h3>
+<pre><code>.venv/bin/python state_machine/tools/update_golden.py --jurisdiction GB \
+    --add state_machine/jurisdictions/gb/sample.json</code></pre>
+<pre><code>jurisdictions/gb/sample.json: new
+GB: 1 scenarios, 1 changed/new, 0 removed
+written: .../state_machine/tests/golden/gb/golden.json</code></pre>
+<p>This creates <code>tests/golden/gb/scenarios.json</code> (the scenarios) and <code>golden.json</code> (a hash of each one's rows, holdings, ledger and tax). From now on any change to these results makes <code>test_golden</code> fail, until someone reviews and explains it. More synthetic fixtures are welcome: <code>--add</code> more files the same way.</p>
+<h3 id="5-add-your-own-unit-tests">5. Add your own unit tests</h3>
+<p>Create <code>state_machine/tests/test_gb.py</code>:</p>
+<pre><code>import unittest
+from decimal import Decimal
+
+from state_machine import engine, jurisdictions
+from state_machine.tests.support import scenario
+
+ITEMS = [
+    {&quot;type&quot;: &quot;income&quot;, &quot;id&quot;: &quot;job&quot;, &quot;startDate&quot;: &quot;2026-01-01&quot;, &quot;amount&quot;: &quot;4000&quot;,
+     &quot;per&quot;: &quot;month&quot;, &quot;taxable&quot;: True},
+    {&quot;type&quot;: &quot;account&quot;, &quot;id&quot;: &quot;isa&quot;, &quot;accountType&quot;: &quot;isa&quot;, &quot;openingBalance&quot;: &quot;10000&quot;,
+     &quot;annualReturn&quot;: &quot;0.06&quot;},
+    {&quot;type&quot;: &quot;account&quot;, &quot;id&quot;: &quot;sipp&quot;, &quot;accountType&quot;: &quot;sipp&quot;, &quot;annualReturn&quot;: &quot;0.06&quot;},
+    {&quot;type&quot;: &quot;contribution&quot;, &quot;id&quot;: &quot;c&quot;, &quot;account&quot;: &quot;sipp&quot;, &quot;startDate&quot;: &quot;2026-01-01&quot;,
+     &quot;amount&quot;: &quot;300&quot;, &quot;per&quot;: &quot;month&quot;},
+]
+
+
+class UnitedKingdom(unittest.TestCase):
+    def test_registered(self):
+        self.assertEqual(jurisdictions.get(&quot;GB&quot;).name, &quot;United Kingdom&quot;)
+
+    def test_sipp_deducted_isa_not_taxed(self):
+        tax = engine.run_detailed(scenario(ITEMS, jurisdiction=&quot;GB&quot;,
+                                           effectiveTaxRate=&quot;0.2&quot;))[&quot;tax&quot;]
+        self.assertEqual(tax[&quot;2026-01&quot;][&quot;deductions&quot;], Decimal(&quot;300.00&quot;))
+        self.assertEqual(tax[&quot;2026-01&quot;][&quot;taxable&quot;], Decimal(&quot;4000.00&quot;))   # ISA return not taxed
+
+    def test_canadian_types_refused(self):
+        bad = dict(ITEMS[1], accountType=&quot;tfsa&quot;)
+        with self.assertRaisesRegex(ValueError, &quot;accountType must be one of isa, sipp&quot;):
+            engine.validate(scenario([bad], jurisdiction=&quot;GB&quot;))
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()</code></pre>
+<h2 id="test-it">Test it</h2>
+<pre><code>.venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
+.venv/bin/python -m unittest discover -s state_machine/tests -t .
+.venv/bin/python state_machine/tools/update_golden.py --check</code></pre>
+<p>The last command now lists three sets: <code>CA</code>, <code>GB</code> and <code>US</code>, each with <code>0 changed/new</code>.</p>
+<p>In the app (<code>.venv/bin/python app.py</code>): "New scenario" offers United Kingdom, the account form offers ISA and SIPP, and loading <code>gb/sample.json</code> runs.</p>
+<h2 id="where-to-go-next">Where to go next</h2>
+<ul><li>Contribution limits (an ISA allowance, say): a <code>ContributionLimits</code> subclass as <code>limits</code>. Copy the shape of <code>us/limits.py</code>; its <code>columns</code> must end in <code>Room</code> or <code>Limit</code> and then show on the Run page.</li><li>Own item types (like Canada's <code>contributionRoom</code>): <code>item_types</code>, <code>required</code>, <code>form_fields</code>, <code>legends</code>, <code>add_groups</code> and <code>validate_item</code>, with an <code>@item_type</code> factory in a module of the package. See <a href="/docs/docs-dev-tutorials-add-item-type">add-item-type.md</a> for the factory.</li><li>A tax rule the flags cannot express: override <code>on_withdraw</code> and friends. See <a href="/docs/docs-dev-tutorials-add-rule">add-rule.md</a>.</li><li>The full API: <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>.</li></ul>

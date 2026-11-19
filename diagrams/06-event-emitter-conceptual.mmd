@@ -1,5 +1,5 @@
 ---
-title: Event-emitter engine, conceptual class model (DRAFT v0.2, poc/state-machine, D1-D5, D-E1..D-E4)
+title: Event-emitter engine, conceptual class model (DRAFT v0.3, webapp/state_machine, D1-D5, D-E1..D-E4, ADR-0061, ADR-0071)
 ---
 classDiagram
     direction LR
@@ -7,8 +7,9 @@ classDiagram
     namespace Input {
         class Scenario {
                 <<input>>
-                horizon, settings
-                retirement, tax rates, inflation, base date
+                horizon, settings, jurisdiction
+                tax rates, inflation, base date
+                items: person, retirement, trigger, holdings, flows...
             }
         class ItemSpec {
                 <<input: one form input>>
@@ -19,12 +20,19 @@ classDiagram
                 <<pure function>>
                 validate(Scenario)
             }
+        class Preparation {
+                <<compiler.prepared>>
+                upgrade (older forms), enabled.active (off items out),
+                triggers.resolve (dates written into targets)
+            }
     }
 
     namespace Build {
         class EmitterFactory {
                 <<registry: @item_type, one per item type>>
                 factory(item, ctx) Emitter[*]
+                @scenario_setup hooks: retirement + tax, results
+                compiler.compile_scenario builds Household + runner
             }
         class Emitter {
                 <<abstract>>
@@ -58,7 +66,8 @@ classDiagram
                 acts at its host's position (D-E1)
             }
         class ScenarioEmitter {
-                retirement, tax step, results recorder
+                retirement (one per person), tax step,
+                results Recorder (CLOSE, emits no events)
             }
     }
 
@@ -67,6 +76,7 @@ classDiagram
                 <<the loop>>
                 sorts emitters by key = order, ordinal, sub, D-E2
                 INITIAL step once, then for each month:
+                household.begin_month (OPEN), then
                 ask each due emitter in key order,
                 apply its events at once
                 registers Emitters only
@@ -92,15 +102,27 @@ classDiagram
             }
         class StateEvent {
                 changes household state
-                retirement, renewal, tax step
+                retirement, renewal, tax step, flow adjustment,
+                contribution room, trigger (log only)
             }
     }
 
     namespace State {
         class Household {
                 <<main object>>
-                month, retired, covered mode
+                month, covered mode, persons, jurisdiction
                 move(kind, from, to, amount, source)
+                begin_month(m)
+            }
+        class Person {
+                id, name, retirement, retired
+                tax rate, retirement tax rate
+            }
+        class Jurisdiction {
+                <<plug-in package: CA, US (ADR-0071)>>
+                account types and tax Treatment,
+                ContributionLimits, own item types,
+                on_contribute / on_return / on_withdraw
             }
         class Aggregate {
                 <<abstract holding>>
@@ -109,7 +131,7 @@ classDiagram
             }
         class Cash
         class Asset {
-                RealEstate, Vehicle
+                RealAsset: RealEstate, Vehicle
             }
         class Liability {
                 Mortgage (loan)
@@ -127,9 +149,9 @@ classDiagram
                 investment income, withdrawal tax,
                 deduction, capital gains, pension value
             }
-        class TaxState {
-                taxable, deductions, own-rate tax,
-                carry-forward pool, monthly detail
+        class TaxAccumulator {
+                per person: taxable, deductions,
+                own-rate tax, carry-forward pool, monthly detail
             }
         class Ledger {
                 Movement[*]: every money change
@@ -147,13 +169,18 @@ classDiagram
                 rows, holdings detail, ledger, tax, events
             }
         class EngineAPI {
-                <<facade, parity with webapp/engine.py>>
+                <<state_machine/api.py, facade engine.py>>
                 validate, run, run_detailed
             }
+        class JsonAPI {
+                <<webapp/api.py, stateless, ADR-0069>>
+                commands (ops.py), run, views
+            }
         class App {
-                <<Flask UI>>
-                form: one input per emitter,
-                modifiers grouped under host
+                <<Flask pages, webapp/web>>
+                form: one input per item,
+                modifiers grouped under host;
+                calls the JSON API only (web/client.py)
             }
     }
 
@@ -161,6 +188,7 @@ classDiagram
     Scenario "1" *-- "*" ItemSpec
     ItemSpec --> ItemSpec : modifies host
     Validator ..> Scenario : checks
+    Preparation ..> Scenario : prepares
 
     EmitterFactory ..> ItemSpec : reads
     EmitterFactory ..> Emitter : builds 1..n per item
@@ -188,7 +216,9 @@ classDiagram
 
     Household "1" *-- "*" Aggregate : by holding slot
     Household "1" *-- "1" Ledger
-    Household "1" *-- "1" TaxState
+    Household "1" *-- "1..*" Person
+    Person "1" *-- "1" TaxAccumulator
+    Household --> Jurisdiction : tax rules and limits
     Aggregate <|-- Cash
     Aggregate <|-- Asset
     Aggregate <|-- Liability
@@ -196,13 +226,16 @@ classDiagram
     Aggregate <|-- Entitlement
     Aggregate --> Rule : references
     Liability --> Asset : secured by
-    StateEvent ..> TaxState : tax step
+    StateEvent ..> TaxAccumulator : tax step
+    FlowEvent ..> Jurisdiction : account hooks
 
     ResultAssembler ..> Household : reads
     ResultAssembler ..> EventLog : reads
     EngineAPI ..> Validator
+    EmitterFactory ..> Preparation : compile_scenario first
     EngineAPI ..> EmitterFactory
     EngineAPI ..> ScenarioRunner
     EngineAPI ..> ResultAssembler
-    App ..> EngineAPI : calls
+    JsonAPI ..> EngineAPI : calls
+    App ..> JsonAPI : calls
     App ..> Scenario : edits

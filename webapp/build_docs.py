@@ -35,7 +35,12 @@ USER_SECTIONS = [
     ("Tutorials", ["docs/user/*.md"]),
 ]
 DEV_SECTIONS = [
-    ("Start here", ["README.md", "CLAUDE.md", "docs/IMPLEMENTATION_STATUS.md"]),
+    # The developer guide first (owner's request 2026-11-18): introduction, tutorials,
+    # reference; the design documents below it.
+    ("Developer guide", ["docs/dev/README.md"]),
+    ("Tutorials", ["docs/dev/tutorials/README.md", "docs/dev/tutorials/*.md"]),
+    ("Reference", ["docs/dev/reference/README.md", "docs/dev/reference/*.md"]),
+    ("Project", ["README.md", "CLAUDE.md", "docs/IMPLEMENTATION_STATUS.md"]),
     ("Planning", ["docs/glossary.md", "docs/open-questions.md", "docs/scenarios/*.md",
                   "docs/poc-review-2026-11-07.md"]),
     ("Review", ["CRITIQUE.md", "CRITIQUE_RESPONSES.md"]),

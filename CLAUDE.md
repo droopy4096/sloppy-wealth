@@ -1,6 +1,7 @@
 # Working on this repository (for developers and AI agents)
 
-Read [README.md](README.md) first (purpose, repo map, contributing). This file is the rule
+Read [README.md](README.md) first (purpose, repo map, contributing), then the developer
+guide [docs/dev/README.md](docs/dev/README.md) (how the system works, tutorials, reference). This file is the rule
 book: how the owner works, how decisions are recorded, and the engineering conventions
 that keep the PoC trustworthy.
 

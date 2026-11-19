@@ -1,0 +1,100 @@
+<h1 id="code-map">Code map</h1>
+<p>Python 3, standard library plus Flask (<code>webapp/requirements.txt</code>). All code is under <code>webapp/</code>.</p>
+<h2 id="dependency-direction">Dependency direction</h2>
+<pre><code>browser (web/static/web.js, sessionStorage)
+   │  form posts
+   ▼
+web/  (pages.py, client.py, timeline_draw.py, templates/)   no engine imports
+   │  client.call / client.get  (in-process or WEB_API_URL)
+   ▼
+api.py  (/api/...)  + schema.py, timeline.py
+   │
+   ▼
+state_machine/  (engine: ops, views, engine facade, compiler, runner, ...)
+   │
+   ▼
+state_machine/jurisdictions/&lt;code&gt;/  (country rules, plug-ins)</code></pre>
+<p><code>web/</code> talks only to the API. <code>api.py</code>, <code>schema.py</code> and <code>timeline.py</code> import the engine. Inside the engine, plug-in modules (<code>holdings/</code>, <code>flows/</code>, <code>events/</code>, <code>rules/</code>, <code>jurisdictions/</code>) import the core; the core never imports a plug-in by name (they are found by <code>compiler.discover()</code>).</p>
+<h2 id="webapp">webapp/</h2>
+<table>
+<tr><th>Module</th><th>Responsibility</th></tr>
+<tr><td><code>app.py</code></td><td>Flask app: registers the <code>api</code> and <code>web</code> blueprints; 1 MB body limit. Run: <code>.venv/bin/python app.py</code>.</td></tr>
+<tr><td><code>api.py</code></td><td>The JSON API (<a href="/docs/docs-dev-reference-api">api.md</a>): commands, runs, views; error handling, limits, gzip.</td></tr>
+<tr><td><code>schema.py</code></td><td>Item-type form schema: <code>FIELDS</code>, <code>LEGENDS</code>, <code>HINTS</code>, <code>SELECTS</code>, <code>PERCENT_FIELDS</code>, groups; <code>merged(code)</code> and <code>describe(code)</code> add a jurisdiction's own types and wording.</td></tr>
+<tr><td><code>timeline.py</code></td><td>Timeline model (<code>layout</code>, ADR-0066) served by <code>/api/timeline</code>.</td></tr>
+<tr><td><code>browser.py</code></td><td>Test stand-in for a browser tab: keeps the scenario and posts it with each request.</td></tr>
+<tr><td><code>build_docs.py</code></td><td>Pre-compiles <code>docs/</code> Markdown and Mermaid into <code>static/docs/</code> for the Help tab and <code>/docs/dev</code>.</td></tr>
+<tr><td><code>samples/</code></td><td>Sample scenario files.</td></tr>
+<tr><td><code>test_*.py</code></td><td>App-level tests (API, engine sanity, docs, UI).</td></tr>
+</table>
+<h2 id="webapp-web">webapp/web/</h2>
+<table>
+<tr><th>Module</th><th>Responsibility</th></tr>
+<tr><td><code>pages.py</code></td><td>Flask blueprint with the pages (builder, flat builder, run, holdings, ledger, break-even, vehicle cost, timeline, load, new, compare, docs); converts form text to JSON values.</td></tr>
+<tr><td><code>client.py</code></td><td>The only way to the engine: calls the API, converts numeric strings to <code>Decimal</code>.</td></tr>
+<tr><td><code>timeline_draw.py</code></td><td>Draws the timeline model as SVG (horizontal) or a git-graph style list.</td></tr>
+<tr><td><code>templates/</code></td><td>Jinja templates (<code>_items.html</code> shared by both builders).</td></tr>
+<tr><td><code>static/web.js</code></td><td>Keeps the scenario in sessionStorage, posts it, swaps in the returned page.</td></tr>
+</table>
+<h2 id="webapp-state-machine-the-engine">webapp/state_machine/ (the engine)</h2>
+<table>
+<tr><th>Module</th><th>Responsibility</th></tr>
+<tr><td><code>engine.py</code>, <code>api.py</code></td><td>Public facade: <code>validate</code>, <code>run</code>, <code>run_detailed</code>, <code>simulate</code>, <code>upgrade</code> and helpers.</td></tr>
+<tr><td><code>ops.py</code></td><td>Scenario commands for the API: load, settings, add, update, toggle, delete, limits.</td></tr>
+<tr><td><code>views.py</code></td><td>Derived views: builder view, summary, ledger month, events view.</td></tr>
+<tr><td><code>cards.py</code></td><td>Builder cards and per-item monthly estimates (no run).</td></tr>
+<tr><td><code>break_even.py</code></td><td>Property break-even from a run (ADR-0073).</td></tr>
+<tr><td><code>vehicle_cost.py</code></td><td>Vehicle cost of ownership from a run (ADR-0074).</td></tr>
+<tr><td><code>upgrade.py</code></td><td>Converts older scenario forms to current ones.</td></tr>
+<tr><td><code>enabled.py</code></td><td><code>enabled: false</code> and its cascade (<code>active</code>, <code>off_reasons</code>).</td></tr>
+<tr><td><code>triggers.py</code></td><td>Resolves triggers into target dates; <code>prepared()</code> = upgrade + active + resolve.</td></tr>
+<tr><td><code>validation.py</code></td><td><code>validate(scenario)</code>: required fields and checks; calls the jurisdiction's <code>validate_item</code>.</td></tr>
+<tr><td><code>compiler.py</code></td><td><code>@item_type</code>, <code>@scenario_setup</code>, <code>discover()</code>, <code>compile_scenario()</code> (Household + runner with emitters), <code>CompileContext</code>, <code>ItemContext</code>.</td></tr>
+<tr><td><code>runner.py</code></td><td><code>ScenarioRunner</code>: INITIAL step, then each month every due emitter in key order; applies events and follow-ups depth-first; logs them.</td></tr>
+<tr><td><code>emitters.py</code></td><td><code>Emitter</code> kinds (<code>OneShotEmitter</code>, <code>InitialEmitter</code>, <code>RecurringEmitter</code>, <code>ModifierEmitter</code>, <code>ScenarioEmitter</code>), schedules (<code>Once</code>, <code>Window</code>, ...), <code>Event</code> kinds (<code>LifecycleEvent</code>, <code>FlowEvent</code>, <code>ValuationEvent</code>, <code>StateEvent</code>), <code>EventLog</code>.</td></tr>
+<tr><td><code>clock.py</code></td><td><code>Order</code>: the steps of a month (below).</td></tr>
+<tr><td><code>household.py</code></td><td><code>Household</code> (holdings, ledger, persons, month state), <code>move()</code>, <code>Person</code>, <code>TaxAccumulator</code>.</td></tr>
+<tr><td><code>ledger.py</code></td><td><code>Ledger</code>: the list of movements (<a href="/docs/docs-dev-reference-ledger">ledger.md</a>).</td></tr>
+<tr><td><code>base.py</code></td><td><code>Aggregate</code> (a holding), <code>Rule</code>, <code>HOLDING_TYPES</code>, <code>GROUPS</code>.</td></tr>
+<tr><td><code>persons.py</code></td><td>Owner, contributor and retirement-person rules on the raw scenario.</td></tr>
+<tr><td><code>dates.py</code></td><td>Month indexes and labels, base month, retirement dates, sales, mortgage start, flow windows.</td></tr>
+<tr><td><code>arith.py</code></td><td>Decimal formulas (<a href="/docs/docs-dev-reference-rules#arithmetic">rules.md</a>).</td></tr>
+<tr><td><code>results.py</code></td><td>Records rows and holdings points each month; <code>assemble()</code> builds the result (<a href="/docs/docs-dev-reference-outputs">outputs.md</a>).</td></tr>
+<tr><td><code>holdings/</code></td><td>Holding item types: <code>account.py</code>, <code>pension.py</code>, <code>real_estate.py</code> (property), <code>vehicle.py</code>, <code>mortgage.py</code> (the <code>Mortgage</code> aggregate), <code>cash.py</code>.</td></tr>
+<tr><td><code>events/</code></td><td>One-off and lifecycle items: <code>purchase.py</code>, <code>sale.py</code>, <code>loan.py</code> (mortgage, renewal, extraPayment, lumpSum), <code>improvement.py</code>, <code>adjustment.py</code> (marketAdjustment), <code>transfer.py</code>, <code>cash_balance.py</code>, <code>retirement.py</code>, <code>trigger.py</code>.</td></tr>
+<tr><td><code>flows/</code></td><td>Recurring flows: <code>income_expense.py</code>, <code>contribution.py</code>, <code>withdrawal.py</code>, <code>adjustment.py</code> (cash-flow adjustment), <code>associated.py</code>, <code>associated_income.py</code>.</td></tr>
+<tr><td><code>rules/</code></td><td><code>tax.py</code>, <code>indexing.py</code>, <code>capital_gains.py</code>, <code>person.py</code> (<a href="/docs/docs-dev-reference-rules">rules.md</a>).</td></tr>
+<tr><td><code>jurisdictions/</code></td><td>Plug-in API and the <code>ca/</code>, <code>us/</code> packages (<a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>).</td></tr>
+<tr><td><code>tests/</code></td><td>Engine unit tests, conformance test, golden suite (<code>tests/golden/</code>).</td></tr>
+<tr><td><code>tools/update_golden.py</code></td><td>Regenerates or checks golden results.</td></tr>
+<tr><td><code>fixtures/</code></td><td>Synthetic scenarios used by tests.</td></tr>
+<tr><td><code>README.md</code>, <code>INTERFACES.md</code>, <code>OBJECTS.md</code>, <code>DECISIONS.md</code></td><td>Engine design docs.</td></tr>
+</table>
+<p>Where each item type lives: the "Code" line of each section in <a href="/docs/docs-dev-reference-items">items.md</a>.</p>
+<h2 id="month-order">Month order</h2>
+<p>Every emitter has the key <code>(order, ordinal, sub)</code>; the runner fires them in key order (<code>clock.py</code>). <code>ordinal</code> is the item index (for holdings and their modifiers: the holding's slot; <code>-1</code> for scenario-level emitters). Steps are 100 apart:</p>
+<table>
+<tr><th>Order</th><th>Value</th><th>What runs</th></tr>
+<tr><td>INITIAL</td><td>-100</td><td>Once before the first month: holdings that exist at the start (accounts, pensions, assets bought before).</td></tr>
+<tr><td>OPEN</td><td>0</td><td><code>Household.begin_month</code> (not an emitter); <code>RetirementEmitter</code>.</td></tr>
+<tr><td>(OPEN + 50)</td><td>50</td><td>CA contribution room start and yearly room.</td></tr>
+<tr><td>(OPEN + 59)</td><td>59</td><td>Trigger log entries.</td></tr>
+<tr><td>(OPEN + 60)</td><td>60</td><td>Cash-flow adjustment log entries.</td></tr>
+<tr><td>INCOME</td><td>100</td><td>Income, associated income and one-offs.</td></tr>
+<tr><td>PENSION_PAY</td><td>200</td><td>Pension payments.</td></tr>
+<tr><td>ACQUIRE</td><td>300</td><td>Purchases, loan advances, account openings.</td></tr>
+<tr><td>IMPROVE</td><td>400</td><td>Improvements.</td></tr>
+<tr><td>ADJUST</td><td>500</td><td>Market adjustments.</td></tr>
+<tr><td>SELL</td><td>600</td><td>Sales, loan payoffs, sale penalties.</td></tr>
+<tr><td>TRANSFER</td><td>700</td><td>One-off transfers.</td></tr>
+<tr><td>SERVICE_DEBT</td><td>800</td><td>Per mortgage: renewal, interest and payment, then extra payments and lump sums.</td></tr>
+<tr><td>EXPENSE</td><td>900</td><td>Expenses, associated expenses and costs.</td></tr>
+<tr><td>MAINTAIN</td><td>1000</td><td>Unused (vehicle maintenance is now an associated expense).</td></tr>
+<tr><td>CONTRIBUTE</td><td>1100</td><td>Contributions.</td></tr>
+<tr><td>WITHDRAW</td><td>1200</td><td>Withdrawals.</td></tr>
+<tr><td>GROW</td><td>1300</td><td>Appreciation and account returns on opening balances.</td></tr>
+<tr><td>REVALUE_PENSIONS</td><td>1400</td><td>Pension revaluation.</td></tr>
+<tr><td>TAX</td><td>1500</td><td>Tax step.</td></tr>
+<tr><td>(TAX + 50)</td><td>1550</td><td>Cash balance reconciliation.</td></tr>
+<tr><td>CLOSE</td><td>1600</td><td>Results row and holdings points.</td></tr>
+</table>

@@ -1,0 +1,99 @@
+<h1 id="tutorial-extend-a-jurisdiction-add-an-account-type">Tutorial: extend a jurisdiction (add an account type)</h1>
+<p><strong>What you'll build:</strong> Canada's FHSA (First Home Savings Account) as a new account type: contributions deducted from taxable income, growth and withdrawals not taxed. It will appear in the account form's dropdown, pass validation and run.</p>
+<p>Big picture first? Read the <a href="/docs/docs-dev-readme">developer intro</a>.</p>
+<h2 id="concepts-you-need">Concepts you need</h2>
+<ul><li>A <strong>jurisdiction</strong> is a package under <code>state_machine/jurisdictions/&lt;code&gt;/</code> (<code>ca/</code>, <code>us/</code>). It holds everything country-specific: account types, tax treatment, contribution limits, own item types and form wording. The core never names a country. See <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>.</li><li>An <strong>account type</strong> is an <code>AccountType(code, label, Treatment, short)</code>. The <code>Treatment</code> has three flags: <code>deductible</code>, <code>returns_taxed</code>, <code>withdrawal_taxed</code>. The default hooks (<code>on_contribute</code>, <code>on_return</code>, <code>on_withdraw</code>) follow the flags, so a plain account type needs no code.</li><li>The builder's account dropdown, validation and the account cards read <code>account_types</code>. You do not edit <code>schema.py</code> or <code>validation.py</code>.</li><li><strong>Conformance test</strong> (<code>tests/test_conformance.py</code>): every jurisdiction must ship a <code>sample.json</code> that uses <strong>every</strong> account type, and that sample must be in its <strong>golden set</strong>. See <a href="/docs/docs-dev-reference-items#account">items.md</a> for the account item.</li></ul>
+<p>All commands run from <code>webapp/</code>.</p>
+<h2 id="steps">Steps</h2>
+<h3 id="1-declare-the-account-type">1. Declare the account type</h3>
+<p>In <code>state_machine/jurisdictions/ca/__init__.py</code>, import <code>Treatment</code> and define the flags (no ready-made constant fits: <code>DEFERRED</code> taxes withdrawals, <code>EXEMPT</code> has no deduction):</p>
+<pre><code>from .. import DEFERRED, EXEMPT, TAXABLE, AccountType, Jurisdiction, Treatment, jurisdiction
+from . import resp
+from .room import ROOM_TYPES, RoomLimits
+
+# FHSA: contributions deductible, growth and qualifying withdrawals tax-free.
+FHSA = Treatment(deductible=True, returns_taxed=False, withdrawal_taxed=False)</code></pre>
+<p>Add it to <code>Canada.account_types</code>, after <code>resp</code>:</p>
+<pre><code>        &quot;fhsa&quot;: AccountType(&quot;fhsa&quot;, &quot;FHSA (first home savings, deductible and tax-free)&quot;,
+                            FHSA, &quot;FHSA&quot;),</code></pre>
+<p>The label shows in the dropdown, the short name on the account card.</p>
+<h3 id="2-update-the-wording">2. Update the wording</h3>
+<p>Still in <code>Canada</code>, the legend and hints that list the account types:</p>
+<pre><code>        &quot;account&quot;: &quot;Account: RRSP, TFSA, FHSA, RESP or non-registered&quot;,
+...
+        (&quot;transfer&quot;, &quot;account&quot;): &quot;RRSP, TFSA, FHSA or non-registered; into an RRSP or FHSA &quot;
+                                 &quot;it is deducted&quot;,</code></pre>
+<h3 id="3-run-the-conformance-test">3. Run the conformance test</h3>
+<pre><code>.venv/bin/python -m unittest state_machine.tests.test_conformance</code></pre>
+<p>It fails:</p>
+<pre><code>FAIL: test_sample_validates_runs_and_is_golden (...) (jurisdiction=&#x27;CA&#x27;)
+AssertionError: Items in the second set but not the first: ...</code></pre>
+<p>The sample does not use <code>fhsa</code> yet.</p>
+<h3 id="4-use-it-in-the-sample">4. Use it in the sample</h3>
+<p>Edit <code>state_machine/jurisdictions/ca/sample.json</code> (synthetic data only). Add an account after <code>kid-resp</code>, and a contribution after <code>c-tfsa</code>:</p>
+<pre><code>    {&quot;type&quot;: &quot;account&quot;, &quot;id&quot;: &quot;ben-fhsa&quot;, &quot;name&quot;: &quot;Ben&#x27;s FHSA&quot;, &quot;owner&quot;: &quot;ben&quot;,
+     &quot;accountType&quot;: &quot;fhsa&quot;, &quot;openingBalance&quot;: &quot;8000&quot;, &quot;annualReturn&quot;: &quot;0.04&quot;},</code></pre>
+<pre><code>    {&quot;type&quot;: &quot;contribution&quot;, &quot;id&quot;: &quot;c-fhsa&quot;, &quot;account&quot;: &quot;ben-fhsa&quot;, &quot;startDate&quot;: &quot;2027-01-01&quot;,
+     &quot;amount&quot;: &quot;8000&quot;, &quot;per&quot;: &quot;year&quot;},</code></pre>
+<p>The conformance test now fails one line later: the sample in the golden set is the old one.</p>
+<h3 id="5-review-the-golden-differences-then-update-the-set">5. Review the golden differences, then update the set</h3>
+<p>First look, without writing:</p>
+<pre><code>.venv/bin/python state_machine/tools/update_golden.py --check --jurisdiction CA \
+    --add state_machine/jurisdictions/ca/sample.json</code></pre>
+<pre><code>jurisdictions/ca/sample.json: lastNetWorth differs
+  golden:  &#x27;553661.41&#x27;
+  current: &#x27;577513.98&#x27;
+tests/Accounts.test_validation_and_cascade_37f125db: error differs
+  golden:  {&#x27;message&#x27;: &#x27;item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp&#x27;, ...}
+  current: {... &#x27;message&#x27;: &#x27;item ROTH: accountType must be one of tfsa, rrsp, nonRegistered, resp, fhsa&#x27;}
+CA: 241 scenarios, 2 changed/new, 0 removed</code></pre>
+<p>Explain every line before you accept it:</p>
+<ul><li>the sample changed because you added an account to it (more savings, so a higher net worth);</li><li>an old error message now lists one more account type.</li></ul>
+<p>Both are intended. Nothing else changed, so no existing scenario computes differently. Now write:</p>
+<pre><code>.venv/bin/python state_machine/tools/update_golden.py --jurisdiction CA \
+    --add state_machine/jurisdictions/ca/sample.json</code></pre>
+<p>The golden suite is the project's regression guard. Its files are committed with the change, and the commit message must say why the results changed. Never regenerate to silence a difference you cannot explain.</p>
+<h3 id="6-fix-the-tests-that-pin-the-list">6. Fix the tests that pin the list</h3>
+<p>Two more places pin Canada's account types:</p>
+<ul><li><code>state_machine/tests/test_jurisdictions.py</code>, <code>test_canada_is_registered_and_the_default</code>: add <code>&quot;fhsa&quot;</code> to the expected list.</li><li>Two WP golden values (<code>test_wp1_validation</code>: the <code>ACCOUNT_TYPES</code> tuple and the "accountType bad" message). Regenerate them and check that only those two keys moved:</li></ul>
+<pre><code>.venv/bin/python state_machine/tools/update_golden.py --values
+git diff state_machine/tests/golden/values.json   # test_constants#2 and test_mutation_table#119</code></pre>
+<h3 id="7-test-the-treatment">7. Test the treatment</h3>
+<p>Create <code>state_machine/tests/test_fhsa.py</code>:</p>
+<pre><code>import unittest
+from decimal import Decimal
+
+from state_machine import engine
+from state_machine.tests.support import scenario
+
+ITEMS = [
+    {&quot;type&quot;: &quot;income&quot;, &quot;id&quot;: &quot;job&quot;, &quot;startDate&quot;: &quot;2026-01-01&quot;, &quot;amount&quot;: &quot;6000&quot;,
+     &quot;per&quot;: &quot;month&quot;, &quot;taxable&quot;: True},
+    {&quot;type&quot;: &quot;account&quot;, &quot;id&quot;: &quot;fhsa&quot;, &quot;accountType&quot;: &quot;fhsa&quot;, &quot;openingBalance&quot;: &quot;10000&quot;,
+     &quot;annualReturn&quot;: &quot;0.06&quot;},
+    {&quot;type&quot;: &quot;contribution&quot;, &quot;id&quot;: &quot;c&quot;, &quot;account&quot;: &quot;fhsa&quot;, &quot;startDate&quot;: &quot;2026-01-01&quot;,
+     &quot;amount&quot;: &quot;500&quot;, &quot;per&quot;: &quot;month&quot;},
+    {&quot;type&quot;: &quot;withdrawal&quot;, &quot;id&quot;: &quot;w&quot;, &quot;account&quot;: &quot;fhsa&quot;, &quot;method&quot;: &quot;amount&quot;,
+     &quot;amount&quot;: &quot;2000&quot;, &quot;per&quot;: &quot;month&quot;, &quot;startDate&quot;: &quot;2027-06-01&quot;, &quot;endDate&quot;: &quot;2027-06-01&quot;},
+]
+
+
+class Fhsa(unittest.TestCase):
+    def test_treatment(self):
+        tax = engine.run_detailed(scenario(ITEMS, effectiveTaxRate=&quot;0.3&quot;))[&quot;tax&quot;]
+        self.assertEqual(tax[&quot;2026-01&quot;][&quot;deductions&quot;], Decimal(&quot;500.00&quot;))   # deducted
+        self.assertEqual(tax[&quot;2026-01&quot;][&quot;taxable&quot;], Decimal(&quot;6000.00&quot;))     # return not taxed
+        self.assertEqual(tax[&quot;2027-06&quot;][&quot;taxable&quot;], Decimal(&quot;6000.00&quot;))     # withdrawal not taxed
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()</code></pre>
+<h2 id="test-it">Test it</h2>
+<pre><code>.venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
+.venv/bin/python -m unittest discover -s state_machine/tests -t .
+.venv/bin/python state_machine/tools/update_golden.py --check     # 0 changed/new everywhere</code></pre>
+<p>In the app (<code>.venv/bin/python app.py</code>), the account form of a Canadian scenario offers "FHSA (first home savings, deductible and tax-free)". A US scenario does not, and validation refuses <code>&quot;accountType&quot;: &quot;fhsa&quot;</code> there.</p>
+<h2 id="not-covered-here">Not covered here</h2>
+<ul><li><strong>Limits.</strong> Canada's contribution room (<code>ca/room.py</code>) knows only <code>rrsp</code> and <code>tfsa</code>. An FHSA limit would extend <code>RoomLimits</code>.</li><li><strong>Rules the flags cannot express</strong> (for example, tax on a non-qualifying withdrawal): override a hook. See <a href="/docs/docs-dev-tutorials-add-rule">add-rule.md</a>.</li></ul>
+<h2 id="where-to-go-next">Where to go next</h2>
+<ul><li>The plug-in API in full: <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a> and <code>state_machine/jurisdictions/__init__.py</code>.</li><li>A whole new country: <a href="/docs/docs-dev-tutorials-new-jurisdiction">new-jurisdiction.md</a>.</li><li>Account fields only one type takes (like the RESP's grant history): the <code>fields=</code> argument of <code>AccountType</code>, see <code>ca/resp.py</code>.</li></ul>
