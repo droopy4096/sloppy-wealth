@@ -1,0 +1,62 @@
+<h1 id="when-a-house-breaks-even">When a house breaks even</h1>
+<p><em>When can I sell the house without losing the money I put into buying and maintaining it?</em></p>
+<p>Buying a house costs more than its price: closing costs, mortgage interest, property tax, insurance, maintenance, and when you sell, the realtor and possibly a penalty for closing the mortgage early. This tutorial adds all of that to a house, then uses the <strong>break-even</strong> calculator to find the first month in which selling would give you back everything you put in. It takes about 15 minutes. All figures are illustrative: replace them with your own.</p>
+<p>To start from the finished scenario, download <a href="/static/docs/files/docs/user/files/house-break-even.json">house-break-even.json</a>, open <strong>Load</strong> in the app and upload it, then jump to <a href="#5-read-the-break-even">Read the break-even</a>.</p>
+<h2 id="what-you-need">What you need</h2>
+<ul><li>Sloppy Wealth running (see <a href="/docs/docs-user-readme">Getting started</a>).</li><li>The price and the mortgage (amount, rate, amortization, term), your closing costs, the selling costs you expect, and the yearly running costs.</li></ul>
+<h2 id="1-start-the-scenario">1. Start the scenario</h2>
+<p>Click <strong>New</strong>, choose your jurisdiction and click <strong>Start</strong>. In the <strong>Scenario</strong> card (under <strong>Household</strong>) set:</p>
+<ul><li><strong>Horizon</strong> from <code>2027-01-01</code> to <code>2051-12-01</code> (25 years, the length of the mortgage).</li><li><strong>Opening cash</strong> <code>150000</code> (the down payment and closing costs come out of it).</li><li><strong>Income tax</strong> <code>0</code>, <strong>Inflation</strong> <code>2.5</code> (%), <strong>Show real values in dollars of</strong> <code>2027-01-01</code>.</li></ul>
+<p>Then, under your person's <strong>Income</strong> category, add an income <code>Take-home pay</code> of <code>7000</code> per month from <code>2027-01-01</code>, not taxable, indexed to inflation, so that cash can pay the mortgage. Income doesn't count in the break-even; it only keeps the cash positive.</p>
+<p><a href="/docs/docs-user-vehicle-lease-or-own">Lease or buy a vehicle</a> shows these first steps with screenshots.</p>
+<h2 id="2-the-house-and-its-mortgage">2. The house and its mortgage</h2>
+<h3 id="the-house">The house</h3>
+<p>In the <strong>Properties</strong> category, click <strong>property</strong> next to <strong>+ Add</strong>: name <code>House</code>, purchase date <code>2027-01-01</code>, price <code>600000</code>, appreciation <code>4.5</code> (%) a year.</p>
+<p><img src="/static/docs/files/docs/user/images/house-break-even/01-add-house.png" alt="The property form" loading="lazy"></p>
+<h3 id="the-mortgage">The mortgage</h3>
+<p>Open the house's card and click <strong>mortgage</strong> under <strong>+ Add</strong>. The mortgage is tied to the house and starts with it. Enter the principal <code>480000</code> (20% down), rate <code>4.5</code> (%), amortization <code>25</code> years.</p>
+<p>The last fields describe the <strong>term</strong> and what closing the mortgage early would cost: <strong>termMonths</strong> <code>60</code> (a five-year term), <strong>penaltyMethod</strong> "months of interest" and <strong>penaltyMonths</strong> <code>3</code>, the usual Canadian penalty. After the term ends there is no penalty until the next term starts. Other methods: a flat amount, or a share of the interest left in the term.</p>
+<p><img src="/static/docs/files/docs/user/images/house-break-even/02-add-mortgage.png" alt="The mortgage form with its term and penalty" loading="lazy"></p>
+<p>The term ends in 2031. On the house's card, click <strong>renewal</strong> and add the next term: start <code>2032-01-01</code>, rate <code>4.25</code> (%), with the same <strong>termMonths</strong> <code>60</code> and penalty of 3 months' interest.</p>
+<h2 id="3-the-costs-of-buying-and-selling">3. The costs of buying and selling</h2>
+<p>These are one-off <strong>associated costs</strong> on the house's card. Click <strong>associatedCost</strong> and add:</p>
+<table>
+<tr><th>Name</th><th>At</th><th>Amount or rate</th></tr>
+<tr><td>Closing costs (land transfer tax, legal)</td><td>its start</td><td>amount <code>9000</code></td></tr>
+<tr><td>Realtor commission</td><td>its end</td><td>rate <code>5</code> (%), basis value</td></tr>
+<tr><td>Legal fees on sale</td><td>its end</td><td>amount <code>1500</code></td></tr>
+</table>
+<p>Costs "at its end" are what a sale would cost. The break-even applies them to every month as if you sold then; they are only actually paid if the scenario sells the house.</p>
+<p><img src="/static/docs/files/docs/user/images/house-break-even/03-add-selling-cost.png" alt="The realtor&#x27;s commission: 5% of the value, at the sale" loading="lazy"></p>
+<h2 id="4-the-costs-of-owning-it">4. The costs of owning it</h2>
+<p>Running costs are <strong>associated expenses</strong>, paid every month while you own the house. Click <strong>associatedExpense</strong> and add:</p>
+<table>
+<tr><th>Name</th><th>Amount</th><th>Indexing</th><th>Also when renting</th></tr>
+<tr><td>Property tax</td><td>yearly rate <code>0.8</code> (%), basis value</td><td>(follows the value)</td><td>no</td></tr>
+<tr><td>Home insurance</td><td><code>1800</code> per year</td><td>inflation</td><td>no</td></tr>
+<tr><td>Maintenance</td><td><code>3000</code> per year</td><td>inflation</td><td>no</td></tr>
+<tr><td>Utilities</td><td><code>250</code> per month</td><td>inflation</td><td><strong>yes</strong></td></tr>
+</table>
+<p>Property tax is a percentage of the house's value, re-set every year, so it rises with the value.</p>
+<p><strong>Also when renting</strong> marks costs that a renter would pay too, such as utilities. The break-even shows two versions: <em>owner costs</em> leave those out (the fair comparison with renting), and <em>all costs</em> keep them.</p>
+<p><img src="/static/docs/files/docs/user/images/house-break-even/04-add-property-tax.png" alt="Property tax as 0.8% of the value" loading="lazy"></p>
+<p>The house's card now holds everything: the mortgage and its renewal, the one-off costs and the running costs.</p>
+<p><img src="/static/docs/files/docs/user/images/house-break-even/05-house-card.png" alt="The house card with its mortgage, costs and running costs" loading="lazy"></p>
+<p>(The switched-off <strong>Kitchen renovation</strong> in the picture is used in step 6.)</p>
+<h2 id="5-read-the-break-even">5. Read the break-even</h2>
+<p>Click the purple <strong>chart icon</strong> on the house's card. For every month, the break-even page imagines a sale at the end of that month:</p>
+<ul><li><strong>Net proceeds</strong> = value − sale costs − loan balance − early-closure penalty: the cash the sale would bring.</li><li><strong>Invested</strong> = everything paid for the house so far: the down payment, closing costs, every mortgage payment, the property tax, insurance and maintenance.</li><li><strong>Gain</strong> = net proceeds − invested. Negative: selling now would lose money. Positive: you are ahead.</li><li><strong>Rent eq.</strong> = what owning has cost per month so far, the rent that would have cost the same. It is negative once owning is ahead.</li></ul>
+<p>Hover a column's heading for its formula.</p>
+<p><img src="/static/docs/files/docs/user/images/house-break-even/06-break-even.png" alt="The break-even page" loading="lazy"></p>
+<p>Reading it:</p>
+<ul><li><strong>In the first month</strong>, a sale would lose <strong>$46,650</strong>: the closing costs ($9,000), the realtor and legal fees ($31,500), the mortgage penalty ($5,350) and the month's running costs ($800) are all lost at once. Hence the huge rent equivalent at the start: those costs are spread over a single month.</li><li>The house <strong>breaks even in 2038-10</strong>, after 142 months (almost 12 years), on owner costs: a sale then would bring $638,060.88 against $636,878.71 put in.</li><li>Counting the utilities too (<em>all costs</em>), it breaks even in <strong>2041-09</strong>.</li><li>After 25 years, in 2051-12, a sale would leave you <strong>$415,630.84 ahead</strong>: owning has <em>earned</em> about $1,385 a month compared with paying rent.</li><li>Selling inside a mortgage term costs its penalty. In 2032-01, the first month of the renewal's term, the penalty is back at $4,438.15; in 2031-12, between terms, it is 0.</li></ul>
+<h2 id="6-what-moves-the-break-even">6. What moves the break-even</h2>
+<p>Change one thing at a time and open the break-even page again: it is recalculated instantly.</p>
+<p><strong>A renovation.</strong> On the house's card, add an <strong>improvement</strong>: <code>Kitchen renovation</code> on <code>2031-06-01</code>, cost <code>45000</code>, value added <code>25000</code> (renovations rarely add their full cost to the value). Tick or untick its checkmark to include it or not.</p>
+<p><img src="/static/docs/files/docs/user/images/house-break-even/07-break-even-with-renovation.png" alt="Break-even with the renovation" loading="lazy"></p>
+<p>With it, the house breaks even in <strong>2039-08</strong> instead of 2038-10: the $20,000 the renovation doesn't add to the value takes about ten more months to earn back.</p>
+<p><strong>Appreciation.</strong> It matters most. Change the house's appreciation from 4.5% to 3% (the green pencil on the house's card): the house then <strong>never breaks even</strong> within 25 years, because the interest, tax and upkeep outpace a 3% rise in value.</p>
+<p><strong>The mortgage.</strong> A lower rate, prepayments (<strong>extraPayment</strong>, <strong>lumpSum</strong> on the house's card) or a shorter amortization cut the interest paid and bring the break-even forward.</p>
+<h2 id="make-it-closer-to-your-situation">Make it closer to your situation</h2>
+<ul><li><strong>A house you already own.</strong> Set the horizon to start in the month you bought it, so the mortgage, which must start inside the horizon, is included from the beginning. If you start the horizon later instead, the break-even counts the house's equity at that date as already invested and starts counting months from there.</li><li><strong>A drop in prices.</strong> A <strong>marketAdjustment</strong> on the house's card changes its value on a date, by a percentage or to a new value.</li><li><strong>The actual sale.</strong> If you plan to sell, add a <strong>sale</strong> on the house's card: it pays off the mortgage, charges the penalty if the term isn't over, and pays the selling costs. The break-even table ends the month before.</li><li><strong>Save your work</strong> with <strong>Save</strong> in the menu; the browser tab forgets it once closed.</li></ul>
+<p>The answer is a ballpark: as good as the figures you enter, appreciation above all.</p>

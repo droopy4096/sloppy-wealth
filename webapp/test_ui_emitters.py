@@ -505,5 +505,25 @@ class ExpenseCardCosts(unittest.TestCase):
         self.assertIn(("2030-12", "COST"), {(x["month"], x["kind"]) for x in ledger})
 
 
+class ItemIdsLikeResultFields(unittest.TestCase):
+    def test_an_id_named_like_a_result_field_does_not_break_the_builder(self):
+        """The builder view's tables keyed by item id (starts, off, set_by) are not
+        converted to numbers: an item may have the id "closing", like a holdings column."""
+        s = {"schemaVersion": 1, "name": "ids", "jurisdiction": "CA",
+             "horizon": {"start": "2027-01-01", "end": "2028-12-01"}, "openingCash": "900000",
+             "items": [{"type": "property", "id": "house", "name": "House",
+                        "purchaseDate": "2027-01-01", "price": "600000",
+                        "annualAppreciation": "0"},
+                       {"type": "associatedCost", "id": "closing", "name": "Closing costs",
+                        "parent": "house", "at": "start", "amount": "9000"},
+                       {"type": "expense", "id": "amount", "name": "Amount",
+                        "startDate": "2027-01-01", "amount": "10", "per": "month",
+                        "enabled": False}]}
+        for view in ("/", "/flat"):
+            page = client_with(s).get(view)
+            self.assertEqual(page.status_code, 200)
+            self.assertIn("Closing costs", page.data.decode())
+
+
 if __name__ == "__main__":
     unittest.main()
