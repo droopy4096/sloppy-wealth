@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ page.title if page else "Documentation" }} - Wealth planner PoC{% endblock %}
+{% block title %}{{ page.title if page else "Help" }} - Sloppy Wealth{% endblock %}
 {% block content %}
 <style>
   body { max-width: 90rem; }
@@ -17,10 +17,17 @@
   .docs article blockquote { border-left: 3px solid #ccc; margin-left: 0; padding-left: 1rem; }
   .docs figure.diagram { margin: 1rem 0; overflow-x: auto; }
   .docs figure.diagram img { max-width: 100%; height: auto; border: 1px solid #eee; }
+  .docs article img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; }
+  .docs aside .area-link { margin-top: 2rem; padding-top: .6rem; border-top: 1px solid #ddd;
+                           font-size: .8rem; }
+  .docs aside .area-link a { color: #777; }
+  .docs aside .area-title { font-size: 1rem; margin: 0 0 .4rem; }
   .docs .source { color: #777; font-size: .85rem; }
 </style>
 <div class="docs">
   <aside>
+    {% if area == "dev" %}<p class="area-link" style="margin-top:0;border:0;padding:0"><a href="{{ url_for('web.docs') }}">&larr; Help (user guide)</a></p>
+    <p class="area-title"><b>Developer documentation</b></p>{% endif %}
     {% for section in sections %}
     <h3>{{ section.title }}</h3>
     <ul>
@@ -29,9 +36,10 @@
       {% endfor %}
     </ul>
     {% endfor %}
+    {% if area != "dev" %}<p class="area-link"><a href="{{ url_for('web.docs_dev') }}" title="design decisions, specifications and engine documentation">Developer documentation &rarr;</a></p>{% endif %}
   </aside>
   <article>
-    {% if page %}<p class="source">{{ page.path }} &middot; click a diagram to open it full size</p>{% endif %}
+    {% if page and area == "dev" %}<p class="source">{{ page.path }} &middot; click a diagram to open it full size</p>{% endif %}
     {{ body }}
   </article>
 </div>

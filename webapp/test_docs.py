@@ -15,15 +15,19 @@ class DocumentationTab(unittest.TestCase):
     def setUp(self):
         self.client = app.app.test_client()
         with open(INDEX) as f:
-            self.sections = json.load(f)["sections"]
+            index = json.load(f)
+        self.user, self.dev = index["user"], index["dev"]
+        self.sections = self.user + self.dev
 
     def test_every_page_and_diagram_is_served(self):
         for section in self.sections:
             for page in section["pages"]:
                 r = self.client.get(f"/docs/{page['slug']}")
                 self.assertEqual(r.status_code, 200, page["path"])
-                for svg in re.findall(r'src="(/static/docs/diagrams/[^"]+)"', r.data.decode()):
-                    self.assertEqual(self.client.get(svg).status_code, 200, svg)
+                body = r.data.decode()
+                for src in re.findall(r'(?:src|href)="(/static/docs/(?:diagrams|files)/[^"]+)"',
+                                      body):
+                    self.assertEqual(self.client.get(src).status_code, 200, src)
         self.assertEqual(self.client.get("/docs/no-such-page").status_code, 404)
 
     def test_index_covers_the_documentation(self):
@@ -43,7 +47,30 @@ class DocumentationTab(unittest.TestCase):
         self.assertIn('<figure class="diagram">', page)            # ```mermaid block
 
     def test_nav_has_the_tab(self):
-        self.assertIn('href="/docs">Documentation', self.client.get("/").data.decode())
+        self.assertIn('href="/docs" title="user guide and tutorials">Help',
+                      self.client.get("/").data.decode())
+
+    def test_help_shows_the_user_guide_and_dev_docs_are_apart(self):
+        """The Help tab (/docs) is the user guide; developer documentation is at /docs/dev,
+        linked from the bottom of the Help sidebar (owner's request 2026-11-18)."""
+        user_paths = {p["path"] for s in self.user for p in s["pages"]}
+        self.assertIn("docs/user/README.md", user_paths)
+        self.assertIn("docs/user/vehicle-lease-or-own.md", user_paths)
+        self.assertTrue(all(p.startswith("docs/user/") for p in user_paths))
+        help_page = self.client.get("/docs").data.decode()
+        self.assertIn("<h1", help_page)
+        self.assertIn("Getting started", help_page)               # the first page
+        self.assertNotIn("Architecture decisions", help_page)          # no dev sections
+        self.assertIn('href="/docs/dev"', help_page)
+        dev = self.client.get("/docs/dev").data.decode()
+        self.assertIn("Architecture decisions", dev)
+        self.assertIn("&larr; Help (user guide)", dev)
+        adr = self.client.get("/docs/docs-adr-0059-retirement-event-and-retirement-tax-rate")
+        self.assertIn("Architecture decisions", adr.data.decode())     # its own area
+        tutorial = self.client.get("/docs/docs-user-vehicle-lease-or-own").data.decode()
+        self.assertIn('src="/static/docs/files/docs/user/images/vehicle-lease-or-own/', tutorial)
+        self.assertIn('href="/static/docs/files/docs/user/files/vehicle-lease-or-own.json"',
+                      tutorial)
 
     def test_markdown_subset(self):
         links = lambda t: t
@@ -53,6 +80,9 @@ class DocumentationTab(unittest.TestCase):
         self.assertIn("<ul><li>a <strong>b <code>c</code></strong><ul><li>nested</li></ul></li></ul>",
                       html)
         self.assertIn("<td>1</td><td>2</td>", html)
+        image = build_docs.markdown("See ![Builder](img/a.png) and [it](b.md).", None, "t", links)
+        self.assertIn('<img src="img/a.png" alt="Builder" loading="lazy">', image)
+        self.assertIn('<a href="b.md">it</a>', image)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,34 @@
+<h1 id="getting-started">Getting started</h1>
+<p>Sloppy Wealth is a ballpark calculator for a household's big financial questions: buy or lease, rent or buy, when a house breaks even, when you can retire. You describe your household as a set of items (incomes, expenses, accounts, properties, mortgages, vehicles, pensions) and the app plays them forward month by month over the years you choose.</p>
+<h2 id="run-it">Run it</h2>
+<p>You need Python 3. From a copy of the repository:</p>
+<pre><code>cd webapp
+python3 -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt   # once
+.venv/bin/python app.py</code></pre>
+<p>Then open http://127.0.0.1:5000 in your browser.</p>
+<h2 id="your-data-stays-with-you">Your data stays with you</h2>
+<p>The scenario you build lives in your browser tab while you work. <strong>Save</strong> (in the top menu) downloads it as a JSON file, which you can <strong>Load</strong> again later, compare with another, or share. The app keeps nothing: there are no accounts and no database. The tab's copy is gone once the tab is closed, so save before you close it; the app warns you about unsaved changes.</p>
+<h2 id="the-menu">The menu</h2>
+<table>
+<tr><th>Item</th><th>What it does</th></tr>
+<tr><td>Canada / United States</td><td>The scenario's jurisdiction: tax rules, account types and limits. Click it to change it in the scenario's settings.</td></tr>
+<tr><td><strong>New</strong></td><td>Start an empty scenario, choosing its jurisdiction.</td></tr>
+<tr><td><strong>Builder</strong></td><td>Your scenario as cards, grouped by person and by category.</td></tr>
+<tr><td><strong>Builder (flat)</strong></td><td>The same items as one list, with all the "add" forms grouped by category.</td></tr>
+<tr><td><strong>Timeline</strong></td><td>When each item starts and ends, and what is tied to what.</td></tr>
+<tr><td><strong>Run</strong></td><td>The month-by-month results: cash, investments, property and vehicles, debts and net worth, also in today's dollars.</td></tr>
+<tr><td><strong>Save</strong> / <strong>Load</strong></td><td>Download the scenario as a file; open a saved one.</td></tr>
+<tr><td><strong>Compare</strong></td><td>Run two saved scenarios side by side.</td></tr>
+<tr><td><strong>Help</strong></td><td>This guide.</td></tr>
+</table>
+<h2 id="building-a-scenario">Building a scenario</h2>
+<ul><li><strong>Settings.</strong> Open the <strong>Scenario</strong> card (under <strong>Household</strong>) to set the name, the horizon (first and last month), the opening cash, tax rates and inflation, and whose dollars the "today's dollars" figures are in.</li><li><strong>Adding.</strong> Each category and card has <strong>+ Add</strong> buttons for the items that belong there: a vehicle's insurance is added on the vehicle's card, so it is tied to it.</li><li><strong>Icons on a card.</strong> <strong>+</strong> shows what can be added to it, the green pencil edits it, the red bin deletes it (with everything tied to it, after asking).</li><li><strong>Switching on and off.</strong> The checkmark at the left of a card or row switches the item off, and everything tied to it follows. Switched-off items stay in the scenario, so you can compare setups by switching them back on: no need to delete anything.</li><li><strong>Estimates.</strong> Cards show a greyed figure per month, a quick estimate from the item's own amounts. <strong>Run</strong> gives the exact figures.</li></ul>
+<h2 id="calculators">Calculators</h2>
+<p>The purple chart icon opens a calculator for that item:</p>
+<ul><li><strong>Property: break-even and rent equivalent.</strong> Each month, what a sale would bring (after selling costs, the mortgage and its early-closure penalty) against everything paid for the property, and the rent that would have cost the same.</li><li><strong>Vehicle: cost of ownership.</strong> Each month, everything paid for the vehicle so far, less its value, per month owned.</li></ul>
+<h2 id="tutorials">Tutorials</h2>
+<p>Step by step, with screenshots and an example scenario to load:</p>
+<ul><li><a href="/docs/docs-user-vehicle-lease-or-own">Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?</a></li></ul>
+<p>More are coming, one for each question in the project's README.</p>
+<h2 id="good-to-know">Good to know</h2>
+<ul><li>It is a ballpark: as good as the figures you enter. Amounts are rounded to cents and the model is simple on purpose.</li><li>It understands Canadian and US accounts and taxes (RRSP, TFSA, RESP; 401(k), IRA, HSA). Other countries may lack features they need.</li></ul>

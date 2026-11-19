@@ -1,0 +1,112 @@
+<h1 id="would-it-be-cheaper-to-lease-a-vehicle-than-to-keep-and-maintain-one-for-20-years">Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?</h1>
+<p>This tutorial compares three ways of having an SUV for the next 20 years:</p>
+<ul><li><strong>A. Buy it and keep it</strong> for the whole 20 years.</li><li><strong>B. Lease, back to back</strong>: a new 48-month lease every four years, five in all.</li><li><strong>C. Lease once, then buy it out</strong>: lease for 48 months, buy the vehicle at the end of the lease for its residual value, and keep it for the remaining 16 years.</li></ul>
+<p>All three live in one scenario; you switch two of them off to see the third. It takes about 20 minutes. All figures are illustrative: replace them with your own.</p>
+<p>If you would rather start from the finished scenario, download <a href="/static/docs/files/docs/user/files/vehicle-lease-or-own.json">vehicle-lease-or-own.json</a>, open <strong>Load</strong> in the app and upload it, then jump to <a href="#6-compare-the-three-options">Compare the three options</a>.</p>
+<h2 id="what-you-need">What you need</h2>
+<ul><li>Sloppy Wealth running (see <a href="/docs/docs-user-readme">Getting started</a>), open at http://127.0.0.1:5000.</li><li>Rough figures for each option: the price, the lease payment and its fees, the residual (buy-out) value, and the running costs (insurance, fuel, maintenance).</li></ul>
+<p>The model works month by month. Amounts can grow with inflation, so a cost you enter keeps its purchasing power and rises each year.</p>
+<h2 id="1-start-a-new-scenario">1. Start a new scenario</h2>
+<p>Click <strong>New</strong> in the top menu, choose your jurisdiction and click <strong>Start</strong>. The jurisdiction only matters for tax and investment accounts, which this question doesn't use.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/01-new-scenario.png" alt="New scenario page with the jurisdiction choice" loading="lazy"></p>
+<h2 id="2-set-the-scenario-s-horizon">2. Set the scenario's horizon</h2>
+<p>In the builder, open the <strong>Scenario</strong> card (under <strong>Household</strong>) and fill in its settings:</p>
+<ul><li><strong>Horizon start</strong> <code>2027-01-01</code> and <strong>Horizon end</strong> <code>2046-12-01</code>: 20 years, one month at a time.</li><li><strong>Opening cash</strong> <code>350000</code>: any amount large enough that cash doesn't go negative. Only the <em>differences</em> between the options matter.</li><li><strong>Income tax</strong> <code>0</code>: none of the options involves income or tax.</li><li><strong>Inflation</strong> <code>2.5</code> (%), and <strong>Show real values in dollars of</strong> <code>2027-01-01</code>, so the results can also be read in today's dollars.</li></ul>
+<p>Click <strong>Save settings</strong>.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/02-settings.png" alt="The Scenario settings form" loading="lazy"></p>
+<h2 id="3-option-a-buy-it-and-keep-it">3. Option A: buy it and keep it</h2>
+<h3 id="add-the-vehicle">Add the vehicle</h3>
+<p>In the <strong>Vehicles</strong> category, click <strong>vehicle</strong> next to <strong>+ Add</strong> and enter its name, purchase date, price and how much value it loses per year (15% is typical for the first years). Click <strong>Add vehicle</strong>.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/03-add-vehicle.png" alt="The vehicle form, filled in" loading="lazy"></p>
+<h3 id="add-its-running-costs">Add its running costs</h3>
+<p>Running costs are <em>associated expenses</em>: they are attached to the vehicle and stop when it is sold or switched off. Open the vehicle's card, click <strong>associatedExpense</strong> under <strong>+ Add</strong>, and fill in one cost at a time:</p>
+<table>
+<tr><th>Name</th><th>Amount</th><th>Per</th><th>Indexing</th></tr>
+<tr><td>Insurance</td><td>1800</td><td>year</td><td>inflation</td></tr>
+<tr><td>Fuel</td><td>250</td><td>month</td><td>inflation</td></tr>
+<tr><td>Maintenance and repairs</td><td>500</td><td>year</td><td>inflation</td></tr>
+</table>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/04-add-running-cost.png" alt="Adding the insurance to the vehicle&#x27;s card" loading="lazy"></p>
+<h3 id="make-maintenance-grow-with-the-vehicle-s-age">Make maintenance grow with the vehicle's age</h3>
+<p>A new vehicle needs little more than oil changes while under warranty; then come brakes, tires and belts, and later the big repairs. Inflation alone doesn't capture that, so step the maintenance up at the ages where it jumps, with <strong>adjustments</strong>. An adjustment gives a cost a new amount from a date, and inflation carries on from there.</p>
+<p>Open <strong>Builder (flat)</strong>, click <strong>adjustment</strong> under <strong>Expenses</strong>, choose the vehicle's <strong>Maintenance and repairs</strong> as the flow, and add one step at a time:</p>
+<table>
+<tr><th>Name</th><th>Date</th><th>Amount per year</th></tr>
+<tr><td>Maintenance from year 4</td><td>2030-01-01</td><td>1290</td></tr>
+<tr><td>Maintenance from year 7</td><td>2033-01-01</td><td>2320</td></tr>
+<tr><td>Maintenance from year 11</td><td>2037-01-01</td><td>3840</td></tr>
+<tr><td>Maintenance from year 15</td><td>2041-01-01</td><td>5650</td></tr>
+</table>
+<p>These are today's $1,200, $2,000, $3,000 and $4,000 a year, grown by 2.5% a year to each date, because an adjustment's amount is in the dollars of its own date.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/05-add-maintenance-step.png" alt="Adding a maintenance step for year 4" loading="lazy"></p>
+<p>Back in the builder, the vehicle's card lists its costs and, under the maintenance, its steps.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/05-vehicle-card.png" alt="The vehicle card with its running costs and maintenance steps" loading="lazy"></p>
+<h3 id="see-what-owning-it-costs-per-month">See what owning it costs per month</h3>
+<p>Click the purple <strong>chart icon</strong> on the vehicle's card. The <strong>Vehicle cost of ownership</strong> page shows, month by month, everything paid for the vehicle so far, its value, and what owning it has cost per month: (paid so far − value) ÷ months owned.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/06-cost-of-ownership.png" alt="The vehicle cost-of-ownership page" loading="lazy"></p>
+<p>After 20 years, owning this SUV has cost <strong>$970.92 a month</strong> on average. Its value has fallen to $1,767.94.</p>
+<h3 id="note-the-result">Note the result</h3>
+<p>Click <strong>Run</strong> in the top menu and scroll to the last month. <strong>Net worth</strong> is what you are left with: cash plus the vehicle's remaining value.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/07-run-a.png" alt="The run with option A" loading="lazy"></p>
+<p>Option A: <strong>$116,978.58</strong> at the end, or $71,535.68 in today's (2027) dollars.</p>
+<h2 id="4-option-b-lease-back-to-back">4. Option B: lease, back to back</h2>
+<p>A lease has a fixed term and a fixed payment. When it ends you return the vehicle (paying a disposition fee) and start the next lease (paying an acquisition fee), at a new payment. The leased vehicle is never more than four years old, and the payment here includes its maintenance.</p>
+<h3 id="add-the-lease">Add the lease</h3>
+<p>In the <strong>Expenses</strong> category, click <strong>expense</strong> next to <strong>+ Add</strong>: name <code>B. SUV leases, back to back (48 months each)</code>, start <code>2027-01-01</code>, end <code>2046-12-01</code>, <code>650</code> per month, indexing <strong>none</strong> (a lease payment doesn't change during its term).</p>
+<h3 id="a-new-payment-for-each-new-lease">A new payment for each new lease</h3>
+<p>On the lease's card, click <strong>adjustment</strong> under <strong>+ Add</strong> and enter each next lease's payment from its first month:</p>
+<table>
+<tr><th>Name</th><th>Date</th><th>Amount per month</th></tr>
+<tr><td>Lease 2</td><td>2031-01-01</td><td>717</td></tr>
+<tr><td>Lease 3</td><td>2035-01-01</td><td>792</td></tr>
+<tr><td>Lease 4</td><td>2039-01-01</td><td>874</td></tr>
+<tr><td>Lease 5</td><td>2043-01-01</td><td>965</td></tr>
+</table>
+<p>(Each is $650 grown by 2.5% a year for four more years.)</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/09-add-next-lease.png" alt="Adding the second lease&#x27;s payment" loading="lazy"></p>
+<h3 id="the-fees-at-each-changeover">The fees at each changeover</h3>
+<p>Fees are one-off <em>associated costs</em>. On the lease's card, click <strong>associatedCost</strong> and add:</p>
+<table>
+<tr><th>Name</th><th>At</th><th>Date</th><th>Amount</th></tr>
+<tr><td>Acquisition fee, lease 1</td><td>its start</td><td></td><td>1000</td></tr>
+<tr><td>Disposition + acquisition fees, lease 2</td><td>on the date below</td><td>2031-01-01</td><td>1400</td></tr>
+<tr><td>Disposition + acquisition fees, lease 3</td><td>on the date below</td><td>2035-01-01</td><td>1500</td></tr>
+<tr><td>Disposition + acquisition fees, lease 4</td><td>on the date below</td><td>2039-01-01</td><td>1650</td></tr>
+<tr><td>Disposition + acquisition fees, lease 5</td><td>on the date below</td><td>2043-01-01</td><td>1800</td></tr>
+<tr><td>Disposition fee, last lease</td><td>its end</td><td></td><td>450</td></tr>
+</table>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/10-add-lease-fee.png" alt="Adding the fees of the second lease" loading="lazy"></p>
+<h3 id="its-running-costs">Its running costs</h3>
+<p>Add the lease's insurance and fuel as associated expenses, like for option A (leases usually require fuller insurance; a newer vehicle uses a little less fuel):</p>
+<table>
+<tr><th>Name</th><th>Amount</th><th>Per</th><th>Indexing</th></tr>
+<tr><td>Insurance</td><td>2100</td><td>year</td><td>inflation</td></tr>
+<tr><td>Fuel</td><td>230</td><td>month</td><td>inflation</td></tr>
+</table>
+<p>The lease's card now shows the whole arrangement: the payments, the fees and the running costs, in date order.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/08-leases-card.png" alt="The lease card with its payments, fees and running costs" loading="lazy"></p>
+<h3 id="switch-option-a-off-and-run">Switch option A off and run</h3>
+<p>Untick the <strong>checkmark</strong> on option A's vehicle card. The vehicle and everything attached to it turn grey and leave the calculation, while staying in the scenario so you can switch them back on. Run again and scroll to the last month.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/11-run-b.png" alt="The run with option B" loading="lazy"></p>
+<p>Option B: <strong>$26,148.92</strong> at the end, or $15,990.80 in today's dollars. Nothing is left to sell at the end of a lease.</p>
+<h2 id="5-option-c-lease-once-then-buy-it-out">5. Option C: lease once, then buy it out</h2>
+<p>At the end of a lease you can usually buy the vehicle for its <em>residual value</em>, set in the contract (here 55% of the price: $24,750). From then on it is yours, four years old, and its maintenance follows its age.</p>
+<ol><li><strong>The lease.</strong> An expense <code>C. SUV lease, then buy out (48 months)</code> from <code>2027-01-01</code> to <code>2030-12-01</code>, <code>650</code> per month, indexing none, with an <strong>acquisition fee</strong> of <code>1000</code> at its start (no disposition fee: you keep the vehicle), and insurance <code>2100</code> a year and fuel <code>230</code> a month as associated expenses.</li><li><strong>The buy-out.</strong> A vehicle <code>C. SUV, bought out at the lease&#x27;s end</code>, bought <code>2031-01-01</code> for <code>24750</code>, losing <code>12</code> % of its value a year.</li><li><strong>Its running costs</strong>, entered in 2031 dollars (today's amounts grown by 2.5% a year for four years): insurance <code>1990</code> a year, fuel <code>275</code> a month, both indexed to inflation, and maintenance <code>1320</code> a year with steps on the same principle as option A: <code>2380</code> from 2034-01-01 (age 7), <code>3940</code> from 2038-01-01 (age 11) and <code>5790</code> from 2042-01-01 (age 15).</li></ol>
+<p>Switch option B off and option C's two cards on: in the builder, only C's lease and C's vehicle have their checkmark ticked.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/12-option-c-on.png" alt="Option C on, options A and B switched off" loading="lazy"></p>
+<p>Run again.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-lease-or-own/13-run-c.png" alt="The run with option C" loading="lazy"></p>
+<p>Option C: <strong>$112,844.95</strong> at the end, or $69,007.85 in today's dollars.</p>
+<h2 id="6-compare-the-three-options">6. Compare the three options</h2>
+<table>
+<tr><th></th><th>A. Buy and keep</th><th>B. Lease back to back</th><th>C. Lease, then buy out</th></tr>
+<tr><td>Net worth after 20 years</td><td>$116,978.58</td><td>$26,148.92</td><td>$112,844.95</td></tr>
+<tr><td>In 2027 dollars</td><td>$71,535.68</td><td>$15,990.80</td><td>$69,007.85</td></tr>
+<tr><td>Average cost per month</td><td>$970.92</td><td>$1,349.38</td><td>$988.15</td></tr>
+</table>
+<p>The average cost per month is the money the option used: (opening cash − net worth at the end) ÷ 240 months. For option A it matches the vehicle cost-of-ownership page.</p>
+<p>With these figures, <strong>buying and keeping is the cheapest</strong>: about $90,800 less than leasing back to back over 20 years (about $55,500 in today's dollars). Leasing once and then buying out comes close to buying, about $4,100 more, because the first four years cost more as a lease than as an owner's depreciation. Back-to-back leasing costs the most, but buys you a vehicle that is never more than four years old.</p>
+<p>To flip between the options at any time, switch the cards' checkmarks and run again. Try different figures to see where the answer changes: a cheaper lease, a higher residual, or maintenance that jumps earlier.</p>
+<h2 id="make-it-closer-to-your-situation">Make it closer to your situation</h2>
+<ul><li><strong>Maintenance not included in your lease.</strong> Add it to the lease as an associated expense, with an adjustment back to the low amount at each new lease (the vehicle is new again).</li><li><strong>Other lease costs.</strong> A down payment, excess-mileage charges or wear-and-tear charges are one-off associated costs at the lease's start or end, like the fees above.</li><li><strong>Replacing a bought vehicle.</strong> If you would replace it after, say, 10 years, add a <strong>sale</strong> on the vehicle's card at that date and a second vehicle bought then.</li><li><strong>Financing the purchase.</strong> This scenario pays cash. A car loan can be entered as a <strong>mortgage</strong> with no property: its principal, rate, amortization and start date. The loan's money arrives in cash, which pays the vehicle, and its payments follow.</li><li><strong>Money not spent up front.</strong> Cash earns nothing in this model. If you would invest the purchase price instead, add an <strong>account</strong> with a return and a one-off <strong>transfer</strong> into it in the leasing options.</li><li><strong>Save your work.</strong> Click <strong>Save</strong> in the menu to download the scenario as a JSON file; the browser tab forgets it once closed.</li></ul>
+<p>The answer is a ballpark. It is as good as the figures you enter, and the model ignores things such as resale negotiations, accidents and lease terms beyond the ones above.</p>

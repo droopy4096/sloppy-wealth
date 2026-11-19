@@ -102,7 +102,7 @@
     <a href="#save" data-save title="download the scenario as a JSON file">Save</a>
     <a href="{{ url_for('web.load') }}">Load</a>
     <a href="{{ url_for('web.compare') }}">Compare</a>
-    <a href="{{ url_for('web.docs') }}">Documentation</a>
+    <a href="{{ url_for('web.docs') }}" title="user guide and tutorials">Help</a>
     {% block nav_extra %}{% endblock %}
   </nav>
   {# The scenario lives in the browser tab (sessionStorage, ADR-0069): a page without

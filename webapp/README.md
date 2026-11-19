@@ -125,8 +125,9 @@ After an intended behaviour change, review what changed
 then regenerate (`update_golden.py`, `update_golden.py --values`) and commit the golden
 files with the change, saying why.
 
-Documentation tab: `/docs` shows the planning docs, ADRs, critique, PoC and state-machine
-documents and the rendered diagrams. They are pre-compiled into `static/docs/` by
-`.venv/bin/python build_docs.py` (needs mermaid-cli `mmdc` for changed diagrams: `$MMDC`,
-`mmdc` on PATH, or a copy cached by `npx @mermaid-js/mermaid-cli`); rerun it after
-editing any document or diagram. `test_docs.py` fails when `static/docs/` is stale.
+Help tab: `/docs` shows the user guide (`docs/user/`: getting started and tutorials, with
+their screenshots and example files); the developer documentation (planning docs, ADRs,
+critique, PoC and state-machine documents and the rendered diagrams) is at `/docs/dev`,
+linked from the bottom of the Help sidebar. Both are pre-compiled into `static/docs/` by
+`build_docs.py`; rerun it after editing any document or diagram. `test_docs.py` fails when
+`static/docs/` is stale.
