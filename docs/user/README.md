@@ -62,7 +62,8 @@ The purple chart icon opens a calculator for that item:
 ## Tutorials
 Step by step, with screenshots and an example scenario to load:
 
-- [Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?](vehicle-lease-or-own.md)
+- [Lease or buy a vehicle](vehicle-lease-or-own.md): would it be cheaper to lease a vehicle
+  than to keep and maintain one for 20 years?
 
 More are coming, one for each question in the project's README.
 
