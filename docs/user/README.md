@@ -68,6 +68,8 @@ Step by step, with screenshots and an example scenario to load:
   the money I put into buying and maintaining it?
 - [Vehicle cost of ownership](vehicle-cost-of-ownership.md): what a car bought with a loan
   really costs per month, with and without fuel.
+- [When can I retire](retirement.md): when can I retire with an income of $NNN in today's
+  dollars, living on an RRSP and CPP?
 
 More are coming, one for each question in the project's README.
 

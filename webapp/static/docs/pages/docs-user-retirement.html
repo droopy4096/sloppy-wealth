@@ -1,0 +1,58 @@
+<h1 id="when-can-i-retire">When can I retire</h1>
+<p><em>When can I retire with an income of $NNN in today's dollars?</em></p>
+<p>This tutorial models one person who wants to retire on <strong>$4,500 a month in today's dollars</strong>, living on an RRSP and the Canada Pension Plan (CPP). It finds the earliest retirement date at which the money lasts until age 90. It takes about 20 minutes. All figures are illustrative: replace them with your own.</p>
+<p>To start from the finished scenario, download <a href="/static/docs/files/docs/user/files/retirement.json">retirement.json</a>, open <strong>Load</strong> in the app and upload it, then jump to <a href="#5-find-the-earliest-date">Find the earliest date</a>.</p>
+<h2 id="how-the-question-is-set-up">How the question is set up</h2>
+<ul><li>The <strong>income you want</strong> is your spending: living expenses of $4,500 a month in today's dollars, rising with inflation every year, before and after retirement.</li><li><strong>Before retiring</strong>, a salary pays the expenses and RRSP contributions; what is left accumulates as cash.</li><li><strong>From retirement</strong>, the salary and the contributions stop. The RRSP is drawn down so that it lasts until the end, and CPP pays from age 60, with increases at 65 and 70.</li><li>You <strong>can retire</strong> at a date if cash never runs out before age 90, the end of the horizon.</li></ul>
+<p>The person in the example was born in June 1975: 60 in 2035-06, 65 in 2040-06, 70 in 2045-06 and 90 in 2065-06.</p>
+<h2 id="what-you-need">What you need</h2>
+<ul><li>Sloppy Wealth running (see <a href="/docs/docs-user-readme">Getting started</a>).</li><li>Your salary, spending, RRSP balance and contributions, and your CPP estimates (your Service Canada statement gives them).</li></ul>
+<h2 id="1-start-the-scenario">1. Start the scenario</h2>
+<p>Click <strong>New</strong>, choose <strong>Canada</strong> and click <strong>Start</strong>. In the <strong>Scenario</strong> card (under <strong>Household</strong>) set:</p>
+<ul><li><strong>Horizon</strong> from <code>2027-01-01</code> to <code>2065-06-01</code> (until age 90).</li><li><strong>Opening cash</strong> <code>40000</code>.</li><li><strong>Income tax</strong> <code>28</code> (%) while working and <strong>Retirement tax</strong> <code>15</code> (%) after retiring: the app switches from one to the other at the retirement date.</li><li><strong>Inflation</strong> <code>2.5</code> (%), <strong>Show real values in dollars of</strong> <code>2027-01-01</code>.</li></ul>
+<h2 id="2-working-life">2. Working life</h2>
+<p>Under your person (<strong>You</strong>):</p>
+<ul><li><strong>Income</strong>: <code>Salary</code>, <code>120000</code> per year from <code>2027-01-01</code>, taxable, indexed to inflation. No end date: retirement will end it.</li><li><strong>Accounts</strong>: an <strong>account</strong> <code>RRSP</code>, type RRSP, opening balance <code>400000</code>, return <code>5</code> (%). On its card, a <strong>contribution</strong> of <code>1500</code> per month from <code>2027-01-01</code>, indexed to inflation (contributions are deducted from taxable income).</li></ul>
+<p>Under <strong>Household</strong>, <strong>Expenses</strong>: <code>Living expenses</code>, <code>4500</code> per month from <code>2027-01-01</code>, <strong>amountIn</strong> "today's dollars", indexed to inflation. This is the retirement income you are aiming for.</p>
+<h2 id="3-retirement">3. Retirement</h2>
+<h3 id="the-retirement-date">The retirement date</h3>
+<p>On your person's card, click <strong>retirement</strong> under <strong>+ Add</strong> and give a first guess: <code>2037-01-01</code> (at 61½).</p>
+<h3 id="what-stops-at-retirement">What stops at retirement</h3>
+<p>A <strong>trigger</strong> ties an item's start or end to another item's date. On the salary's card, click <strong>trigger</strong>: event <strong>Retirement</strong>, action <strong>end</strong> (its last month is the month before retirement). For the RRSP contributions, which sit as a row on the RRSP's card, open <strong>Builder (flat)</strong> and add a <strong>trigger</strong> under <strong>Triggers</strong>: event <strong>Retirement</strong>, target <strong>RRSP contributions</strong>, action <strong>end</strong>.</p>
+<p><img src="/static/docs/files/docs/user/images/retirement/01-add-trigger.png" alt="The salary ends at retirement" loading="lazy"></p>
+<p>Moving the retirement date later moves both ends with it.</p>
+<h3 id="drawing-the-rrsp-down">Drawing the RRSP down</h3>
+<p>On the RRSP's card, add a <strong>withdrawal</strong>, method <strong>annuity</strong>, indexed to inflation, and leave its start date blank: a withdrawal without a start date begins at retirement. An annuity spreads the balance over the months left, rising with inflation, so the RRSP lasts exactly until the end of the horizon. Withdrawals are taxed (at the retirement rate).</p>
+<h3 id="cpp">CPP</h3>
+<p>CPP pays from age 60 and, in this tutorial, increases at 65 and 70. In <strong>Pensions</strong>, add three <strong>pensions</strong>, each taxable, indexed to inflation, with amounts in today's dollars:</p>
+<table>
+<tr><th>Name</th><th>Amount per month</th><th>Start</th></tr>
+<tr><td>CPP from 60</td><td>700</td><td>2035-06-01</td></tr>
+<tr><td>CPP increase at 65</td><td>400</td><td>2040-06-01</td></tr>
+<tr><td>CPP increase at 70</td><td>400</td><td>2045-06-01</td></tr>
+</table>
+<p>So CPP is $700 a month at 60, $1,100 at 65 and $1,500 at 70, in today's dollars.</p>
+<p>Your person's section now holds the whole plan: the retirement and its triggers, the salary, the RRSP with its contributions and drawdown, and CPP.</p>
+<p><img src="/static/docs/files/docs/user/images/retirement/02-person-section.png" alt="Your section: retirement, salary, RRSP and CPP" loading="lazy"></p>
+<h2 id="4-run-it">4. Run it</h2>
+<p>Click <strong>Run</strong> and look at the <strong>Cash</strong> column.</p>
+<p><img src="/static/docs/files/docs/user/images/retirement/03-run-2037.png" alt="Retiring in 2037-01: cash runs out in 2051" loading="lazy"></p>
+<p>Retiring in 2037-01, cash turns negative in <strong>2051-09</strong> (at 76) and ends <strong>$268,963 short</strong>: not enough. (<strong>Investments</strong> holds the RRSP and the value of the CPP pensions; the RRSP is spread to the end on purpose, so it is the cash that tells whether the spending is covered.)</p>
+<h2 id="5-find-the-earliest-date">5. Find the earliest date</h2>
+<p>Move the retirement date later until cash stays positive to the end. On your person's card, click the green <strong>pencil</strong> on the <strong>Retirement</strong> row, change the date and click <strong>Save</strong>; then <strong>Run</strong> again.</p>
+<p><img src="/static/docs/files/docs/user/images/retirement/04-edit-retirement.png" alt="Moving the retirement date" loading="lazy"></p>
+<table>
+<tr><th>Retirement</th><th>Cash at the end (2065-06)</th><th></th></tr>
+<tr><td>2037-01</td><td>−$268,963.44</td><td>runs out in 2051-09</td></tr>
+<tr><td>2038-07</td><td>−$11,903.49</td><td>runs out just before the end</td></tr>
+<tr><td><strong>2038-08</strong></td><td><strong>$2,667.33</strong></td><td><strong>lasts until 90</strong></td></tr>
+</table>
+<p><img src="/static/docs/files/docs/user/images/retirement/05-run-2038.png" alt="Retiring in 2038-08: cash lasts until the end" loading="lazy"></p>
+<p>So with these figures you can retire in <strong>August 2038, at 63</strong>, on $4,500 a month in today's dollars.</p>
+<p>In the first month of retirement, CPP pays $918.46 and the RRSP $4,387.52, less $795.90 of tax, against $5,904.39 of living expenses (the $4,500 grown by twelve years of inflation). The cash saved while working covers the difference until the CPP increases at 65 and 70.</p>
+<h2 id="6-what-moves-the-date">6. What moves the date</h2>
+<p>Change one thing at a time and run again:</p>
+<ul><li><strong>Spending.</strong> A lower target is a strong lever: edit the living expenses.</li><li><strong>Saving more</strong> while working: a larger RRSP contribution, or a TFSA (an <strong>account</strong> of type TFSA, with a <strong>withdrawal</strong> at retirement like the RRSP's).</li><li><strong>CPP timing.</strong> Starting CPP later pays more each month; change the pensions' start dates and amounts.</li><li><strong>Returns.</strong> The RRSP's 5% return matters a lot over 40 years; try 4% or 6%.</li></ul>
+<h2 id="make-it-closer-to-your-situation">Make it closer to your situation</h2>
+<ul><li><strong>A spouse.</strong> Add a second <strong>person</strong> (under <strong>Household</strong>) with their own income, accounts, CPP and retirement date; items then belong to one person or the other.</li><li><strong>Spending that changes in retirement.</strong> An <strong>adjustment</strong> on the living expenses gives them a new amount from a date.</li><li><strong>OAS</strong> (Old Age Security, from 65) is another pension.</li><li><strong>Save your work</strong> with <strong>Save</strong> in the menu; the browser tab forgets it once closed.</li></ul>
+<p>The answer is a ballpark: as good as the figures you enter, returns and inflation above all.</p>
