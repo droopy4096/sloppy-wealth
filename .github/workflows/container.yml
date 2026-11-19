@@ -1,6 +1,7 @@
 # Build the container image (Containerfile) on every version tag and publish it to the
-# GitHub container registry: ghcr.io/<owner>/<repo>. The test gates run first; nothing
-# is published if they fail.
+# GitHub container registry: ghcr.io/<owner>/<repo>, then add the image (pull command,
+# tags, digest) to the tag's GitHub Release, creating the release if there is none.
+# The test gates run first; nothing is published if they fail.
 #
 # Tags are plain semver without a "v" prefix (owner's convention):
 #   git tag 0.1.0 && git push upstream 0.1.0
@@ -41,7 +42,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write       # create / edit the GitHub Release of the tag
       packages: write
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +64,8 @@ jobs:
           # latest only for a plain release tag (1.2.3), not a pre-release (1.2.3-rc.1)
           flavor: |
             latest=auto
-      - uses: docker/build-push-action@v6
+      - id: build
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Containerfile
@@ -73,3 +75,13 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Add the image to the GitHub Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          IMAGE: ghcr.io/${{ github.repository }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: .github/scripts/release-container-notes.sh "$TAG" "$IMAGE" "$DIGEST" "$TAGS" linux/amd64,linux/arm64
