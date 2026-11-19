@@ -7,7 +7,7 @@ calculator for a household's big financial questions.
 Over the years I kept asking questions like these:
 
 - [Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?](docs/user/vehicle-lease-or-own.md)
-- When can I sell the house without losing the money I put into buying and maintaining it?
+- [When can I sell the house without losing the money I put into buying and maintaining it?](docs/user/house-break-even.md)
 - Would it be cheaper to rent?
 - When can I retire with an income of $NNN in today's dollars?
 - How much net worth am I really adding each year, in today's dollars?

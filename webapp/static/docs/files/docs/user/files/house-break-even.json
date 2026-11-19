@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "name": "When does the house break even?",
+  "jurisdiction": "CA",
+  "horizon": {
+    "start": "2027-01-01",
+    "end": "2051-12-01"
+  },
+  "openingCash": "150000",
+  "effectiveTaxRate": "0",
+  "annualInflation": "0.025",
+  "dollarsOf": "2027-01-01",
+  "items": [
+    {
+      "type": "income",
+      "id": "pay",
+      "name": "Take-home pay",
+      "startDate": "2027-01-01",
+      "amount": "7000",
+      "per": "month",
+      "taxable": false,
+      "indexing": "inflation"
+    },
+    {
+      "type": "property",
+      "id": "house",
+      "name": "House",
+      "purchaseDate": "2027-01-01",
+      "price": "600000",
+      "annualAppreciation": "0.045"
+    },
+    {
+      "type": "mortgage",
+      "id": "mortgage",
+      "name": "Mortgage",
+      "property": "house",
+      "principal": "480000",
+      "annualRate": "0.045",
+      "amortizationYears": "25",
+      "termMonths": "60",
+      "penaltyMethod": "monthsInterest",
+      "penaltyMonths": "3"
+    },
+    {
+      "type": "renewal",
+      "id": "renewal",
+      "name": "Renewal (5-year term)",
+      "mortgage": "mortgage",
+      "startDate": "2032-01-01",
+      "annualRate": "0.0425",
+      "termMonths": "60",
+      "penaltyMethod": "monthsInterest",
+      "penaltyMonths": "3"
+    },
+    {
+      "type": "associatedCost",
+      "id": "closing",
+      "name": "Closing costs (land transfer tax, legal)",
+      "parent": "house",
+      "at": "start",
+      "amount": "9000"
+    },
+    {
+      "type": "associatedCost",
+      "id": "realtor",
+      "name": "Realtor commission",
+      "parent": "house",
+      "at": "end",
+      "rate": "0.05",
+      "basis": "value"
+    },
+    {
+      "type": "associatedCost",
+      "id": "selling-legal",
+      "name": "Legal fees on sale",
+      "parent": "house",
+      "at": "end",
+      "amount": "1500"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "property-tax",
+      "name": "Property tax",
+      "parent": "house",
+      "annualRate": "0.008",
+      "basis": "value"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "insurance",
+      "name": "Home insurance",
+      "parent": "house",
+      "amount": "1800",
+      "per": "year",
+      "indexing": "inflation"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "maintenance",
+      "name": "Maintenance",
+      "parent": "house",
+      "amount": "3000",
+      "per": "year",
+      "indexing": "inflation"
+    },
+    {
+      "type": "associatedExpense",
+      "id": "utilities",
+      "name": "Utilities",
+      "parent": "house",
+      "amount": "250",
+      "per": "month",
+      "indexing": "inflation",
+      "alsoWhenRenting": true
+    },
+    {
+      "type": "improvement",
+      "id": "kitchen",
+      "name": "Kitchen renovation",
+      "property": "house",
+      "improvementDate": "2031-06-01",
+      "cost": "45000",
+      "valueAdded": "25000",
+      "enabled": false
+    }
+  ]
+}

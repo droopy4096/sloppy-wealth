@@ -14,6 +14,11 @@
    "title": "Tutorials",
    "pages": [
     {
+     "slug": "docs-user-house-break-even",
+     "title": "When a house breaks even",
+     "path": "docs/user/house-break-even.md"
+    },
+    {
      "slug": "docs-user-vehicle-lease-or-own",
      "title": "Lease or buy a vehicle",
      "path": "docs/user/vehicle-lease-or-own.md"

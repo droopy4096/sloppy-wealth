@@ -64,6 +64,8 @@ Step by step, with screenshots and an example scenario to load:
 
 - [Lease or buy a vehicle](vehicle-lease-or-own.md): would it be cheaper to lease a vehicle
   than to keep and maintain one for 20 years?
+- [When a house breaks even](house-break-even.md): when can I sell the house without losing
+  the money I put into buying and maintaining it?
 
 More are coming, one for each question in the project's README.
 
