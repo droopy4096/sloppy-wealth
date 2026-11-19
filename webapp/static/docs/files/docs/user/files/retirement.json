@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "name": "When can I retire on $4,500 a month?",
+  "jurisdiction": "CA",
+  "horizon": {
+    "start": "2027-01-01",
+    "end": "2065-06-01"
+  },
+  "openingCash": "40000",
+  "effectiveTaxRate": "0.28",
+  "retirementTaxRate": "0.15",
+  "annualInflation": "0.025",
+  "dollarsOf": "2027-01-01",
+  "items": [
+    {
+      "type": "retirement",
+      "id": "retire",
+      "name": "Retirement",
+      "retirementDate": "2037-01-01"
+    },
+    {
+      "type": "income",
+      "id": "salary",
+      "name": "Salary",
+      "startDate": "2027-01-01",
+      "amount": "120000",
+      "per": "year",
+      "taxable": true,
+      "indexing": "inflation"
+    },
+    {
+      "type": "trigger",
+      "id": "salary-ends",
+      "name": "Salary ends at retirement",
+      "event": "retire",
+      "target": "salary",
+      "action": "end"
+    },
+    {
+      "type": "expense",
+      "id": "living",
+      "name": "Living expenses",
+      "startDate": "2027-01-01",
+      "amount": "4500",
+      "per": "month",
+      "amountIn": "base",
+      "indexing": "inflation"
+    },
+    {
+      "type": "account",
+      "id": "rrsp",
+      "name": "RRSP",
+      "accountType": "rrsp",
+      "openingBalance": "400000",
+      "annualReturn": "0.05"
+    },
+    {
+      "type": "contribution",
+      "id": "rrsp-in",
+      "name": "RRSP contributions",
+      "account": "rrsp",
+      "startDate": "2027-01-01",
+      "amount": "1500",
+      "per": "month",
+      "indexing": "inflation"
+    },
+    {
+      "type": "trigger",
+      "id": "contributions-end",
+      "name": "Contributions end at retirement",
+      "event": "retire",
+      "target": "rrsp-in",
+      "action": "end"
+    },
+    {
+      "type": "withdrawal",
+      "id": "rrsp-out",
+      "name": "RRSP drawdown",
+      "account": "rrsp",
+      "method": "annuity",
+      "startDate": "",
+      "indexing": "inflation"
+    },
+    {
+      "type": "pension",
+      "id": "cpp-60",
+      "name": "CPP from 60",
+      "amount": "700",
+      "per": "month",
+      "startDate": "2035-06-01",
+      "taxable": true,
+      "indexing": "inflation"
+    },
+    {
+      "type": "pension",
+      "id": "cpp-65",
+      "name": "CPP increase at 65",
+      "amount": "400",
+      "per": "month",
+      "startDate": "2040-06-01",
+      "taxable": true,
+      "indexing": "inflation"
+    },
+    {
+      "type": "pension",
+      "id": "cpp-70",
+      "name": "CPP increase at 70",
+      "amount": "400",
+      "per": "month",
+      "startDate": "2045-06-01",
+      "taxable": true,
+      "indexing": "inflation"
+    }
+  ]
+}
