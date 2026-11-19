@@ -187,9 +187,10 @@ its maintenance follows its age.
    fuel `230` a month as associated expenses.
 2. **The buy-out.** A vehicle `C. SUV, bought out at the lease's end`, bought `2031-01-01`
    for `24750`, losing `12` % of its value a year.
-3. **Its running costs**, entered in 2031 dollars (today's amounts grown by 2.5% a year
-   for four years): insurance `1990` a year, fuel `275` a month, both indexed to
-   inflation, and maintenance `1320` a year with steps on the same principle as option A:
+3. **Its running costs**, in today's dollars (**amountIn** "today's dollars": the app
+   grows them with inflation until 2031): insurance `1800` a year, fuel `250` a month,
+   both indexed to inflation, and maintenance `1200` a year with steps on the same
+   principle as option A:
    `2380` from 2034-01-01 (age 7), `3940` from 2038-01-01 (age 11) and `5790` from
    2042-01-01 (age 15).
 
@@ -202,21 +203,21 @@ Run again.
 
 ![The run with option C](images/vehicle-lease-or-own/13-run-c.png)
 
-Option C: **$112,844.95** at the end, or $69,007.85 in today's dollars.
+Option C: **$112,670.47** at the end, or $68,901.15 in today's dollars.
 
 ## 6. Compare the three options
 | | A. Buy and keep | B. Lease back to back | C. Lease, then buy out |
 |---|---|---|---|
-| Net worth after 20 years | $116,978.58 | $26,148.92 | $112,844.95 |
-| In 2027 dollars | $71,535.68 | $15,990.80 | $69,007.85 |
-| Average cost per month | $970.92 | $1,349.38 | $988.15 |
+| Net worth after 20 years | $116,978.58 | $26,148.92 | $112,670.47 |
+| In 2027 dollars | $71,535.68 | $15,990.80 | $68,901.15 |
+| Average cost per month | $970.92 | $1,349.38 | $988.87 |
 
 The average cost per month is the money the option used: (opening cash − net worth at the
 end) ÷ 240 months. For option A it matches the vehicle cost-of-ownership page.
 
 With these figures, **buying and keeping is the cheapest**: about $90,800 less than
 leasing back to back over 20 years (about $55,500 in today's dollars). Leasing once and
-then buying out comes close to buying, about $4,100 more, because the first four years
+then buying out comes close to buying, about $4,300 more, because the first four years
 cost more as a lease than as an owner's depreciation. Back-to-back leasing costs the most,
 but buys you a vehicle that is never more than four years old.
 

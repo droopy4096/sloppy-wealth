@@ -250,27 +250,30 @@
       "id": "bought-out-insurance",
       "name": "Insurance",
       "parent": "bought-out",
-      "amount": "1990",
+      "amount": "1800",
       "per": "year",
-      "indexing": "inflation"
+      "indexing": "inflation",
+      "amountIn": "base"
     },
     {
       "type": "associatedExpense",
       "id": "bought-out-fuel",
       "name": "Fuel",
       "parent": "bought-out",
-      "amount": "275",
+      "amount": "250",
       "per": "month",
-      "indexing": "inflation"
+      "indexing": "inflation",
+      "amountIn": "base"
     },
     {
       "type": "associatedExpense",
       "id": "bought-out-maintenance",
       "name": "Maintenance and repairs",
       "parent": "bought-out",
-      "amount": "1320",
+      "amount": "1200",
       "per": "year",
-      "indexing": "inflation"
+      "indexing": "inflation",
+      "amountIn": "base"
     },
     {
       "type": "adjustment",
