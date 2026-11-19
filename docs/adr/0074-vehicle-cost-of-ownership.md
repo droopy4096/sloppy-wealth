@@ -31,3 +31,13 @@ over the months owned: the total cost of ownership per month.
 ## Consequences
 - New view `state_machine/vehicle_cost.py`, `POST /api/view/vehicle-cost`, page
   `/run/vehicle-cost`. No new fields; results unchanged.
+
+## Amendment 2026-11-18: a loan may finance a vehicle
+Owner's decision (vehicle-financing tutorial): a mortgage's `property` may name a vehicle,
+making it a car loan. It starts with the vehicle's purchase when its `startDate` is blank,
+is listed under the vehicle's card (which offers it under **+ Add**), and is paid off from
+cash if the vehicle is sold. The vehicle's cost of ownership counts the loan's interest
+(and penalties) in **paid so far**, shown in a **Loan interest** column; the principal is
+already counted as the purchase price. Alternatives: reading the cost with financing from
+the Run page (no app change), or leaving financing out.
+

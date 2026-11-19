@@ -132,6 +132,7 @@ HINTS = {
     ("renewal", "keepPayment"): "yes: the payment stays, prepayment savings shorten the "
                                 "loan; falls back to a new payment if it cannot repay it",
     ("mortgage", "startDate"): "blank = purchase date",
+    ("mortgage", "property"): "the property it is secured by, or the vehicle it finances",
     ("withdrawal", "method"): "choose first: which of the fields below is used",
     ("income", "earnedIncome"): "counts for contribution limits (salary); blank = same as "
                                 "taxable",
@@ -293,7 +294,8 @@ PERCENT_FIELDS = {"annualAppreciation", "annualRate", "annualDepreciation", "ind
 CARD_ADDS = {
     "property": ["mortgage", "sale", "improvement", "marketAdjustment", "renewal",
                  "extraPayment", "lumpSum", "associatedExpense", "associatedCost", "trigger"],
-    "vehicle": ["sale", "marketAdjustment", "associatedExpense", "associatedCost", "trigger"],
+    "vehicle": ["mortgage", "sale", "marketAdjustment", "associatedExpense", "associatedCost",
+                "trigger"],
     "mortgage": ["renewal", "extraPayment", "lumpSum", "associatedExpense", "associatedCost",
                  "trigger"],
     "income": ["adjustment", "associatedIncome", "associatedOneOff", "associatedExpense",

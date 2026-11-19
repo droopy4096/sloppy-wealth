@@ -18,7 +18,7 @@
         {% if field in selects %}
         <select name="{{ field }}">{% for value, label in selects[field] %}<option value="{{ value }}"{% if defaults.get((kind, field)) == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
         {% elif field == "property" %}
-        <select name="property">{% for pid, pname in (names.asset if kind in ("sale", "marketAdjustment") else names.property).items() %}<option value="{{ pid }}">{{ pname }}</option>{% endfor %}{% if kind == "mortgage" %}<option value="">none</option>{% endif %}</select>
+        <select name="property">{% for pid, pname in (names.asset if kind in ("sale", "marketAdjustment", "mortgage") else names.property).items() %}<option value="{{ pid }}">{{ pname }}</option>{% endfor %}{% if kind == "mortgage" %}<option value="">none</option>{% endif %}</select>
         {% elif field in person_fields %}
         <select name="{{ field }}"><option value="">{{ "the owner" if field == "contributor" else "the first person" }}</option>{% for xid, xname in names.person.items() %}<option value="{{ xid }}">{{ xname }}</option>{% endfor %}</select>
         {% elif field == "parent" %}

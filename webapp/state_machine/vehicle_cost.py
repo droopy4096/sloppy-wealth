@@ -6,7 +6,9 @@ the horizon start for a vehicle bought before it):
 
 - **paid so far**: the purchase price (or its value at the horizon start), plus every
   associated expense and cost of the vehicle (fuel, insurance, maintenance, repairs),
-  and penalties of its sale / market adjustment items;
+  penalties of its sale / market adjustment items, and the interest (and penalties) of
+  the loans that finance it (a mortgage whose ``property`` is the vehicle, ADR-0074
+  amendment; the principal is already the purchase price);
 - **value**: its market value at the month's end less its selling costs (associated
   costs at its end, ADR-0067);
 - **cost per month** = (paid so far − value) / months owned.
@@ -34,8 +36,13 @@ def cost_of_ownership(scenario, result, vid):
     if item is None:
         raise ValueError(f"unknown vehicle {vid!r}")
     sources, selling = {vid}, []
+    loans = {i.get("id") for i in s["items"] if i.get("type") == "mortgage"
+             and i.get("property") == vid}
+    sources |= loans
     for i in s["items"]:
         kind = i.get("type")
+        if kind in ("renewal", "extraPayment", "lumpSum") and i.get("mortgage") in loans:
+            sources.add(i.get("id"))
         if kind in ("sale", "marketAdjustment") and i.get("property") == vid:
             sources.add(i.get("id"))
         elif kind in ("associatedExpense", "associatedCost") and i.get("parent") == vid:
@@ -50,7 +57,7 @@ def cost_of_ownership(scenario, result, vid):
     for x in result["ledger"]:
         by_month.setdefault(x["month"], []).append(x)
 
-    rows, paid, first, before = [], Decimal(0), None, False
+    rows, paid, interest, first, before = [], Decimal(0), Decimal(0), None, False
     for point in points:
         label = point["month"]
         if sale_month is not None and label >= sale_month:
@@ -65,11 +72,15 @@ def cost_of_ownership(scenario, result, vid):
             if (x["kind"] == "PURCHASE" and x["to"] == vid) or (
                     x["kind"] in ("EXPENSE", "COST", "PENALTY") and x["source"] in sources):
                 paid += x["amount"]
+            elif x["kind"] == "LOAN_INTEREST" and x["from"] in loans:
+                paid += x["amount"]
+                interest += x["amount"]
         costs = selling_costs(selling, point["closing"])
         value = point["closing"] - costs
         months = month_index(label + "-01", "month") - first + 1
         rows.append({"month": label, "monthsOwned": months, "value": point["closing"],
                      "sellingCosts": costs, "netValue": value, "paidSoFar": paid,
+                     "interestSoFar": interest,
                      "costPerMonth": ((paid - value) / months).quantize(CENT)})
 
     try:
@@ -90,4 +101,4 @@ def cost_of_ownership(scenario, result, vid):
         notes.append("No running costs: add associated expenses (fuel, insurance, "
                      "maintenance) to the vehicle to include them.")
     return {"vehicle": vid, "name": item.get("name") or vid, "rows": rows,
-            "summary": summary, "notes": notes}
+            "summary": summary, "notes": notes, "financed": bool(loans)}

@@ -505,6 +505,28 @@ class ExpenseCardCosts(unittest.TestCase):
         self.assertIn(("2030-12", "COST"), {(x["month"], x["kind"]) for x in ledger})
 
 
+class VehicleLoanInTheApp(unittest.TestCase):
+    def test_a_loan_added_on_the_vehicle_card(self):
+        """ADR-0074 amendment: the vehicle card offers a loan (mortgage) tied to it; it is
+        listed under the vehicle and its interest shows on the cost-of-ownership page."""
+        s = {"schemaVersion": 1, "name": "car", "jurisdiction": "CA",
+             "horizon": {"start": "2027-01-01", "end": "2031-12-01"}, "openingCash": "20000",
+             "items": [{"type": "vehicle", "id": "car", "name": "Car",
+                        "purchaseDate": "2027-01-01", "price": "38000",
+                        "annualDepreciation": "0.15"}]}
+        client = client_with(s)
+        card = section(client.get("/").data.decode(), 'id="item-car"', "</details>")
+        self.assertIn('data-kind="mortgage"', card)
+        client.post("/items/add", data={"type": "mortgage", "name": "Car loan", "property": "car",
+                                         "principal": "32000", "annualRate": "6.9",
+                                         "amortizationYears": "5"})
+        self.assertEqual(client.scenario["items"][-1]["property"], "car")
+        card = section(client.get("/").data.decode(), 'id="item-car"', "</details>")
+        self.assertIn("Car loan", card)
+        page = client.get("/run/vehicle-cost?vehicle=car").data.decode()
+        self.assertIn(">Loan interest</th>", page)
+
+
 class ItemIdsLikeResultFields(unittest.TestCase):
     def test_an_id_named_like_a_result_field_does_not_break_the_builder(self):
         """The builder view's tables keyed by item id (starts, off, set_by) are not

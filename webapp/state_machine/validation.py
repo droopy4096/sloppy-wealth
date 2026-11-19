@@ -132,6 +132,7 @@ def validate(scenario):
     pensions = {i.get("id"): i for i in scenario["items"] if i.get("type") == "pension"}
     sales = property_sales(scenario["items"])
     vehicles = {i.get("id"): i for i in scenario["items"] if i.get("type") == "vehicle"}
+    assets = dict(properties, **vehicles)           # what a loan may be tied to
     renewal_months = set()
     rules = jurisdictions.of(scenario)              # ADR-0071
     required = required_fields(rules)
@@ -172,13 +173,14 @@ def validate(scenario):
             else:
                 dec(item, field, where)
         if kind == "mortgage":
-            if item.get("property") and item["property"] not in properties:
+            # A loan secures a property, or (ADR-0074 amendment) finances a vehicle.
+            if item.get("property") and item["property"] not in assets:
                 raise ValueError(f"{where}: refers to unknown property {item['property']!r}")
-            at = mortgage_start(item, properties, where)
+            at = mortgage_start(item, assets, where)
             if not start <= at <= end:
                 raise ValueError(f"{where}: startDate is outside the horizon")
             if item.get("property"):
-                prop = properties[item["property"]]
+                prop = assets[item["property"]]
                 if at < month_index(prop["purchaseDate"], where):
                     raise ValueError(f"{where}: starts before its property is purchased")
                 sale = sales.get(item["property"])
@@ -239,7 +241,7 @@ def validate(scenario):
                 raise ValueError(f"{where}: {field} must not be negative")
         if kind == "renewal":
             mtg = mortgages[item["mortgage"]]
-            if month_index(item["startDate"], where) <= mortgage_start(mtg, properties, where):
+            if month_index(item["startDate"], where) <= mortgage_start(mtg, assets, where):
                 raise ValueError(f"{where}: startDate must be after the mortgage start")
             # Keep the payment and derive the amortisation (ADR-0043 amendment, C-M7).
             if not isinstance(item.get("keepPayment", False), bool):
@@ -255,7 +257,7 @@ def validate(scenario):
             if sale:
                 renew_at = month_index(item["startDate"], where)
                 sold_at = month_index(sale["saleDate"], where)
-                prop = properties[mtg["property"]]
+                prop = assets[mtg["property"]]
                 if renew_at >= sold_at:
                     when = "in the same month as" if renew_at == sold_at else "after"
                     raise ValueError(f"{where}: renewal of {mtg.get('name') or mtg.get('id')} on "
@@ -273,7 +275,7 @@ def validate(scenario):
             check_date(item, where, "paymentDate")
             if item.get("payOff") and item.get("amount"):
                 raise ValueError(f"{where}: give an amount or payOff, not both")
-            if month_index(item["paymentDate"], where) <= mortgage_start(mtg, properties, where):
+            if month_index(item["paymentDate"], where) <= mortgage_start(mtg, assets, where):
                 raise ValueError(f"{where}: paymentDate must be after the mortgage start")
         if kind == "lumpSum" and (item.get("paidFrom") or "cash") not in ("cash", "outside"):
             raise ValueError(f"{where}: paidFrom must be cash or outside; got {item['paidFrom']!r}")
@@ -457,7 +459,7 @@ def validate(scenario):
             check_associated_income(item, kind, where, scenario["items"], start, end)
         if kind == "mortgage" and item.get("firstPaymentDate"):
             first_pay = month_index(item["firstPaymentDate"], f"{where}.firstPaymentDate")
-            if first_pay <= mortgage_start(item, properties, where):
+            if first_pay <= mortgage_start(item, assets, where):
                 raise ValueError(f"{where}: firstPaymentDate must be after the mortgage start")
         if kind == "mortgage":
             check_amortization(item, where)
