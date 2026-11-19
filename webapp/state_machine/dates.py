@@ -79,7 +79,8 @@ def property_sales(items):
 
 
 def mortgage_start(item, properties, where=""):
-    """Month index a mortgage starts: its startDate, or its property's purchase date."""
+    """Month index a mortgage starts: its startDate, or the purchase date of the property
+    (or vehicle, ADR-0074 amendment) it is tied to; ``properties`` maps ids to those."""
     if item.get("startDate"):
         return month_index(item["startDate"], f"{where}.startDate")
     if item.get("property"):

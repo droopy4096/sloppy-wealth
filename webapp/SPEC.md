@@ -75,7 +75,10 @@ Mortgage prepayments (added later) refer to a mortgage by its `id`:
 ```
 - Mortgage and property link (added later): a mortgage may have `"property": "<id>"`
   (secured by, ADR-0024). Its `startDate` may then be blank: it starts in the property's
-  purchase month (financed purchase, ADR-0025). A property may have `marketValue`: cash
+  purchase month (financed purchase, ADR-0025). The `property` may also be a vehicle (a car
+  loan, ADR-0074 amendment): the loan starts with the vehicle's purchase, is paid off if the
+  vehicle is sold, and its interest counts in the vehicle's cost of ownership. A property
+  may have `marketValue`: cash
   pays `price`, but the property starts at `marketValue` (e.g. a house built for less than
   it is worth). A property may have `saleDate` and
   `sellingCostRate` (fraction). In the sale month (events step) cash receives the

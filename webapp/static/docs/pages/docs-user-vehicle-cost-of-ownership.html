@@ -1,0 +1,46 @@
+<h1 id="vehicle-cost-of-ownership">Vehicle cost of ownership</h1>
+<p><em>What does my car really cost me per month, financing included, and how much of it is fuel?</em></p>
+<p>A car costs far more than its loan payment: the value it loses, the loan's interest, insurance, maintenance and fuel. This short tutorial models one car bought with a five-year loan and reads what owning it costs per month, first with fuel, then without. It takes about 10 minutes. All figures are illustrative: replace them with your own.</p>
+<p>To start from the finished scenario, download <a href="/static/docs/files/docs/user/files/vehicle-cost-of-ownership.json">vehicle-cost-of-ownership.json</a>, open <strong>Load</strong> in the app and upload it, then jump to <a href="#3-read-the-cost-per-month">Read the cost</a>.</p>
+<h2 id="what-you-need">What you need</h2>
+<ul><li>Sloppy Wealth running (see <a href="/docs/docs-user-readme">Getting started</a>).</li><li>The car's price and your down payment, the loan (rate and length), and the yearly running costs.</li></ul>
+<h2 id="1-start-the-scenario">1. Start the scenario</h2>
+<p>Click <strong>New</strong>, choose your jurisdiction and click <strong>Start</strong>. In the <strong>Scenario</strong> card (under <strong>Household</strong>) set the horizon from <code>2027-01-01</code> to <code>2034-12-01</code> (eight years, how long you plan to keep the car), <strong>Opening cash</strong> <code>20000</code>, <strong>Income tax</strong> <code>0</code> and <strong>Inflation</strong> <code>2.5</code> (%).</p>
+<p>Under your person's <strong>Income</strong> category, add <code>Take-home pay</code> of <code>4000</code> per month from <code>2027-01-01</code>, not taxable, indexed to inflation, so that cash can pay for the car. Income doesn't count in the car's cost.</p>
+<h2 id="2-the-car-and-its-loan">2. The car and its loan</h2>
+<h3 id="the-car">The car</h3>
+<p>In the <strong>Vehicles</strong> category, click <strong>vehicle</strong> next to <strong>+ Add</strong>: name <code>Car</code>, purchase date <code>2027-01-01</code>, price <code>38000</code>, losing <code>15</code> (%) of its value a year.</p>
+<h3 id="the-loan">The loan</h3>
+<p>Open the car's card and click <strong>mortgage</strong> under <strong>+ Add</strong>: in the app, any loan is a "mortgage", and one added on a vehicle's card finances that vehicle. Enter the amount borrowed, <code>32000</code> (the price less a $6,000 down payment), the rate <code>6.9</code> (%) and amortization <code>5</code> years. Leave the start date blank: the loan starts with the purchase.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-cost-of-ownership/01-add-car-loan.png" alt="The car loan form" loading="lazy"></p>
+<p>The money borrowed goes into cash, which pays the full price; the loan's payments then follow monthly ($630.67 here), and its interest counts as a cost of the car.</p>
+<h3 id="the-running-costs">The running costs</h3>
+<p>On the car's card, click <strong>associatedExpense</strong> and add:</p>
+<table>
+<tr><th>Name</th><th>Amount</th><th>Per</th><th>Indexing</th></tr>
+<tr><td>Insurance</td><td>1800</td><td>year</td><td>inflation</td></tr>
+<tr><td>Maintenance</td><td>700</td><td>year</td><td>inflation</td></tr>
+<tr><td>Fuel</td><td>250</td><td>month</td><td>inflation</td></tr>
+</table>
+<p>The car's card now shows the loan and the three costs, with this month's estimates.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-cost-of-ownership/02-car-card.png" alt="The car with its loan and running costs" loading="lazy"></p>
+<h2 id="3-read-the-cost-per-month">3. Read the cost per month</h2>
+<p>Click the purple <strong>chart icon</strong> on the car's card. For every month, the <strong>Vehicle cost of ownership</strong> page shows:</p>
+<ul><li><strong>Value</strong>: what the car is worth.</li><li><strong>Loan interest</strong>: the interest paid on its loan so far.</li><li><strong>Paid so far</strong>: the price, plus the interest and every running cost so far.</li><li><strong>Cost/mo</strong>: (paid so far − value) ÷ months owned, what owning the car has cost per month.</li></ul>
+<p><img src="/static/docs/files/docs/user/images/vehicle-cost-of-ownership/03-cost-with-fuel.png" alt="The cost of ownership with fuel" loading="lazy"></p>
+<p>With fuel, the car costs <strong>$927.59 a month</strong> over the five years of the loan, and <strong>$847.84 a month</strong> over the eight years: keeping a car longer spreads its loss of value and the loan's interest ($5,839.91 in all) over more months.</p>
+<p>The cost per month starts low ($458.33 in the first month: one month of running costs, and a car still worth its price) and climbs as the value falls.</p>
+<h2 id="4-the-same-car-without-fuel">4. The same car without fuel</h2>
+<p>Fuel depends on how much you drive, so it helps to see the cost without it. On the car's card, untick the <strong>checkmark</strong> on the <strong>Fuel</strong> row. It turns grey and leaves the calculation, but stays in the scenario.</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-cost-of-ownership/04-fuel-switched-off.png" alt="Fuel switched off" loading="lazy"></p>
+<p>Open the cost of ownership page again:</p>
+<p><img src="/static/docs/files/docs/user/images/vehicle-cost-of-ownership/05-cost-without-fuel.png" alt="The cost of ownership without fuel" loading="lazy"></p>
+<table>
+<tr><th></th><th>With fuel</th><th>Without fuel</th></tr>
+<tr><td>Cost per month over 5 years</td><td>$927.59</td><td>$664.77</td></tr>
+<tr><td>Cost per month over 8 years</td><td>$847.84</td><td>$574.84</td></tr>
+</table>
+<p>So fuel is about <strong>$273 a month</strong> of this car's cost, and the car itself (value lost, interest, insurance and maintenance) about <strong>$575</strong>. Tick the checkmark again to bring fuel back. Any item can be switched the same way: try the insurance, or the loan (the car then is paid in cash, without interest).</p>
+<h2 id="make-it-closer-to-your-situation">Make it closer to your situation</h2>
+<ul><li><strong>Maintenance that grows with age</strong>: see <a href="/docs/docs-user-vehicle-lease-or-own">Lease or buy a vehicle</a> for steps by age.</li><li><strong>Selling the car.</strong> Add a <strong>sale</strong> on its card at the date you would sell: it pays off what is left of the loan, and the table ends the month before.</li><li><strong>Other costs.</strong> Registration, tires or parking are more associated expenses; a one-off repair is an associated cost on a date.</li><li><strong>Save your work</strong> with <strong>Save</strong> in the menu; the browser tab forgets it once closed.</li></ul>
+<p>The answer is a ballpark: as good as the figures you enter.</p>

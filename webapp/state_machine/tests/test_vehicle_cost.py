@@ -69,5 +69,36 @@ class Figures(unittest.TestCase):
         self.assertIn("No running costs", " ".join(view(CAR)["notes"]))
 
 
+
+class Financed(unittest.TestCase):
+    """ADR-0074 amendment: a loan may finance a vehicle; its interest is a cost of
+    ownership (the principal is already the purchase price)."""
+    LOAN = {"type": "mortgage", "id": "carloan", "name": "Car loan", "property": "car",
+            "principal": "32000", "annualRate": "0.069", "amortizationYears": "5"}
+
+    def test_interest_counts_and_the_loan_starts_with_the_vehicle(self):
+        s = scenario(CAR, self.LOAN)
+        result = engine.run_detailed(s)
+        self.assertEqual(next(x["month"] for x in result["ledger"]
+                              if x["kind"] == "LOAN_ADVANCE"), "2027-01")
+        out = cost_of_ownership(s, result, "car")
+        interest = sum(x["amount"] for x in result["ledger"] if x["kind"] == "LOAN_INTEREST")
+        last = out["rows"][-1]
+        self.assertTrue(out["financed"])
+        self.assertEqual(last["interestSoFar"], interest)
+        self.assertEqual(last["paidSoFar"], D(40000) + interest)
+        self.assertFalse(view(CAR)["financed"])
+
+    def test_selling_the_vehicle_pays_its_loan_off(self):
+        sale = {"type": "sale", "id": "s", "property": "car", "saleDate": "2029-01-01"}
+        result = engine.run_detailed(scenario(CAR, self.LOAN, sale))
+        self.assertIn(("2029-01", "LOAN_PAYOFF"), {(x["month"], x["kind"]) for x in result["ledger"]})
+
+    def test_unknown_asset_still_refused(self):
+        from state_machine import validation
+        with self.assertRaisesRegex(ValueError, "refers to unknown property 'nope'"):
+            validation.validate(scenario(CAR, dict(self.LOAN, property="nope")))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -58,7 +58,7 @@ def lifetime(parent, env):
         opened = parent.get("openedDate")
         return (month_index(opened, "openedDate") if opened else env.start), env.end
     if kind == "mortgage":
-        start = parent.get("startDate") or env.properties.get(parent.get("property"), {}).get(
+        start = parent.get("startDate") or env.assets.get(parent.get("property"), {}).get(
             "purchaseDate")
         return (month_index(start, "startDate") if start else None), env.end
     if kind == "associatedExpense":

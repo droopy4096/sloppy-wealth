@@ -15,7 +15,8 @@
 </form>
 {% if view %}
 <p>Each month: <b>Paid so far</b> = the purchase price and every expense and cost of the
-vehicle (fuel, insurance, maintenance...) up to that month; <b>Cost/mo</b> = (Paid so far −
+vehicle (fuel, insurance, maintenance...) up to that month, plus the interest of a loan
+tied to it; <b>Cost/mo</b> = (Paid so far −
 Value less Sale costs) / Owned (mo): what owning it has cost per month. Hover a heading for
 its formula. Nominal dollars (ADR-0074).</p>
 {% for note in view.notes %}<p class="muted">{{ note }}</p>{% endfor %}
@@ -30,16 +31,17 @@ its formula. Nominal dollars (ADR-0074).</p>
   ("Owned (mo)", "months owned: from the purchase, or from the horizon start if bought before it"),
   ("Value", "market value at the end of the month"),
   ("Sale costs", "selling costs: the vehicle's associated costs at its end"),
-  ("Paid so far", "purchase price (or value at the horizon start) + every expense and cost of the vehicle so far"),
+  ("Paid so far", "purchase price (or value at the horizon start) + every expense and cost of the vehicle so far + the interest of its loan"),
   ("Cost/mo", "(Paid so far - (Value - Sale costs)) / Owned (mo): the cost of ownership per month"),
 ] %}
 <table>
-  <tr>{% for title, tip in heads %}<th title="{{ tip }}">{{ title }}</th>{% endfor %}</tr>
+  <tr>{% for title, tip in heads %}{% if title == "Paid so far" and view.financed %}<th title="interest paid on the loan that finances the vehicle, so far (included in Paid so far)">Loan interest</th>{% endif %}<th title="{{ tip }}">{{ title }}</th>{% endfor %}</tr>
   {% for r in view.rows %}
   <tr>
     <td><a href="{{ url_for('web.run_ledger', month=r.month) }}">{{ r.month }}</a></td>
     <td class="num">{{ r.monthsOwned }}</td>
     <td class="num">{{ r.value|money }}</td><td class="num">{{ r.sellingCosts|money }}</td>
+    {% if view.financed %}<td class="num">{{ r.interestSoFar|money }}</td>{% endif %}
     <td class="num">{{ r.paidSoFar|money }}</td><td class="num">{{ r.costPerMonth|money }}</td>
   </tr>
   {% endfor %}

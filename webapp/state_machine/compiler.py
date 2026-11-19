@@ -117,6 +117,9 @@ class CompileContext:
         self._targets = items_by_id(scenario)     # accounts and pensions, for owners
         # Reference prepare(): last property item per id; sales keyed by asset id.
         self.properties = {i.get("id"): i for i in items if i["type"] == "property"}
+        # What a loan may be tied to: a property, or a vehicle it finances (ADR-0074 am.).
+        self.assets = dict(self.properties, **{i.get("id"): i for i in items
+                                               if i["type"] == "vehicle"})
         self.sales = property_sales(items)
         # Holding slots (D1): an id's position is its first holding item; only its last
         # holding item is compiled (the reference dict overwrote earlier ones).

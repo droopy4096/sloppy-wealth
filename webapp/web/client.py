@@ -25,7 +25,7 @@ NUMERIC = {"assets", "assetsNetWorth", "cash", "debts", "investments", "netWorth
            "value", "sellingCosts", "balance", "penalty", "netProceeds", "netInvestment",
            "breakEven", "rentEquivalent", "closingPenalty",
            # vehicle cost of ownership (ADR-0074)
-           "netValue", "paidSoFar", "costPerMonth"}
+           "netValue", "paidSoFar", "costPerMonth", "interestSoFar"}
 
 
 # A jurisdiction's limit columns in result rows (ADR-0071), e.g. rrspRoom.

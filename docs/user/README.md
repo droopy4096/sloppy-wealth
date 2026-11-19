@@ -66,6 +66,8 @@ Step by step, with screenshots and an example scenario to load:
   than to keep and maintain one for 20 years?
 - [When a house breaks even](house-break-even.md): when can I sell the house without losing
   the money I put into buying and maintaining it?
+- [Vehicle cost of ownership](vehicle-cost-of-ownership.md): what a car bought with a loan
+  really costs per month, with and without fuel.
 
 More are coming, one for each question in the project's README.
 

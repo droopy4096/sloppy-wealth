@@ -329,7 +329,7 @@ class LumpSumEmitter(_DebtModifier):
 def compile_mortgage(item, ctx):
     env = ctx.env
     r, payment, n = mortgage_terms(item)
-    at = mortgage_start(item, env.properties)
+    at = mortgage_start(item, env.assets)
     first_pay = item.get("firstPaymentDate")
     # Terms with an early-closure penalty (ADR-0073): its own, and each renewal's.
     closure = {ctx.id: ClosureTerm.of(at, item)}
