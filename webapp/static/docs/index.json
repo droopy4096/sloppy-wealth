@@ -1,5 +1,27 @@
 {
- "sections": [
+ "user": [
+  {
+   "title": "Start here",
+   "pages": [
+    {
+     "slug": "docs-user-readme",
+     "title": "Getting started",
+     "path": "docs/user/README.md"
+    }
+   ]
+  },
+  {
+   "title": "Tutorials",
+   "pages": [
+    {
+     "slug": "docs-user-vehicle-lease-or-own",
+     "title": "Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?",
+     "path": "docs/user/vehicle-lease-or-own.md"
+    }
+   ]
+  }
+ ],
+ "dev": [
   {
    "title": "Start here",
    "pages": [

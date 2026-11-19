@@ -71,7 +71,10 @@ outputs; `run_detailed()` returns rows, holdings, ledger, tax and the event log.
   explaining why results changed. Never regenerate to silence an unexplained difference.
 - **Gates before every commit** (from `webapp/`): the two test commands in README.md
   "Quick start". Commit only when they pass.
-- **Documentation tab**: after editing any document or diagram, run
+- **Help tab and developer docs**: user documentation lives in `docs/user/` (shown in the
+  Help tab, `/docs`; screenshots and example files next to it are copied into
+  `webapp/static/docs/files/`); everything else is developer documentation (`/docs/dev`).
+  After editing any document or diagram, run
   `webapp/.venv/bin/python webapp/build_docs.py` and commit `webapp/static/docs/` (`test_docs.py`
   fails when it is stale). Mermaid rendering uses `mmdc` (`$MMDC`, PATH, or a copy cached
   by an earlier `npx @mermaid-js/mermaid-cli` run); unchanged diagrams reuse their SVGs.

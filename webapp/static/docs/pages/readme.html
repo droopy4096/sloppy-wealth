@@ -1,7 +1,7 @@
 <h1 id="sloppy-wealth">Sloppy Wealth</h1>
 <p>Sloppy Wealth is sloppy in more ways than one. It was designed by a human and largely vibe-coded with an LLM, and it is not meant to be a precise instrument: it is a ballpark calculator for a household's big financial questions.</p>
 <p>Over the years I kept asking questions like these:</p>
-<ul><li><a href="docs/user/vehicle-lease-or-own.md">Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?</a></li><li>When can I sell the house without losing the money I put into buying and maintaining it?</li><li>Would it be cheaper to rent?</li><li>When can I retire with an income of $NNN in today's dollars?</li><li>How much net worth am I really adding each year, in today's dollars?</li></ul>
+<ul><li><a href="/docs/docs-user-vehicle-lease-or-own">Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?</a></li><li>When can I sell the house without losing the money I put into buying and maintaining it?</li><li>Would it be cheaper to rent?</li><li>When can I retire with an income of $NNN in today's dollars?</li><li>How much net worth am I really adding each year, in today's dollars?</li></ul>
 <p>I built calculators for some of them, but never had the time for one tool that combines them all, let alone one that isn't command-line based. Enter the LLM. I brought the ideas (how to design it, what to design it for, and what <em>I</em> need) and let the LLM fill the gaps, tuning its approach as we went. This project is the result.</p>
 <h2 id="what-it-does">What it does</h2>
 <p>It models a household month by month over a lifetime: incomes, expenses, accounts, pensions, properties and mortgages, vehicles and taxes. It projects cash, investments, property, debts and net worth (also in today's dollars), compares scenarios side by side, and has calculators for a property's break-even and rent equivalent and for a vehicle's cost of ownership per month.</p>
@@ -39,4 +39,4 @@ python3 -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt   # o
 .venv/bin/python app.py                                              # http://127.0.0.1:5000
 .venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
 .venv/bin/python -m unittest discover -s state_machine/tests -t .    # engine + golden suite</code></pre>
-<p>The app has a <strong>Documentation</strong> tab (<code>/docs</code>) with every document and rendered diagram.</p>
+<p>The app has a <strong>Help</strong> tab (<code>/docs</code>) with the user guide and tutorials; the developer documentation (every design document and rendered diagram) is at <code>/docs/dev</code>, linked from the bottom of the Help sidebar.</p>

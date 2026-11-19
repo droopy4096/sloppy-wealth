@@ -531,23 +531,36 @@ DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__
                         "static", "docs")
 
 
+@web.route("/docs/dev", methods=["GET", "POST"])
+def docs_dev():
+    """The developer documentation's first page."""
+    return docs(area="dev")
+
+
 @web.route("/docs", methods=["GET", "POST"])
 @web.route("/docs/<slug>", methods=["GET", "POST"])
-def docs(slug=None):
-    """Project documentation and diagram renderings (pre-compiled, see build_docs.py).
-    Not scenario pages: GET and POST give the same page."""
+def docs(slug=None, area="user"):
+    """The Help tab: the user guide (docs/user) at /docs; the developer documentation
+    (planning docs, ADRs, specs, diagrams) at /docs/dev, out of the way (owner's request
+    2026-11-18). Pre-compiled by build_docs.py. Not scenario pages: GET and POST give the
+    same page."""
     try:
         with open(os.path.join(DOCS_DIR, "index.json")) as f:
-            sections = json.load(f)["sections"]
+            index = json.load(f)
     except FileNotFoundError:
-        return render_template("docs.html", sections=[], page=None, messages=[], body=Markup(
-            "<p>Documentation is not compiled: run <code>webapp/build_docs.py</code>.</p>"))
-    pages = {p["slug"]: p for s in sections for p in s["pages"]}
-    if slug is None:
-        slug = next(iter(pages))
-    if slug not in pages:
+        return render_template("docs.html", sections=[], page=None, area=area, messages=[],
+                               body=Markup("<p>Documentation is not compiled: run "
+                                           "<code>webapp/build_docs.py</code>.</p>"))
+    pages = {a: {p["slug"]: p for s in index[a] for p in s["pages"]} for a in index}
+    if slug is not None:
+        area = next((a for a in pages if slug in pages[a]), None)
+        if area is None:
+            abort(404)
+    elif pages[area]:
+        slug = next(iter(pages[area]))
+    else:
         abort(404)
     with open(os.path.join(DOCS_DIR, "pages", slug + ".html")) as f:
         body = Markup(f.read())
-    return render_template("docs.html", sections=sections, page=pages[slug], body=body,
-                           messages=[])
+    return render_template("docs.html", sections=index[area], page=pages[area][slug],
+                           area=area, body=body, messages=[])

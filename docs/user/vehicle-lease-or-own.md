@@ -15,7 +15,7 @@ If you would rather start from the finished scenario, download
 upload it, then jump to [Compare the three options](#6-compare-the-three-options).
 
 ## What you need
-- Sloppy Wealth running (see "Quick start" in the [README](../../README.md)), open at
+- Sloppy Wealth running (see [Getting started](README.md)), open at
   http://127.0.0.1:5000.
 - Rough figures for each option: the price, the lease payment and its fees, the
   residual (buy-out) value, and the running costs (insurance, fuel, maintenance).

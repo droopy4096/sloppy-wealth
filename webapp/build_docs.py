@@ -1,4 +1,5 @@
-"""Pre-compile the project documentation for the app's Documentation tab.
+"""Pre-compile the documentation for the app's Help tab (user guide, docs/user/) and its
+developer area (/docs/dev: planning docs, ADRs, critique, specs, engine docs).
 
     webapp/.venv/bin/python webapp/build_docs.py
 
@@ -26,8 +27,14 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "webapp", "static", "docs")
 
-# (section, [paths or globs relative to the repo root]) in sidebar order.
-SECTIONS = [
+# Two areas (owner's request 2026-11-18): the Help tab shows the user guide; the developer
+# documentation is served at /docs/dev. Each area: (section, [paths or globs relative to
+# the repo root]) in sidebar order; a path appears once per area.
+USER_SECTIONS = [
+    ("Start here", ["docs/user/README.md"]),
+    ("Tutorials", ["docs/user/*.md"]),
+]
+DEV_SECTIONS = [
     ("Start here", ["README.md", "CLAUDE.md", "docs/IMPLEMENTATION_STATUS.md"]),
     ("Planning", ["docs/glossary.md", "docs/open-questions.md", "docs/scenarios/*.md",
                   "docs/poc-review-2026-11-07.md"]),
@@ -98,14 +105,21 @@ class Diagrams:
 # ---------- a small Markdown converter (the subset these documents use) ----------
 
 def inline(text, links):
-    """Inline Markdown: code, links, bold, italic; everything else escaped. Code spans are
-    swapped for placeholders first, so emphasis may contain code."""
+    """Inline Markdown: code, images, links, bold, italic; everything else escaped. Code
+    spans and images are swapped for placeholders first, so emphasis may contain code. An
+    image's path goes through ``links`` too (build() copies the file and returns its URL)."""
     codes = []
 
     def keep(m):
         codes.append(f"<code>{html.escape(m.group(1))}</code>")
         return f"\x00{len(codes) - 1}\x00"
+
+    def image(m):
+        codes.append(f'<img src="{html.escape(links(m.group(2)))}" '
+                     f'alt="{html.escape(m.group(1))}" loading="lazy">')
+        return f"\x00{len(codes) - 1}\x00"
     s = re.sub(r"`([^`]+)`", keep, text)
+    s = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)", image, s)
     s = html.escape(s, quote=False)
     s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)",
                lambda m: f'<a href="{links(html.unescape(m.group(2)))}">{m.group(1)}</a>', s)
@@ -240,28 +254,51 @@ def title_for(path, text):
     return re.sub(r"[`*]", "", m.group(1)).strip() if m else os.path.basename(path)
 
 
-def collect():
-    sections = []
-    for title, patterns in SECTIONS:
+AREAS = {"user": USER_SECTIONS, "dev": DEV_SECTIONS}
+
+
+def collect(area=None):
+    """[(section title, [paths])] of one area, or of both (user first) when None."""
+    if area is None:
+        return collect("user") + collect("dev")
+    sections, seen = [], set()
+    for title, patterns in AREAS[area]:
         paths = []
         for pattern in patterns:
             for path in sorted(glob.glob(os.path.join(ROOT, pattern))):
                 rel = os.path.relpath(path, ROOT)
-                if rel not in paths:
+                if rel not in seen:
+                    seen.add(rel)
                     paths.append(rel)
         sections.append((title, paths))
     return sections
 
 
 def build():
-    if os.path.isdir(os.path.join(OUT, "pages")):
-        shutil.rmtree(os.path.join(OUT, "pages"))
-    os.makedirs(os.path.join(OUT, "pages"))
+    for sub in ("pages", "files"):
+        if os.path.isdir(os.path.join(OUT, sub)):
+            shutil.rmtree(os.path.join(OUT, sub))
+        os.makedirs(os.path.join(OUT, sub))
     diagrams = Diagrams()
     print(f"mermaid-cli: {diagrams.mmdc or 'not found (existing SVGs reused)'}")
-    sections = collect()
-    slugs = {rel: slug_for(rel) for _, paths in sections for rel in paths}
+    areas = {area: collect(area) for area in AREAS}
+    slugs = {rel: slug_for(rel) for sections in areas.values() for _, paths in sections
+             for rel in paths}
+    index = {area: render_area(sections, slugs, diagrams) for area, sections in areas.items()}
+    diagrams.prune()
+    with open(os.path.join(OUT, "index.json"), "w") as f:
+        json.dump(index, f, indent=1)
+        f.write("\n")
+    count = sum(len(s["pages"]) for sections in index.values() for s in sections)
+    print(f"{count} pages, {len(diagrams.used)} diagrams -> {os.path.relpath(OUT, ROOT)}")
+    if diagrams.missing:
+        print("NOT COMPILED: " + ", ".join(diagrams.missing))
+        return 1
+    return 0
 
+
+def render_area(sections, slugs, diagrams):
+    """Write the pages of one area; return its index sections."""
     index = []
     for title, paths in sections:
         pages = []
@@ -275,6 +312,14 @@ def build():
                     return target
                 path, _, frag = target.partition("#")
                 resolved = os.path.normpath(os.path.join(here, path))
+                if resolved not in slugs and not resolved.endswith((".md", ".mmd")) \
+                        and os.path.isfile(os.path.join(ROOT, resolved)):
+                    # An image or a download next to the document (screenshots, example
+                    # scenarios): copied to static/docs/files/ under its repo path.
+                    out = os.path.join(OUT, "files", resolved)
+                    os.makedirs(os.path.dirname(out), exist_ok=True)
+                    shutil.copyfile(os.path.join(ROOT, resolved), out)
+                    return f"/static/docs/files/{resolved}"
                 if resolved in slugs:
                     return f"/docs/{slugs[resolved]}" + (f"#{frag}" if frag else "")
                 return target
@@ -292,16 +337,7 @@ def build():
                 f.write(body + "\n")
             pages.append({"slug": slug, "title": title_for(rel, text), "path": rel})
         index.append({"title": title, "pages": pages})
-    diagrams.prune()
-    with open(os.path.join(OUT, "index.json"), "w") as f:
-        json.dump({"sections": index}, f, indent=1)
-        f.write("\n")
-    count = sum(len(s["pages"]) for s in index)
-    print(f"{count} pages, {len(diagrams.used)} diagrams -> {os.path.relpath(OUT, ROOT)}")
-    if diagrams.missing:
-        print("NOT COMPILED: " + ", ".join(diagrams.missing))
-        return 1
-    return 0
+    return index
 
 
 if __name__ == "__main__":

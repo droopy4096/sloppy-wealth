@@ -93,4 +93,6 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # once
 .venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
 .venv/bin/python -m unittest discover -s state_machine/tests -t .    # engine + golden suite
 ```
-The app has a **Documentation** tab (`/docs`) with every document and rendered diagram.
+The app has a **Help** tab (`/docs`) with the user guide and tutorials; the developer
+documentation (every design document and rendered diagram) is at `/docs/dev`, linked from
+the bottom of the Help sidebar.
