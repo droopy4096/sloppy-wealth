@@ -1,0 +1,62 @@
+<h1 id="developer-guide">Developer guide</h1>
+<p>Sloppy Wealth plays a household's finances forward month by month: incomes, expenses, accounts, properties, mortgages, vehicles, pensions and taxes. This page gives you the big picture. The <a href="/docs/docs-dev-tutorials-readme">tutorials</a> then walk you through common changes, and the <a href="/docs/docs-dev-reference-readme">reference</a> describes every element.</p>
+<p>If you have never used the app, spend ten minutes with the user guide's <a href="/docs/docs-user-readme">Getting started</a> and one tutorial, such as <a href="/docs/docs-user-vehicle-cost-of-ownership">Vehicle cost of ownership</a>. Everything below is easier once you have seen a scenario being built and run.</p>
+<h2 id="run-it-and-test-it">Run it and test it</h2>
+<p>From <code>webapp/</code>:</p>
+<pre><code>python3 -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt   # once
+.venv/bin/python app.py                                              # http://127.0.0.1:5000
+.venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
+.venv/bin/python -m unittest discover -s state_machine/tests -t .    # engine + golden suite
+.venv/bin/python state_machine/tools/update_golden.py --check        # golden results unchanged?</code></pre>
+<p>All three test commands must pass before a pull request (see "Contributing" in the <a href="/docs/readme">README</a>).</p>
+<h2 id="the-three-layers">The three layers</h2>
+<figure class="diagram"><a href="/static/docs/diagrams/49c9798ed84edeca.svg" target="_blank"><img src="/static/docs/diagrams/49c9798ed84edeca.svg" alt="docs/dev/README.md diagram"></a></figure>
+<ul><li><strong>The scenario</strong> is a JSON document: a few settings (horizon, opening cash, tax rates, inflation, jurisdiction) and a list of <strong>items</strong> (an income, an account, a mortgage…). Every item type is described in <a href="/docs/docs-dev-reference-items">items</a>.</li><li><strong>The server keeps nothing.</strong> The scenario lives in the browser tab. Every request sends it, the server answers with the new scenario or the results, and forgets it.</li><li><strong>The web pages</strong> only call the JSON API (<a href="/docs/docs-dev-reference-api">api</a>); they never import the engine. Anything the pages can do, another client can do through the API.</li><li><strong>The engine</strong> turns a scenario into month-by-month results.</li></ul>
+<h2 id="the-engine-is-a-state-machine">The engine is a state machine</h2>
+<p>The engine keeps one piece of state, the <strong>Household</strong>, and changes it only through <strong>events</strong>. Who decides that an event happens each month is the job of <strong>emitters</strong>.</p>
+<figure class="diagram"><a href="/static/docs/diagrams/87dbe9e6d5b21a31.svg" target="_blank"><img src="/static/docs/diagrams/87dbe9e6d5b21a31.svg" alt="docs/dev/README.md diagram"></a></figure>
+<ul><li><strong>Household</strong> (<code>household.py</code>) holds cash, the <strong>holdings</strong> (properties, vehicles, mortgages, accounts, pensions), the persons with their tax, the ledger and the jurisdiction's rules.</li><li><strong>Items compile to emitters.</strong> Each item type has a factory registered with <code>@item_type(&quot;name&quot;)</code> (<code>compiler.py</code>). It returns one or more emitters: an income gives an emitter that pays it every month between its dates, a property gives a purchase, an appreciation and possibly a sale.</li><li><strong>Emitters decide, events act.</strong> Every month the runner (<code>runner.py</code>) asks each emitter, in a fixed order, whether something happens (<code>emit</code>). An emitter only <em>reads</em> the household; it returns events. The event's <code>apply</code> makes the change.</li><li><strong>Every balance change is a movement</strong>: <code>household.move(kind, from, to, amount, source)</code> rounds the amount to cents, changes both balances and writes one ledger line. The movement kinds are listed in <a href="/docs/docs-dev-reference-ledger">ledger</a>.</li><li><strong>Rules</strong> are calculators events call: tax, indexing, investment returns (<a href="/docs/docs-dev-reference-rules">rules</a>).</li><li><strong>Results</strong> (<code>results.py</code>) record a row and the holdings' balances at the end of each month (<a href="/docs/docs-dev-reference-outputs">outputs</a>).</li></ul>
+<h3 id="the-month-order">The month order</h3>
+<p>Emitters run sorted by an order number (<code>clock.Order</code>), so each month always goes through the same steps:</p>
+<table>
+<tr><th>Step</th><th>What happens</th></tr>
+<tr><td>INITIAL</td><td>once, before the first month: holdings that exist at the start</td></tr>
+<tr><td>OPEN</td><td>the month begins; retirement, triggers</td></tr>
+<tr><td>INCOME, PENSION_PAY</td><td>incomes and pensions are paid</td></tr>
+<tr><td>ACQUIRE, IMPROVE, ADJUST, SELL, TRANSFER</td><td>purchases, loans advanced, accounts opened, improvements, value changes, sales, transfers</td></tr>
+<tr><td>SERVICE_DEBT</td><td>mortgage interest and payments, renewals, prepayments</td></tr>
+<tr><td>EXPENSE, MAINTAIN</td><td>expenses</td></tr>
+<tr><td>CONTRIBUTE, WITHDRAW</td><td>money into and out of accounts and pensions</td></tr>
+<tr><td>GROW, REVALUE_PENSIONS</td><td>appreciation, depreciation, account returns</td></tr>
+<tr><td>TAX</td><td>each person's tax for the month</td></tr>
+<tr><td>CLOSE</td><td>the month's results are recorded</td></tr>
+</table>
+<p>The steps are 100 apart, so a new emitter can be placed between two of them.</p>
+<h3 id="a-tiny-run">A tiny run</h3>
+<p>A scenario with $1,000 of cash, a salary of $4,000 a month, rent of $1,500 and 25% tax produces, in its first month, these ledger lines and this result row:</p>
+<pre><code>2027-01  INCOME   None -&gt; cash  4000.00  source salary
+2027-01  EXPENSE  cash -&gt; None  1500.00  source rent
+2027-01  TAX      cash -&gt; None  1000.00
+row 2027-01: cash 2500.00, netWorth 2500.00</code></pre>
+<p><code>None</code> means outside the model: money that comes in from, or goes out to, the world.</p>
+<h2 id="jurisdictions">Jurisdictions</h2>
+<p>Everything country-specific (account types such as RRSP or 401(k), how each is taxed, contribution limits, the items only one country has) lives in a plug-in package under <code>state_machine/jurisdictions/</code> (Canada <code>ca/</code>, United States <code>us/</code>). The core asks the scenario's jurisdiction instead of checking for "RRSP". See <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions</a>.</p>
+<h2 id="where-things-live">Where things live</h2>
+<table>
+<tr><th>Path</th><th>What</th></tr>
+<tr><td><code>webapp/state_machine/</code></td><td>the engine: <code>household.py</code>, <code>runner.py</code>, <code>clock.py</code>, <code>emitters.py</code>, <code>compiler.py</code>; items in <code>holdings/</code>, <code>events/</code>, <code>flows/</code>; calculators in <code>rules/</code>; <code>jurisdictions/</code>; <code>validation.py</code>, <code>upgrade.py</code>, <code>results.py</code>; derived views (<code>views.py</code>, <code>cards.py</code>, <code>break_even.py</code>, <code>vehicle_cost.py</code>); scenario commands (<code>ops.py</code>)</td></tr>
+<tr><td><code>webapp/api.py</code></td><td>the JSON API</td></tr>
+<tr><td><code>webapp/schema.py</code></td><td>the forms: fields, hints, choices and groups of each item type</td></tr>
+<tr><td><code>webapp/web/</code></td><td>the web pages (an API client)</td></tr>
+<tr><td><code>webapp/SPEC.md</code></td><td>the scenario JSON format and engine semantics (binding)</td></tr>
+<tr><td><code>docs/adr/</code></td><td>architecture decisions, numbered; the <em>why</em> behind the rules</td></tr>
+</table>
+<p>More in <a href="/docs/docs-dev-reference-modules">modules</a>.</p>
+<h2 id="diagrams">Diagrams</h2>
+<ul><li><a href="/docs/diagrams-06-event-emitter-conceptual">Diagram 06, the event-emitter model</a> shows the engine's classes as built.</li><li>Diagrams 01 to 05 show the planning-era design that the engine implements in its own way; read them for the domain ideas, not for code. Diagram 02 is the target domain model, not all of it built.</li></ul>
+<h2 id="rules-of-the-house">Rules of the house</h2>
+<ul><li>Money is <code>decimal.Decimal</code>, rounded to cents when a movement is made; rates are fractions in JSON and percentages in forms.</li><li>Change balances only through <code>household.move</code>.</li><li>Emitters decide, events act; emit nothing in months where nothing happens.</li><li>The <strong>golden suite</strong> freezes the results of 240+ scenarios. If your change alters results on purpose, review the differences (<code>update_golden.py --check</code>), regenerate, and say why in the commit message. Never regenerate to hide a difference you can't explain.</li><li>Never commit personal data: examples and test scenarios are synthetic.</li></ul>
+<p>The full rule book, including how decisions are recorded, is <a href="/docs/claude">CLAUDE.md</a>.</p>
+<h2 id="next">Next</h2>
+<p>Start with a <a href="/docs/docs-dev-tutorials-readme">tutorial</a>:</p>
+<ul><li><a href="/docs/docs-dev-tutorials-add-item-type">Add an item type</a></li><li><a href="/docs/docs-dev-tutorials-extend-jurisdiction">Extend a jurisdiction</a></li><li><a href="/docs/docs-dev-tutorials-new-jurisdiction">Create a jurisdiction</a></li><li><a href="/docs/docs-dev-tutorials-add-rule">Add a rule</a></li><li><a href="/docs/docs-dev-tutorials-change-output">Change the output</a></li></ul>

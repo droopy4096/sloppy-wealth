@@ -1,0 +1,99 @@
+<h1 id="jurisdictions">Jurisdictions</h1>
+<p>A jurisdiction is a tax country as a plug-in package (ADR-0071). It decides the account types and how each is taxed, its own item types, its contribution limits and their result columns, and wording for the forms. The core engine has no country rules.</p>
+<ul><li>API: <code>state_machine/jurisdictions/__init__.py</code>.</li><li>Packages: <code>state_machine/jurisdictions/ca/</code> (Canada), <code>state_machine/jurisdictions/us/</code> (United States).</li><li>A scenario names one with <code>&quot;jurisdiction&quot;: &quot;CA&quot;</code>; a scenario without the field is Canadian (<code>DEFAULT = &quot;CA&quot;</code>; <code>upgrade.py</code> inserts it).</li></ul>
+<h2 id="treatment">Treatment</h2>
+<p>Frozen dataclass: how money in an account type is taxed.</p>
+<table>
+<tr><th>Flag</th><th>Meaning</th></tr>
+<tr><td><code>deductible</code></td><td>Money put in reduces the contributor's taxable income.</td></tr>
+<tr><td><code>returns_taxed</code></td><td>The monthly return is taxable income of the owner (a loss gives no credit).</td></tr>
+<tr><td><code>withdrawal_taxed</code></td><td>Money taken out is taxable income of the owner (or taxed at the account's <code>withdrawalTaxRate</code>).</td></tr>
+</table>
+<p>Predefined: <code>DEFERRED</code> (True, False, True), <code>EXEMPT</code> (False, False, False), <code>TAXABLE</code> (False, True, False). The US package adds <code>HSA</code> (True, False, False).</p>
+<h2 id="accounttype">AccountType</h2>
+<p>Frozen dataclass <code>AccountType(code, label, treatment, short=&quot;&quot;, fields=())</code>:</p>
+<table>
+<tr><th>Attribute</th><th>Meaning</th></tr>
+<tr><td><code>code</code></td><td>Stored in the account item's <code>accountType</code>.</td></tr>
+<tr><td><code>label</code></td><td>Shown in forms (the <code>accountType</code> choices of <code>/api/schema</code>).</td></tr>
+<tr><td><code>treatment</code></td><td>A <code>Treatment</code>.</td></tr>
+<tr><td><code>short</code></td><td>Card label.</td></tr>
+<tr><td><code>fields</code></td><td>Extra account fields only this type takes (e.g. <code>&quot;contributor&quot;</code>, RESP fields). <code>schema.merged</code> adds them to the account form.</td></tr>
+</table>
+<h2 id="jurisdiction">Jurisdiction</h2>
+<p>Base class; subclass it and register it with <code>@jurisdiction(&quot;XX&quot;)</code>.</p>
+<table>
+<tr><th>Attribute</th><th>Meaning</th></tr>
+<tr><td><code>code</code></td><td>ISO 3166 alpha-2 code; set by the decorator.</td></tr>
+<tr><td><code>name</code></td><td>Display name.</td></tr>
+<tr><td><code>account_types</code></td><td><code>{code: AccountType}</code>. Validation refuses other <code>accountType</code> values.</td></tr>
+<tr><td><code>item_types</code></td><td>Own item types, e.g. <code>(&quot;contributionRoom&quot;,)</code>. Other jurisdictions refuse them by name.</td></tr>
+<tr><td><code>required</code></td><td><code>{own type: [required fields]}</code>, merged into <code>validation.REQUIRED</code>.</td></tr>
+<tr><td><code>choice_fields</code></td><td>Required fields that are choices, not numbers or dates (checked in <code>validate_item</code>).</td></tr>
+<tr><td><code>owned_types</code></td><td>Own types that take an <code>owner</code>.</td></tr>
+<tr><td><code>labels</code></td><td>Wording keys <code>deductions</code>, <code>pool</code>, <code>earned</code> (ledger and forms).</td></tr>
+<tr><td><code>limits</code></td><td>A <code>ContributionLimits</code> instance (default <code>NO_LIMITS</code>).</td></tr>
+<tr><td><code>form_fields</code></td><td><code>{own type: [fields in JSON order]}</code> for the forms.</td></tr>
+<tr><td><code>legends</code>, <code>hints</code></td><td>Form legends and hints (<code>(type, field)</code> or field keys); also override core wording.</td></tr>
+<tr><td><code>percent_fields</code></td><td>Own fields typed as percentages in the form.</td></tr>
+<tr><td><code>selects</code></td><td>Dropdown choices of own fields: <code>{field: [(value, label)]}</code>.</td></tr>
+<tr><td><code>add_groups</code></td><td><code>{group title: [own types]}</code> added to the flat builder's "+ Add" groups.</td></tr>
+<tr><td><code>head_adds</code></td><td>`{"person"</td><td>"scenario": [own types]}` added to person or Scenario cards.</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Meaning</th></tr>
+<tr><td><code>treatment(account)</code></td><td>The <code>Treatment</code> of an account object, or <code>None</code>.</td></tr>
+<tr><td><code>on_contribute</code>, <code>on_return</code>, <code>on_withdraw</code></td><td>Tax hooks, see <a href="#hooks">Hooks</a>.</td></tr>
+<tr><td><code>validate_item(item, where, check)</code></td><td>Checks for its own item types (and anything else); raise <code>ValueError</code>. Called for every item after the core checks. <code>check</code> is a <code>validation.ItemCheck</code> with <code>scenario</code>, <code>persons</code>, <code>start</code>, <code>end</code> and <code>seen</code> (a dict for its own state across items, e.g. one item per type).</td></tr>
+<tr><td><code>label(key, default)</code></td><td><code>labels.get(key, default)</code>.</td></tr>
+</table>
+<h2 id="hooks">Hooks</h2>
+<p>Called by the account events with the rounded amount <code>household.move</code> returned.</p>
+<table>
+<tr><th>Hook</th><th>Called from</th><th>Default</th></tr>
+<tr><td><code>on_contribute(household, account, amount, source=None)</code></td><td><code>InvestmentAccount.accept_contribution</code> (own share only), <code>Transfer.apply</code></td><td>If <code>deductible</code> and the scenario is not <code>expensesCovered</code>: <code>tax_of(account.contributor).add_deduction(amount)</code>.</td></tr>
+<tr><td><code>on_return(household, account, ret)</code></td><td><code>AccountReturn.apply</code></td><td>If <code>returns_taxed</code>: <code>tax_of(account.owner).add_taxable(max(0, ret))</code>.</td></tr>
+<tr><td><code>on_withdraw(household, account, amount)</code></td><td><code>Withdrawal.apply</code></td><td>If <code>withdrawal_taxed</code>: with <code>withdrawalTaxRate</code>, <code>add_own_rate_tax(amount × rate)</code>; else <code>add_taxable(amount)</code> for the owner.</td></tr>
+</table>
+<p>Not called for <code>OPENING_TRANSFER</code> / <code>OPENING_BALANCE</code> or the employer match. Override a hook and call <code>super()</code> for the rest (Canada does this for the RESP grant).</p>
+<h2 id="contributionlimits">ContributionLimits</h2>
+<p>Interface for limits; the base class allows everything (<code>NO_LIMITS</code>).</p>
+<table>
+<tr><th>Member</th><th>Meaning</th></tr>
+<tr><td><code>columns</code></td><td><code>{result column: heading}</code>. Names must end in <code>Room</code> or <code>Limit</code> (the conformance test checks; <code>web/client.py</code> converts such columns to Decimal).</td></tr>
+<tr><td><code>cap(household, account, amount, match=False)</code></td><td>The part of <code>amount</code> the account may receive now; uses it up. <code>match=True</code> for an employer match.</td></tr>
+<tr><td><code>note_earned(household, amount, person=None)</code></td><td>Earned income of a person this month.</td></tr>
+<tr><td><code>note_withdrawal(household, account, amount)</code></td><td>A withdrawal (limits that give room back).</td></tr>
+<tr><td><code>remaining(household)</code></td><td><code>{column: amount or None}</code> added to each result row.</td></tr>
+</table>
+<p><code>capped_note(requested, allowed)</code> gives the event-log note when a movement was capped.</p>
+<h2 id="registration-and-discovery">Registration and discovery</h2>
+<ul><li><code>@jurisdiction(&quot;XX&quot;)</code> sets <code>cls.code</code> and stores one instance in <code>REGISTRY</code>.</li><li><code>discover()</code> imports every sub-package of <code>jurisdictions/</code> and every module inside it (so <code>@item_type</code> factories in, e.g., <code>ca/room.py</code> register too). <code>compiler.discover()</code> calls it.</li><li>Look-ups: <code>registered()</code> (all), <code>get(code)</code> (<code>ValueError</code> if unknown), <code>of(scenario)</code>, <code>of_or_default(scenario)</code>, <code>code_of(scenario)</code>, <code>own_item_types()</code> (<code>{type: code}</code>).</li><li>The household keeps its jurisdiction as <code>household.jurisdiction</code>.</li><li>Changing a scenario's jurisdiction (<code>POST /api/settings</code>) is refused while items need the old one (<code>ops.switch_problem</code> names them).</li></ul>
+<h2 id="ca">CA</h2>
+<p>Canada, <code>jurisdictions/ca/</code>.</p>
+<table>
+<tr><th>accountType</th><th>Label</th><th>Treatment</th><th>Extra fields</th></tr>
+<tr><td><code>tfsa</code></td><td>TFSA (tax-free)</td><td>EXEMPT</td><td></td></tr>
+<tr><td><code>rrsp</code></td><td>RRSP (tax-deferred)</td><td>DEFERRED</td><td><code>contributor</code> (spousal RRSP)</td></tr>
+<tr><td><code>nonRegistered</code></td><td>non-registered (returns taxed)</td><td>TAXABLE</td><td></td></tr>
+<tr><td><code>resp</code></td><td>RESP (education savings, with the CESG grant)</td><td>EXEMPT</td><td><code>unusedGrantRoom</code>, <code>grantReceived</code>, <code>contributedSoFar</code></td></tr>
+</table>
+<ul><li>Own item type: <a href="/docs/docs-dev-reference-items#contributionroom">contributionRoom</a> (<code>ca/room.py</code>).</li><li>Limits: <code>RoomLimits</code> (<code>ca/room.py</code>), columns <code>rrspRoom</code>, <code>tfsaRoom</code>. Room per (person, account type); a movement uses its account's contributor's room. For an <code>resp</code> account <code>cap</code> applies the RESP lifetime limit instead ($50,000 less <code>contributedSoFar</code>).</li><li><code>on_contribute</code> override: after the default, an RESP pays the CESG grant (<code>ca/resp.py</code> <code>pay_grant</code>, a <a href="/docs/docs-dev-reference-ledger#grant">GRANT</a> movement): 20 % of the amount, limited by the grant room ($500 per calendar year from the horizon's first year plus <code>unusedGrantRoom</code>), $1,000 a year and $7,200 lifetime less <code>grantReceived</code> (ADR-0072).</li><li><code>validate_item</code>: contributionRoom checks; RESP fields only on <code>resp</code> accounts, not negative.</li><li>Sample: <code>jurisdictions/ca/sample.json</code>.</li></ul>
+<h2 id="us">US</h2>
+<p>United States, <code>jurisdictions/us/</code>.</p>
+<table>
+<tr><th>accountType</th><th>Label</th><th>Treatment</th></tr>
+<tr><td><code>traditional401k</code></td><td>401(k), traditional (tax-deferred)</td><td>DEFERRED</td></tr>
+<tr><td><code>roth401k</code></td><td>401(k), Roth (tax-free)</td><td>EXEMPT</td></tr>
+<tr><td><code>traditionalIra</code></td><td>IRA, traditional (tax-deferred)</td><td>DEFERRED</td></tr>
+<tr><td><code>rothIra</code></td><td>IRA, Roth (tax-free)</td><td>EXEMPT</td></tr>
+<tr><td><code>hsa</code></td><td>HSA (health savings account)</td><td>HSA (deductible only)</td></tr>
+<tr><td><code>brokerage</code></td><td>brokerage (returns taxed)</td><td>TAXABLE</td></tr>
+</table>
+<ul><li>Own item type: <a href="/docs/docs-dev-reference-items#contributionlimit">contributionLimit</a> (<code>us/limits.py</code>).</li><li>Limits: <code>YearlyLimits</code>, columns <code>k401Limit</code>, <code>iraLimit</code>, <code>hsaLimit</code>. Groups: <code>traditional401k</code> and <code>roth401k</code> → <code>401k</code>; the IRAs → <code>ira</code>; <code>hsa</code> → <code>hsa</code>. Per calendar year, no carry-over; the match is not capped.</li><li>No hook overrides. Social Security is a <a href="/docs/docs-dev-reference-items#pension">pension</a> item; federal and state tax and FICA are in the flat rate. Not modelled: RMDs, early-withdrawal penalty, HSA medical rules, 529 plans, Roth conversions.</li><li>Sample: <code>jurisdictions/us/sample.json</code>.</li></ul>
+<h2 id="conformance-test">Conformance test</h2>
+<p><code>state_machine/tests/test_conformance.py</code> runs over every registered jurisdiction. A new package must pass it unchanged:</p>
+<ul><li>declarations: two-letter upper-case code, a name, at least one account type, <code>AccountType</code> keys equal their codes, extra fields appear on the account form, limit columns end in <code>Room</code> or <code>Limit</code>;</li><li>own item types: each has an <code>@item_type</code> factory, <code>required</code>, <code>form_fields</code> and a <code>legend</code>, belongs to one jurisdiction only; <code>owned_types</code>, <code>add_groups</code>, <code>head_adds</code> list only own types;</li><li>forms: <code>schema.describe(code)</code> builds, every type is in exactly one add group, the <code>accountType</code> choices are the account types, other jurisdictions' types are absent;</li><li>sample: <code>jurisdictions/&lt;code&gt;/sample.json</code> exists, uses every account type and own item type, validates, runs, shows a limit column, and is in the jurisdiction's golden set.</li></ul>
+<p>Run: <code>cd webapp &amp;&amp; .venv/bin/python -m unittest state_machine.tests.test_conformance</code>.</p>
+<h2 id="golden-sets">Golden sets</h2>
+<p>Each jurisdiction has its own golden results (<code>state_machine/tools/update_golden.py</code>): Canada's set is <code>state_machine/tests/golden/</code> (<code>scenarios.json</code>, <code>golden.json</code>, <code>values.json</code>); another jurisdiction's is <code>state_machine/tests/golden/&lt;code&gt;/</code> (US: <code>golden/us/</code>). <code>update_golden.py --check</code> compares all sets; <code>--jurisdiction XX</code> picks one, and <code>--add FILE</code> adds a synthetic scenario to it. Steps for a new jurisdiction: <code>state_machine/README.md</code>, "Contributing a jurisdiction".</p>

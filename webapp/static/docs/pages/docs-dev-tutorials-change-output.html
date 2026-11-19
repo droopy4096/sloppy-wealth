@@ -1,0 +1,98 @@
+<h1 id="tutorial-add-a-value-to-the-output">Tutorial: add a value to the output</h1>
+<p><strong>What you'll build:</strong> a new <code>liquid</code> column (cash + investments: money not tied up in property or vehicles) in every monthly result row. It comes out of the engine, through the JSON API, and onto the Run page's table.</p>
+<p>Big picture first? Read the <a href="/docs/docs-dev-readme">developer intro</a>.</p>
+<h2 id="concepts-you-need">Concepts you need</h2>
+<ul><li>A run returns <code>run_detailed()</code>: <code>rows</code> (one per month), <code>holdings</code>, <code>ledger</code>, <code>tax</code> and <code>events</code>. <code>state_machine/results.py</code> builds them. The <code>Recorder</code> emitter runs last each month (<code>Order.CLOSE</code>) and calls <code>row()</code>. See <a href="/docs/docs-dev-reference-outputs">outputs.md</a>.</li><li>The pages never call the engine. They call the <strong>JSON API</strong> (<code>webapp/api.py</code>), which sends every <code>Decimal</code> as a string. The web client (<code>web/client.py</code>) turns the fields listed in <code>NUMERIC</code> back into <code>Decimal</code> for the templates. See <a href="/docs/docs-dev-reference-api">api.md</a>.</li><li>The <strong>golden suite</strong> stores a SHA-256 hash of each scenario's <code>rows</code>. A new column changes the hash of every scenario, even though no number changed.</li></ul>
+<p>All commands run from <code>webapp/</code>.</p>
+<h2 id="steps">Steps</h2>
+<h3 id="1-compute-the-value">1. Compute the value</h3>
+<p>In <code>state_machine/results.py</code>, function <code>row()</code>, add the key:</p>
+<pre><code>    out = {&quot;month&quot;: month_label(m), &quot;cash&quot;: cash, &quot;investments&quot;: investments,
+           &quot;assets&quot;: assets, &quot;debts&quot;: debts, &quot;assetsNetWorth&quot;: anw,
+           &quot;netWorth&quot;: cash + anw,
+           &quot;liquid&quot;: cash + investments}     # money that is not tied up in property</code></pre>
+<p><code>row()</code> only reads the household. Never change balances here; that is the events' job.</p>
+<h3 id="2-convert-it-in-the-web-client">2. Convert it in the web client</h3>
+<p>The API sends <code>&quot;liquid&quot;: &quot;15000.00&quot;</code>. Add the key to <code>NUMERIC</code> in <code>web/client.py</code>, or the template gets a string and cannot compare it with zero:</p>
+<pre><code>NUMERIC = {&quot;assets&quot;, &quot;assetsNetWorth&quot;, &quot;cash&quot;, &quot;debts&quot;, &quot;investments&quot;, &quot;netWorth&quot;,
+           &quot;realAssetsNetWorth&quot;, &quot;realNetWorth&quot;, &quot;liquid&quot;,</code></pre>
+<p>The API itself needs no change: <code>/api/run</code> returns the whole <code>result</code>, and <code>_json_default</code> in <code>api.py</code> writes any <code>Decimal</code> as a string.</p>
+<h3 id="3-show-it-on-the-run-page">3. Show it on the Run page</h3>
+<p>In <code>web/templates/run.html</code>, add a heading after "Net worth (... $)":</p>
+<pre><code>&lt;th&gt;Net worth ({{ summary.dollarsOf }} $)&lt;/th&gt;&lt;th&gt;Liquid&lt;/th&gt;</code></pre>
+<p>and the key to the list of columns:</p>
+<pre><code>{% for key in [&quot;cash&quot;, &quot;investments&quot;, &quot;assets&quot;, &quot;debts&quot;, &quot;realAssetsNetWorth&quot;, &quot;netWorth&quot;, &quot;realNetWorth&quot;, &quot;liquid&quot;] %}</code></pre>
+<h3 id="4-update-the-spec">4. Update the spec</h3>
+<p><code>webapp/SPEC.md</code>, section "Engine output", lists the row keys. Add <code>&quot;liquid&quot;: Decimal</code> after <code>&quot;netWorth&quot;: Decimal</code>. Then rebuild the documentation tab:</p>
+<pre><code>.venv/bin/python build_docs.py</code></pre>
+<h3 id="5-write-a-test">5. Write a test</h3>
+<p>Create <code>state_machine/tests/test_liquid.py</code>:</p>
+<pre><code>import json
+import unittest
+
+import app
+from state_machine import engine
+from state_machine.tests.support import scenario
+
+ITEMS = [{&quot;type&quot;: &quot;account&quot;, &quot;id&quot;: &quot;tfsa&quot;, &quot;accountType&quot;: &quot;tfsa&quot;,
+          &quot;openingBalance&quot;: &quot;5000&quot;, &quot;annualReturn&quot;: &quot;0&quot;},
+         {&quot;type&quot;: &quot;property&quot;, &quot;id&quot;: &quot;home&quot;, &quot;purchaseDate&quot;: &quot;2025-01-01&quot;, &quot;price&quot;: &quot;300000&quot;,
+          &quot;annualAppreciation&quot;: &quot;0&quot;}]
+
+
+class Liquid(unittest.TestCase):
+    def test_row(self):
+        row = engine.run_detailed(scenario(ITEMS))[&quot;rows&quot;][0]
+        self.assertEqual(row[&quot;liquid&quot;], row[&quot;cash&quot;] + row[&quot;investments&quot;])
+        self.assertEqual(str(row[&quot;liquid&quot;]), &quot;15000.00&quot;)       # the house is not liquid
+
+    def test_api_and_run_page(self):
+        client = app.app.test_client()
+        answer = client.post(&quot;/api/run&quot;, data=json.dumps({&quot;scenario&quot;: scenario(ITEMS)}),
+                             content_type=&quot;application/json&quot;).get_json()
+        self.assertEqual(answer[&quot;result&quot;][&quot;rows&quot;][0][&quot;liquid&quot;], &quot;15000.00&quot;)   # a string
+        from browser import Browser
+        page = Browser(scenario(ITEMS)).get(&quot;/run&quot;).data.decode()
+        self.assertIn(&quot;&lt;th&gt;Liquid&lt;/th&gt;&quot;, page)
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()</code></pre>
+<p><code>browser.Browser</code> stands in for a browser tab: it posts the scenario with each request, as the page's JavaScript does.</p>
+<h3 id="6-review-the-golden-differences">6. Review the golden differences</h3>
+<pre><code>.venv/bin/python state_machine/tools/update_golden.py --check</code></pre>
+<p>Almost every scenario is listed:</p>
+<pre><code>fixtures/us_single.json: rows differs
+  golden:  &#x27;8a338a6c...&#x27;
+  current: &#x27;704cbc01...&#x27;
+...
+CA: 241 scenarios, 163 changed/new, 0 removed
+US: 2 scenarios, 2 changed/new, 0 removed</code></pre>
+<p>That is expected: each row has one more key. But <code>--check</code> prints only the <em>first</em> field that differs, so confirm that nothing else (holdings, ledger, tax, net worth) moved:</p>
+<pre><code>.venv/bin/python - &lt;&lt;&#x27;EOF&#x27;
+from state_machine.tools import update_golden as g
+engine = g.load_engine()
+for code in g.golden_sets():
+    old, new = g.load_golden(code), g.compute(engine, g.load_scenarios(code))
+    other = [k for k in new if {f: v for f, v in old[k].items() if f != &quot;rows&quot;}
+             != {f: v for f, v in new[k].items() if f != &quot;rows&quot;}]
+    print(code, &quot;changed beyond rows:&quot;, other)
+EOF</code></pre>
+<pre><code>CA changed beyond rows: []
+US changed beyond rows: []</code></pre>
+<p>Only now regenerate, the scenario hashes and the WP tests' stored values:</p>
+<pre><code>.venv/bin/python state_machine/tools/update_golden.py
+.venv/bin/python state_machine/tools/update_golden.py --values</code></pre>
+<p>Commit the golden files with the change. The message must say why: "rows gain a <code>liquid</code> column; no value changed (holdings, ledger, tax hashes identical)".</p>
+<h3 id="7-fix-the-test-that-pins-the-row-keys">7. Fix the test that pins the row keys</h3>
+<p><code>state_machine/tests/test_wp8_results.py</code>, <code>test_kitchen_sink</code>, checks the exact key order of a row. Add <code>&quot;liquid&quot;</code> after <code>&quot;netWorth&quot;</code>:</p>
+<pre><code>        self.assertEqual(list(r[&quot;rows&quot;][0]), [&quot;month&quot;, &quot;cash&quot;, &quot;investments&quot;, &quot;assets&quot;, &quot;debts&quot;,
+                                              &quot;assetsNetWorth&quot;, &quot;netWorth&quot;, &quot;liquid&quot;, &quot;realNetWorth&quot;,
+                                              &quot;realAssetsNetWorth&quot;])</code></pre>
+<h2 id="test-it">Test it</h2>
+<pre><code>.venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
+.venv/bin/python -m unittest discover -s state_machine/tests -t .
+.venv/bin/python state_machine/tools/update_golden.py --check     # 0 changed/new everywhere</code></pre>
+<p>In the app (<code>.venv/bin/python app.py</code>), load a sample and click Run: the table ends with a "Liquid" column.</p>
+<h2 id="where-to-go-next">Where to go next</h2>
+<ul><li>A value per holding (not per month): add it in the aggregate's <code>report_extra()</code> (it lands in each holding point), see <code>holdings/</code>.</li><li>A new kind of ledger line: that is an event's job, see <a href="/docs/docs-dev-tutorials-add-item-type">add-item-type.md</a> and <a href="/docs/docs-dev-reference-ledger">ledger.md</a>.</li><li>The output formats in full: <a href="/docs/docs-dev-reference-outputs">outputs.md</a>; the API: <a href="/docs/docs-dev-reference-api">api.md</a>.</li><li>A column that only some jurisdictions have (like contribution room): it comes from the jurisdiction's <code>limits.remaining()</code>, and the web client converts keys ending in <code>Room</code> or <code>Limit</code> automatically. See <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>.</li></ul>

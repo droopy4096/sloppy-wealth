@@ -1,8 +1,10 @@
 ---
-title: Projection result, output model (DRAFT v0.1)
+title: Projection result, output model (DRAFT v0.1; planning design, the PoC implements part of it, see note)
 ---
 classDiagram
     direction TB
+
+    note "PoC (state_machine/api.py run_detailed) returns rows, holdings, ledger, tax, events.\nrows: month, cash, investments, assets, debts, assetsNetWorth, netWorth,\nrealNetWorth, realAssetsNetWorth, + jurisdiction limit columns.\nledger lines: month, kind, from, to, amount, source (no tags).\nNot built: SetResult, goals, tallies, shortfalls, liquidationNetWorth, appliedDefaults."
 
     %% ---------- Root: one result per ScenarioSet run (ADR-0028) ----------
     class SetResult {

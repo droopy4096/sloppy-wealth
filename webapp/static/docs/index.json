@@ -38,7 +38,97 @@
  ],
  "dev": [
   {
-   "title": "Start here",
+   "title": "Developer guide",
+   "pages": [
+    {
+     "slug": "docs-dev-readme",
+     "title": "Developer guide",
+     "path": "docs/dev/README.md"
+    }
+   ]
+  },
+  {
+   "title": "Tutorials",
+   "pages": [
+    {
+     "slug": "docs-dev-tutorials-readme",
+     "title": "Tutorials",
+     "path": "docs/dev/tutorials/README.md"
+    },
+    {
+     "slug": "docs-dev-tutorials-add-item-type",
+     "title": "Tutorial: add a new item type",
+     "path": "docs/dev/tutorials/add-item-type.md"
+    },
+    {
+     "slug": "docs-dev-tutorials-add-rule",
+     "title": "Tutorial: add a rule",
+     "path": "docs/dev/tutorials/add-rule.md"
+    },
+    {
+     "slug": "docs-dev-tutorials-change-output",
+     "title": "Tutorial: add a value to the output",
+     "path": "docs/dev/tutorials/change-output.md"
+    },
+    {
+     "slug": "docs-dev-tutorials-extend-jurisdiction",
+     "title": "Tutorial: extend a jurisdiction (add an account type)",
+     "path": "docs/dev/tutorials/extend-jurisdiction.md"
+    },
+    {
+     "slug": "docs-dev-tutorials-new-jurisdiction",
+     "title": "Tutorial: add a new jurisdiction",
+     "path": "docs/dev/tutorials/new-jurisdiction.md"
+    }
+   ]
+  },
+  {
+   "title": "Reference",
+   "pages": [
+    {
+     "slug": "docs-dev-reference-readme",
+     "title": "Reference",
+     "path": "docs/dev/reference/README.md"
+    },
+    {
+     "slug": "docs-dev-reference-api",
+     "title": "JSON API",
+     "path": "docs/dev/reference/api.md"
+    },
+    {
+     "slug": "docs-dev-reference-items",
+     "title": "Scenario items",
+     "path": "docs/dev/reference/items.md"
+    },
+    {
+     "slug": "docs-dev-reference-jurisdictions",
+     "title": "Jurisdictions",
+     "path": "docs/dev/reference/jurisdictions.md"
+    },
+    {
+     "slug": "docs-dev-reference-ledger",
+     "title": "Ledger movements",
+     "path": "docs/dev/reference/ledger.md"
+    },
+    {
+     "slug": "docs-dev-reference-modules",
+     "title": "Code map",
+     "path": "docs/dev/reference/modules.md"
+    },
+    {
+     "slug": "docs-dev-reference-outputs",
+     "title": "Run outputs",
+     "path": "docs/dev/reference/outputs.md"
+    },
+    {
+     "slug": "docs-dev-reference-rules",
+     "title": "Rules and calculators",
+     "path": "docs/dev/reference/rules.md"
+    }
+   ]
+  },
+  {
+   "title": "Project",
    "pages": [
     {
      "slug": "readme",
@@ -507,32 +597,32 @@
     },
     {
      "slug": "diagrams-01-engine-pipeline",
-     "title": "Engine pipeline (ADR-0010, ADR-0027, ADR-0028)",
+     "title": "Engine pipeline (ADR-0010, ADR-0027, ADR-0028; planning design, the PoC implements it as diagram 06)",
      "path": "diagrams/01-engine-pipeline.mmd"
     },
     {
      "slug": "diagrams-02-scenario-domain-model",
-     "title": "ScenarioSet input, conceptual domain model (DRAFT v0.56)",
+     "title": "ScenarioSet input, conceptual domain model (DRAFT v0.57; target design, not all built, see docs/IMPLEMENTATION_STATUS.md)",
      "path": "diagrams/02-scenario-domain-model.mmd"
     },
     {
      "slug": "diagrams-03-sequence-pipeline-run",
-     "title": "Pipeline run, two-houses scenario (ADR-0010)",
+     "title": "Pipeline run, two-houses scenario (ADR-0010; planning design, the PoC implements it as diagram 06)",
      "path": "diagrams/03-sequence-pipeline-run.mmd"
     },
     {
      "slug": "diagrams-04-sequence-month-step",
-     "title": "One month step (ADR-0018 revision 2, Accepted)",
+     "title": "One month step (ADR-0018 revision 2; planning design, the PoC order is clock.Order, diagram 06)",
      "path": "diagrams/04-sequence-month-step.mmd"
     },
     {
      "slug": "diagrams-05-output-model",
-     "title": "Projection result, output model (DRAFT v0.1)",
+     "title": "Projection result, output model (DRAFT v0.1; planning design, the PoC implements part of it, see note)",
      "path": "diagrams/05-output-model.mmd"
     },
     {
      "slug": "diagrams-06-event-emitter-conceptual",
-     "title": "Event-emitter engine, conceptual class model (DRAFT v0.2, poc/state-machine, D1-D5, D-E1..D-E4)",
+     "title": "Event-emitter engine, conceptual class model (DRAFT v0.3, webapp/state_machine, D1-D5, D-E1..D-E4, ADR-0061, ADR-0071)",
      "path": "diagrams/06-event-emitter-conceptual.mmd"
     }
    ]

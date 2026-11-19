@@ -61,6 +61,7 @@ backlog).
 ## Repository map
 | Path | What |
 |---|---|
+| `docs/dev/` | Developer guide: an introduction to how the system works, tutorials for common changes, and a reference of every item, movement, rule, output and API endpoint |
 | `docs/user/` | User tutorials: how to answer the questions above with the app, with screenshots and example scenario files |
 | `docs/adr/` | Architecture Decision Records 0001–0074, many with dated amendments. The source of truth for decisions. |
 | `docs/open-questions.md` | Decisions still open, deferred or on watch |

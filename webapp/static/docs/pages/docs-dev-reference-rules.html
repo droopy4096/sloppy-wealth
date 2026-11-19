@@ -1,0 +1,69 @@
+<h1 id="rules-and-calculators">Rules and calculators</h1>
+<p>A rule is a calculator that emitters and events call. Rules subclass <code>base.Rule</code>, hold no scenario state (state they need lives on the household), and use the formulas in <code>state_machine/arith.py</code>. Rule modules live in <code>state_machine/rules/</code>; the jurisdiction-specific rules (tax treatment of accounts, contribution limits) live in <code>state_machine/jurisdictions/</code> (<a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>).</p>
+<table>
+<tr><th>Rule</th><th>Module</th><th>Called by</th></tr>
+<tr><td><a href="#taxrule">TaxRule</a></td><td><code>rules/tax.py</code></td><td><code>TaxStepEvent</code>, once a month</td></tr>
+<tr><td><a href="#indexingrule">IndexingRule</a></td><td><code>rules/indexing.py</code></td><td>income, expense, contribution, withdrawal (amount), associated items</td></tr>
+<tr><td><a href="#capitalgainsrule">CapitalGainsRule</a></td><td><code>rules/capital_gains.py</code></td><td><code>Sale.apply</code></td></tr>
+<tr><td><a href="#account-tax-hooks">Account tax hooks</a></td><td><code>jurisdictions/__init__.py</code> <code>Jurisdiction</code></td><td>account events</td></tr>
+<tr><td><a href="#contribution-limits">Contribution limits</a></td><td><code>jurisdictions/__init__.py</code> <code>ContributionLimits</code></td><td>account events, income</td></tr>
+<tr><td><a href="#closure-penalty">Closure penalty</a></td><td><code>holdings/mortgage.py</code> <code>Mortgage.penalty_at</code></td><td>sale, lump sum payoff, results</td></tr>
+<tr><td><a href="#arithmetic">Arithmetic</a></td><td><code>arith.py</code></td><td>everywhere</td></tr>
+</table>
+<h2 id="taxrule">TaxRule</h2>
+<p>One flat rate on taxable income less deductions, per person, every month (ADR-0017, ADR-0048, ADR-0061).</p>
+<ul><li>Inputs: each person's <code>TaxAccumulator</code> (<code>household.tax_of(person)</code>), reset at the start of each month (<code>Household.begin_month</code>):<ul><li><code>taxable</code>: added by <code>add_taxable</code> (taxable income, pension payments, taxed returns, taxed withdrawals);</li><li><code>deductions</code>: added by <code>add_deduction</code> (deductible contributions and transfers, pension contributions);</li><li><code>extra_tax</code>: tax at an account's own <code>withdrawalTaxRate</code>, kept unrounded (<code>add_own_rate_tax</code>);</li><li><code>pool</code>: unused deductions carried forward; never reset.</li></ul></li><li>Step (<code>TaxRule.person_step</code>): <code>available = deductions + pool</code>; <code>used = min(available, max(0, taxable))</code>; <code>pool = available − used</code>; <code>incomeTax = money(rate × (max(0, taxable) − used))</code>; <code>total = incomeTax + money(extra_tax)</code>. Tax is never negative; no cash credit.</li><li>Rate: <code>person.current_tax_rate</code>: the person's <code>effectiveTaxRate</code> (else the scenario's), switching to the retirement rate once the person's <code>Retirement</code> event has run.</li><li>Output: one <a href="/docs/docs-dev-reference-ledger#tax">TAX</a> movement per person (source: person id when there are several), and the month's detail in <code>household.tax_detail</code> (see <a href="/docs/docs-dev-reference-outputs#tax">outputs.md</a>).</li><li>Wiring: <code>TaxEmitter</code> (<code>Order.TAX</code>, scenario level) emits a <code>TaxStepEvent</code> every month. It is registered by the scenario setup hook <code>setup_retirement_and_tax</code> in <code>events/retirement.py</code>.</li></ul>
+<h2 id="indexingrule">IndexingRule</h2>
+<p>A flow's yearly step-up (ADR-0013), with cash-flow adjustments (ADR-0062).</p>
+<pre><code>IndexingRule(rate, anchor, divisor=1, steps=None)
+IndexingRule.for_item(item, inflation, anchor, divisor=1, steps=None)  # rate from item
+rule.amount(base, month) -&gt; Decimal                                       # rounded to cents</code></pre>
+<ul><li><code>rate</code>: from <code>arith.indexing_rate(item, inflation)</code>: <code>inflation</code> → the scenario's <code>annualInflation</code>, <code>custom</code> → <code>indexRate</code>, else 0.</li><li><code>anchor</code>: the month index the amount is stated for (the item's start, or the parent's start for associated items).</li><li><code>divisor</code>: <code>arith.PER[per]</code>: 1 (month), 3 (quarter), 12 (year).</li><li><code>steps</code>: <code>[(month, new base, divisor)]</code> from <code>flows/adjustment.steps_for</code>; the last step at or before <code>month</code> replaces base, divisor and anchor.</li><li><code>amount</code> = <code>arith.indexed(base, rate, month − anchor, divisor)</code> = <code>money(base × (1 + rate)^((month − anchor) // 12) / divisor)</code>.</li></ul>
+<p>Pensions do not use it: <code>Pension.payment</code> steps on the anniversary of the base date (<code>dollarsOf</code>) with the same expression. Percent withdrawals and percentage associated items use their own yearly re-set (<code>PercentStrategy</code>, <code>YearlyPercent</code>, <code>percent_of</code>).</p>
+<h2 id="capitalgainsrule">CapitalGainsRule</h2>
+<p>A deliberate no-op: no tax on gains from selling a property or vehicle (known gap C-M8, ADR-0017).</p>
+<ul><li><code>CapitalGainsRule.on_sale(household, asset, proceeds, source)</code> returns <code>None</code>, records nothing, adds no taxable income.</li><li><code>RealAsset.capital_gains = NO_CAPITAL_GAINS</code> (the shared instance); <code>Sale.apply</code> calls it after the <a href="/docs/docs-dev-reference-ledger#sale">SALE</a> movement. A future capital-gains treatment plugs in here.</li></ul>
+<h2 id="account-tax-hooks">Account tax hooks</h2>
+<p>Methods of <code>Jurisdiction</code>, called by account events with the rounded amount that <code>household.move</code> returned. Default behaviour follows the account type's <code>Treatment</code> flags; a jurisdiction overrides a hook for anything else.</p>
+<table>
+<tr><th>Hook</th><th>Called from</th><th>Default</th></tr>
+<tr><td><code>on_contribute(household, account, amount, source)</code></td><td><code>InvestmentAccount.accept_contribution</code> (own share), <code>Transfer.apply</code></td><td><code>deductible</code> and not <code>expensesCovered</code>: a deduction of <code>account.contributor</code>. Canada adds the RESP grant.</td></tr>
+<tr><td><code>on_return(household, account, ret)</code></td><td><code>AccountReturn.apply</code></td><td><code>returns_taxed</code>: taxable income of the owner, max(0, ret).</td></tr>
+<tr><td><code>on_withdraw(household, account, amount)</code></td><td><code>Withdrawal.apply</code></td><td><code>withdrawal_taxed</code>: own-rate tax if <code>withdrawalTaxRate</code>, else taxable income of the owner.</td></tr>
+</table>
+<p>Details: <a href="/docs/docs-dev-reference-jurisdictions#hooks">jurisdictions.md</a>.</p>
+<h2 id="contribution-limits">Contribution limits</h2>
+<p><code>household.jurisdiction.limits</code>, a <code>ContributionLimits</code> object (<a href="/docs/docs-dev-reference-jurisdictions#contributionlimits">jurisdictions.md</a>):</p>
+<table>
+<tr><th>Method</th><th>Called from</th></tr>
+<tr><td><code>cap(household, account, amount, match=False)</code></td><td><code>accept_contribution</code> (own share, then match with <code>match=True</code>), <code>Transfer.apply</code>, <code>AccountOpening.apply</code> (opening from cash)</td></tr>
+<tr><td><code>note_earned(household, amount, person)</code></td><td><code>Income.apply</code> when the income is earned</td></tr>
+<tr><td><code>note_withdrawal(household, account, amount)</code></td><td><code>Withdrawal.apply</code></td></tr>
+<tr><td><code>remaining(household)</code></td><td><code>results.row</code>: the limit columns of each row</td></tr>
+</table>
+<p>Implementations: <code>NO_LIMITS</code> (base class, nothing capped), Canada <code>RoomLimits</code> (<code>jurisdictions/ca/room.py</code>, with RESP lifetime limit from <code>ca/resp.py</code>), United States <code>YearlyLimits</code> (<code>jurisdictions/us/limits.py</code>).</p>
+<h2 id="closure-penalty">Closure penalty</h2>
+<p>The early-closure penalty of a mortgage term (ADR-0073), <code>Mortgage.penalty_at(month)</code> with the <code>ClosureTerm</code> of the term in effect (the mortgage's own, or the latest renewal's):</p>
+<table>
+<tr><th>penaltyMethod</th><th>Penalty</th></tr>
+<tr><td><code>flat</code></td><td><code>penaltyAmount</code></td></tr>
+<tr><td><code>interestLeft</code></td><td><code>penaltyRate</code> × the schedule's interest over the months left in the term (<code>Mortgage.interest_left</code>, no prepayments)</td></tr>
+<tr><td><code>monthsInterest</code></td><td><code>penaltyMonths</code> × balance × monthly rate</td></tr>
+</table>
+<p>0 after the term ends, without a term, or when nothing is owed. Used by <code>Sale.apply</code> (sale without <code>salePenalty</code>), <code>ClosurePenalty</code> (lump-sum payoff without <code>penalty</code>) and <code>Mortgage.report_extra</code> (holdings field <code>closingPenalty</code> = penalty if closed after that month).</p>
+<h2 id="arithmetic">Arithmetic</h2>
+<p><code>state_machine/arith.py</code> (copied verbatim from iteration 1; do not rearrange the expressions, Decimal results depend on them):</p>
+<table>
+<tr><th>Function</th><th>Meaning</th></tr>
+<tr><td><code>money(x)</code></td><td>Round half-even to cents.</td></tr>
+<tr><td><code>D(x)</code>, <code>dec(item, field, where)</code></td><td>Decimal through <code>str</code>; <code>dec</code> raises a readable <code>ValueError</code>.</td></tr>
+<tr><td><code>power(base, exp)</code></td><td>Fractional power via <code>ln</code>/<code>exp</code>.</td></tr>
+<tr><td><code>flow_amount(item)</code></td><td><code>(amount, per)</code>; <code>per</code> must be month, quarter or year.</td></tr>
+<tr><td><code>monthly_rate(annual)</code></td><td>Mortgage rate: (1 + annual/2)^(1/6) − 1.</td></tr>
+<tr><td><code>annuity(balance, r, n)</code></td><td>Level payment; <code>balance / n</code> at r = 0.</td></tr>
+<tr><td><code>mortgage_terms(item)</code></td><td><code>(r, payment, n)</code> of a mortgage item.</td></tr>
+<tr><td><code>keep_payment_months(balance, r, payment, limit)</code></td><td>Months left when a renewal keeps the payment, or <code>None</code> (fall back).</td></tr>
+<tr><td><code>indexed(base, rate, months, divisor)</code></td><td>See IndexingRule.</td></tr>
+<tr><td><code>indexing_rate(item, inflation)</code></td><td>See IndexingRule.</td></tr>
+</table>
+<p><code>flows/withdrawal.py</code> <code>annuity_factor(r, g, n)</code> is the present value of a growing annuity used by the <code>annuity</code> withdrawal method.</p>

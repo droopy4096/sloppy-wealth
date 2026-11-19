@@ -1,8 +1,10 @@
-<h1>Projection result, output model (DRAFT v0.1)</h1><p><code>diagrams/05-output-model.mmd</code></p><figure class="diagram"><a href="/static/docs/diagrams/085edd2ae42196cd.svg" target="_blank"><img src="/static/docs/diagrams/085edd2ae42196cd.svg" alt="diagrams/05-output-model.mmd"></a></figure><details><summary>Mermaid source</summary><pre><code>---
-title: Projection result, output model (DRAFT v0.1)
+<h1>Projection result, output model (DRAFT v0.1; planning design, the PoC implements part of it, see note)</h1><p><code>diagrams/05-output-model.mmd</code></p><figure class="diagram"><a href="/static/docs/diagrams/46d9dcfd7ed11611.svg" target="_blank"><img src="/static/docs/diagrams/46d9dcfd7ed11611.svg" alt="diagrams/05-output-model.mmd"></a></figure><details><summary>Mermaid source</summary><pre><code>---
+title: Projection result, output model (DRAFT v0.1; planning design, the PoC implements part of it, see note)
 ---
 classDiagram
     direction TB
+
+    note &quot;PoC (state_machine/api.py run_detailed) returns rows, holdings, ledger, tax, events.\nrows: month, cash, investments, assets, debts, assetsNetWorth, netWorth,\nrealNetWorth, realAssetsNetWorth, + jurisdiction limit columns.\nledger lines: month, kind, from, to, amount, source (no tags).\nNot built: SetResult, goals, tallies, shortfalls, liquidationNetWorth, appliedDefaults.&quot;
 
     %% ---------- Root: one result per ScenarioSet run (ADR-0028) ----------
     class SetResult {

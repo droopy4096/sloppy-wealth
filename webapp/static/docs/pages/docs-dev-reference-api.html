@@ -1,0 +1,64 @@
+<h1 id="json-api">JSON API</h1>
+<p><code>webapp/api.py</code>, a Flask blueprint under <code>/api</code> (ADR-0069). It is the only part of the app that uses the engine. The server keeps nothing between requests: every POST carries the whole present scenario and gets JSON back.</p>
+<h2 id="conventions">Conventions</h2>
+<ul><li>Request bodies are JSON objects (<code>Content-Type: application/json</code>).</li><li>Every response has <code>schemaVersion</code> (1), <code>ok</code> (bool) and <code>messages</code> (list of strings).</li><li>Money and rates are decimal strings; <code>Decimal</code> values are serialized with <code>str</code>, sets as sorted lists.</li><li>Scenarios are upgraded from older forms on arrival (<code>state_machine/upgrade.py</code>).</li><li>Responses over 1 KB are gzip-compressed when the request has <code>Accept-Encoding: gzip</code>.</li></ul>
+<p><strong>Commands</strong> (<code>state_machine/ops.py</code>) answer <code>{scenario, ok, messages}</code>: when <code>ok</code> is true, <code>scenario</code> is the new, validated scenario; when false, it is the scenario as sent and <code>messages</code> says why. <code>messages</code> may also carry notes on an accepted change. Status is 200 either way.</p>
+<p><strong>Views</strong> answer <code>{ok, messages, ...}</code> with their own fields.</p>
+<h2 id="errors-and-limits">Errors and limits</h2>
+<table>
+<tr><th>Case</th><th>Status</th><th>Body</th></tr>
+<tr><td>Body over 1 MB</td><td>413</td><td><code>ok: false</code>, "the request is larger than 1024 KB"</td></tr>
+<tr><td>Body not a JSON object; a required key missing or of the wrong type</td><td>400</td><td><code>ok: false</code>, message names the key</td></tr>
+<tr><td>More than 1,000 items, or a horizon over 100 years (<code>ops.over_limits</code>)</td><td>400</td><td><code>ok: false</code>, message</td></tr>
+<tr><td><code>ValueError</code>, <code>KeyError</code>, <code>TypeError</code>, <code>AttributeError</code> raised while reading a scenario</td><td>400</td><td><code>ok: false</code>, "the scenario cannot be read: …"</td></tr>
+<tr><td>Invalid scenario for a run or view</td><td>200</td><td><code>ok: false</code>, the validation message</td></tr>
+</table>
+<h2 id="endpoints">Endpoints</h2>
+<table>
+<tr><th>Method</th><th>Path</th><th>Request</th><th>Response (besides <code>ok</code>, <code>messages</code>)</th></tr>
+<tr><td>GET</td><td><code>/api/schema?jurisdiction=XX</code></td><td>—</td><td>The form schema of one jurisdiction (default CA): <code>jurisdiction</code> {code, name, labels, columns}, <code>jurisdictions</code> [{code, name}], <code>fields</code>, <code>personFields</code>, <code>legends</code>, <code>hints</code>, <code>blankShown</code>, <code>defaults</code>, <code>needs</code>, <code>hostField</code>, <code>formGroups</code>, <code>selects</code>, <code>percentFields</code>, <code>cardAdds</code>, <code>headAdds</code>, <code>linkField</code>, <code>addGroups</code> (<code>schema.describe</code>). Unknown code: 400.</td></tr>
+<tr><td>GET</td><td><code>/api/new?jurisdiction=XX</code></td><td>—</td><td>Command: an empty scenario (name "Untitled", horizon 2027-01 to 2051-12, openingCash "0"). Unknown code: 400.</td></tr>
+<tr><td>POST</td><td><code>/api/load</code></td><td><code>{data}</code></td><td>Command: <code>data</code> (a file's JSON) checked (<code>schemaVersion</code> must be 1), validated, upgraded, every item given an id. Refused: an empty scenario.</td></tr>
+<tr><td>POST</td><td><code>/api/validate</code></td><td><code>{scenario}</code></td><td>Command: the scenario upgraded, or refused with the validation message.</td></tr>
+<tr><td>POST</td><td><code>/api/settings</code></td><td><code>{scenario, settings}</code></td><td>Command. <code>settings</code> keys: <code>name</code>, <code>horizon</code> {start, end}, <code>openingCash</code>, <code>incomeMode</code>, <code>dollarsOf</code>, <code>annualInflation</code>, <code>effectiveTaxRate</code>, <code>retirementTaxRate</code>, <code>jurisdiction</code>. Missing keys take the form's defaults (blank rates become "0"; blank retirementTaxRate stays blank). A jurisdiction change is refused while items need the old one.</td></tr>
+<tr><td>POST</td><td><code>/api/items/add</code></td><td><code>{scenario, item}</code></td><td>Command. <code>item.type</code> must be a core type or any jurisdiction's own type (else 400); validation refuses another jurisdiction's type. Id (8 hex chars) and name filled in if missing; a duplicate id is refused. An item missing its trigger-set date is added switched off, with a note; adding a trigger switches its waiting target on.</td></tr>
+<tr><td>POST</td><td><code>/api/items/update</code></td><td><code>{scenario, id, item, clear}</code></td><td>Command. <code>item</code>: new field values; <code>clear</code>: list of field names to remove. Id and type stay; a type change is refused.</td></tr>
+<tr><td>POST</td><td><code>/api/items/toggle</code></td><td><code>{scenario, id}</code></td><td>Command. Switches <code>enabled</code> off, or back on (removes the field).</td></tr>
+<tr><td>POST</td><td><code>/api/items/delete</code></td><td><code>{scenario, id}</code></td><td>Command. Deletes the item and everything linked to it (link fields, triggers on it, items its start triggers start), transitively. Deleting a person also deletes their retirement and contributionRoom; their other items lose the <code>owner</code>/<code>contributor</code> field.</td></tr>
+<tr><td>POST</td><td><code>/api/view/builder</code></td><td><code>{scenario}</code></td><td><code>starts</code>, <code>ordered</code> [{id, nested}], <code>off</code>, <code>set_by</code>, <code>names</code>, <code>summary</code>, <code>cards</code>, <code>items</code> (<a href="/docs/docs-dev-reference-outputs#derived-views">outputs.md</a>).</td></tr>
+<tr><td>POST</td><td><code>/api/run</code></td><td><code>{scenario}</code></td><td><code>scenario</code> (as sent), <code>result</code> {rows, holdings, ledger, tax, events} (<a href="/docs/docs-dev-reference-outputs">outputs.md</a>), <code>summary</code>. Invalid: <code>ok: false</code>, <code>scenario</code>.</td></tr>
+<tr><td>POST</td><td><code>/api/view/ledger</code></td><td><code>{scenario, month}</code></td><td>One month of the run: <code>month</code> (the first if <code>month</code> is not one), <code>months</code>, <code>movements</code> (ledger lines with signed <code>cash</code>), <code>indices</code>, <code>net_cash</code>, <code>balances</code> [{holding, point}], <code>names</code>, <code>tax</code>, <code>events</code> (records with <code>n</code>, <code>depth</code>, <code>movements</code> [{index, movement}]).</td></tr>
+<tr><td>POST</td><td><code>/api/view/break-even</code></td><td><code>{scenario, property}</code></td><td><code>view</code> (property, name, rows, summary, notes) for the property (default: the first), <code>properties</code> [{id, name}]. No properties: <code>view: null</code>.</td></tr>
+<tr><td>POST</td><td><code>/api/view/vehicle-cost</code></td><td><code>{scenario, vehicle}</code></td><td><code>view</code> (vehicle, name, rows, summary, notes, financed) for the vehicle (default: the first), <code>vehicles</code> [{id, name}]. No vehicles: <code>view: null</code>.</td></tr>
+<tr><td>POST</td><td><code>/api/timeline</code></td><td><code>{scenario}</code></td><td>The timeline model: <code>start</code>, <code>end</code>, <code>lanes</code>, <code>links</code>, <code>dots</code>, <code>arrows</code>, <code>guides</code>, <code>set_by</code> (<code>timeline.layout</code>).</td></tr>
+<tr><td>POST</td><td><code>/api/compare</code></td><td><code>{a, b}</code></td><td><code>a</code>, <code>b</code> (rows of each run), <code>summaries</code> {a, b}. Different horizons: <code>ok: false</code> (ADR-0028).</td></tr>
+</table>
+<p>Example:</p>
+<pre><code>POST /api/run
+{&quot;scenario&quot;: {&quot;schemaVersion&quot;: 1, &quot;jurisdiction&quot;: &quot;CA&quot;,
+  &quot;horizon&quot;: {&quot;start&quot;: &quot;2027-01-01&quot;, &quot;end&quot;: &quot;2027-12-01&quot;}, &quot;openingCash&quot;: &quot;1000&quot;,
+  &quot;items&quot;: [{&quot;type&quot;: &quot;income&quot;, &quot;id&quot;: &quot;pay&quot;, &quot;startDate&quot;: &quot;2027-01-01&quot;, &quot;amount&quot;: &quot;3000&quot;}]}}
+-&gt; {&quot;schemaVersion&quot;: 1, &quot;ok&quot;: true, &quot;messages&quot;: [], &quot;scenario&quot;: {...},
+    &quot;result&quot;: {&quot;rows&quot;: [{&quot;month&quot;: &quot;2027-01&quot;, &quot;cash&quot;: &quot;4000.00&quot;, ...}, ...], ...},
+    &quot;summary&quot;: {&quot;dollarsOf&quot;: &quot;2027-01&quot;, &quot;retirement&quot;: &quot;&quot;, &quot;retirements&quot;: []}}</code></pre>
+<h2 id="how-the-web-pages-call-it">How the web pages call it</h2>
+<p><code>webapp/web/</code> never imports the engine. <code>web/client.py</code> is its only way in:</p>
+<ul><li><code>client.call(path, payload)</code> posts, <code>client.get(path)</code> gets. By default the call goes in-process through Flask's test client (same app, same contract). With the environment variable <code>WEB_API_URL</code> set (e.g. <code>http://localhost:5001</code>) it goes over HTTP.</li><li>Answers are decoded; values of known numeric keys (<code>NUMERIC</code>, plus keys ending in <code>Room</code> or <code>Limit</code>) become <code>Decimal</code>, except inside <code>scenario</code> and label tables.</li></ul>
+<p>The browser keeps the scenario in the tab's sessionStorage and posts it (form field <code>scenario</code>) with every page request (<code>web/static/web.js</code>). <code>web/pages.py</code> routes:</p>
+<table>
+<tr><th>Page route</th><th>API call</th></tr>
+<tr><td><code>/</code>, <code>/flat</code> (builder)</td><td><code>GET /schema</code>, <code>POST /view/builder</code></td></tr>
+<tr><td><code>POST /settings</code></td><td><code>POST /settings</code> (form percentages converted to fractions)</td></tr>
+<tr><td><code>POST /items/add</code></td><td><code>POST /items/add</code> (form text to JSON values: <code>form_item</code>)</td></tr>
+<tr><td><code>POST /items/&lt;id&gt;/update</code></td><td><code>POST /items/update</code> (blank fields go to <code>clear</code>)</td></tr>
+<tr><td><code>POST /items/&lt;id&gt;/toggle</code>, <code>/delete</code></td><td><code>POST /items/toggle</code>, <code>/items/delete</code></td></tr>
+<tr><td><code>/load</code></td><td><code>POST /load</code></td></tr>
+<tr><td><code>/new</code></td><td><code>GET /new?jurisdiction=</code></td></tr>
+<tr><td><code>/compare</code></td><td><code>POST /load</code> (each file), <code>POST /compare</code></td></tr>
+<tr><td><code>/run</code>, <code>/run/holdings</code></td><td><code>POST /run</code></td></tr>
+<tr><td><code>/run/ledger?month=</code></td><td><code>POST /view/ledger</code></td></tr>
+<tr><td><code>/run/break-even?property=</code></td><td><code>POST /view/break-even</code></td></tr>
+<tr><td><code>/run/vehicle-cost?vehicle=</code></td><td><code>POST /view/vehicle-cost</code></td></tr>
+<tr><td><code>/timeline</code></td><td><code>POST /timeline</code></td></tr>
+</table>
+<p>Form conversion (<code>pages.form_item</code>): percentage fields (<code>schema.PERCENT_FIELDS</code> plus the jurisdiction's) are divided by 100; <code>taxable</code>, <code>keepPayment</code>, <code>alsoWhenRenting</code> become booleans; <code>earnedIncome</code> yes/no/blank; <code>covers</code> becomes <code>payOff</code>; blank person fields and <code>on: start</code> are left out.</p>

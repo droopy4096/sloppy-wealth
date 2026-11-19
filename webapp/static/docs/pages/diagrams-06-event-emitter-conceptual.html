@@ -1,5 +1,5 @@
-<h1>Event-emitter engine, conceptual class model (DRAFT v0.2, poc/state-machine, D1-D5, D-E1..D-E4)</h1><p><code>diagrams/06-event-emitter-conceptual.mmd</code></p><figure class="diagram"><a href="/static/docs/diagrams/33429f82c9cefd3e.svg" target="_blank"><img src="/static/docs/diagrams/33429f82c9cefd3e.svg" alt="diagrams/06-event-emitter-conceptual.mmd"></a></figure><details><summary>Mermaid source</summary><pre><code>---
-title: Event-emitter engine, conceptual class model (DRAFT v0.2, poc/state-machine, D1-D5, D-E1..D-E4)
+<h1>Event-emitter engine, conceptual class model (DRAFT v0.3, webapp/state_machine, D1-D5, D-E1..D-E4, ADR-0061, ADR-0071)</h1><p><code>diagrams/06-event-emitter-conceptual.mmd</code></p><figure class="diagram"><a href="/static/docs/diagrams/f865468502f0ff6e.svg" target="_blank"><img src="/static/docs/diagrams/f865468502f0ff6e.svg" alt="diagrams/06-event-emitter-conceptual.mmd"></a></figure><details><summary>Mermaid source</summary><pre><code>---
+title: Event-emitter engine, conceptual class model (DRAFT v0.3, webapp/state_machine, D1-D5, D-E1..D-E4, ADR-0061, ADR-0071)
 ---
 classDiagram
     direction LR
@@ -7,8 +7,9 @@ classDiagram
     namespace Input {
         class Scenario {
                 &lt;&lt;input&gt;&gt;
-                horizon, settings
-                retirement, tax rates, inflation, base date
+                horizon, settings, jurisdiction
+                tax rates, inflation, base date
+                items: person, retirement, trigger, holdings, flows...
             }
         class ItemSpec {
                 &lt;&lt;input: one form input&gt;&gt;
@@ -19,12 +20,19 @@ classDiagram
                 &lt;&lt;pure function&gt;&gt;
                 validate(Scenario)
             }
+        class Preparation {
+                &lt;&lt;compiler.prepared&gt;&gt;
+                upgrade (older forms), enabled.active (off items out),
+                triggers.resolve (dates written into targets)
+            }
     }
 
     namespace Build {
         class EmitterFactory {
                 &lt;&lt;registry: @item_type, one per item type&gt;&gt;
                 factory(item, ctx) Emitter[*]
+                @scenario_setup hooks: retirement + tax, results
+                compiler.compile_scenario builds Household + runner
             }
         class Emitter {
                 &lt;&lt;abstract&gt;&gt;
@@ -58,7 +66,8 @@ classDiagram
                 acts at its host&#x27;s position (D-E1)
             }
         class ScenarioEmitter {
-                retirement, tax step, results recorder
+                retirement (one per person), tax step,
+                results Recorder (CLOSE, emits no events)
             }
     }
 
@@ -67,6 +76,7 @@ classDiagram
                 &lt;&lt;the loop&gt;&gt;
                 sorts emitters by key = order, ordinal, sub, D-E2
                 INITIAL step once, then for each month:
+                household.begin_month (OPEN), then
                 ask each due emitter in key order,
                 apply its events at once
                 registers Emitters only
@@ -92,15 +102,27 @@ classDiagram
             }
         class StateEvent {
                 changes household state
-                retirement, renewal, tax step
+                retirement, renewal, tax step, flow adjustment,
+                contribution room, trigger (log only)
             }
     }
 
     namespace State {
         class Household {
                 &lt;&lt;main object&gt;&gt;
-                month, retired, covered mode
+                month, covered mode, persons, jurisdiction
                 move(kind, from, to, amount, source)
+                begin_month(m)
+            }
+        class Person {
+                id, name, retirement, retired
+                tax rate, retirement tax rate
+            }
+        class Jurisdiction {
+                &lt;&lt;plug-in package: CA, US (ADR-0071)&gt;&gt;
+                account types and tax Treatment,
+                ContributionLimits, own item types,
+                on_contribute / on_return / on_withdraw
             }
         class Aggregate {
                 &lt;&lt;abstract holding&gt;&gt;
@@ -109,7 +131,7 @@ classDiagram
             }
         class Cash
         class Asset {
-                RealEstate, Vehicle
+                RealAsset: RealEstate, Vehicle
             }
         class Liability {
                 Mortgage (loan)
@@ -127,9 +149,9 @@ classDiagram
                 investment income, withdrawal tax,
                 deduction, capital gains, pension value
             }
-        class TaxState {
-                taxable, deductions, own-rate tax,
-                carry-forward pool, monthly detail
+        class TaxAccumulator {
+                per person: taxable, deductions,
+                own-rate tax, carry-forward pool, monthly detail
             }
         class Ledger {
                 Movement[*]: every money change
@@ -147,13 +169,18 @@ classDiagram
                 rows, holdings detail, ledger, tax, events
             }
         class EngineAPI {
-                &lt;&lt;facade, parity with webapp/engine.py&gt;&gt;
+                &lt;&lt;state_machine/api.py, facade engine.py&gt;&gt;
                 validate, run, run_detailed
             }
+        class JsonAPI {
+                &lt;&lt;webapp/api.py, stateless, ADR-0069&gt;&gt;
+                commands (ops.py), run, views
+            }
         class App {
-                &lt;&lt;Flask UI&gt;&gt;
-                form: one input per emitter,
-                modifiers grouped under host
+                &lt;&lt;Flask pages, webapp/web&gt;&gt;
+                form: one input per item,
+                modifiers grouped under host;
+                calls the JSON API only (web/client.py)
             }
     }
 
@@ -161,6 +188,7 @@ classDiagram
     Scenario &quot;1&quot; *-- &quot;*&quot; ItemSpec
     ItemSpec --&gt; ItemSpec : modifies host
     Validator ..&gt; Scenario : checks
+    Preparation ..&gt; Scenario : prepares
 
     EmitterFactory ..&gt; ItemSpec : reads
     EmitterFactory ..&gt; Emitter : builds 1..n per item
@@ -188,7 +216,9 @@ classDiagram
 
     Household &quot;1&quot; *-- &quot;*&quot; Aggregate : by holding slot
     Household &quot;1&quot; *-- &quot;1&quot; Ledger
-    Household &quot;1&quot; *-- &quot;1&quot; TaxState
+    Household &quot;1&quot; *-- &quot;1..*&quot; Person
+    Person &quot;1&quot; *-- &quot;1&quot; TaxAccumulator
+    Household --&gt; Jurisdiction : tax rules and limits
     Aggregate &lt;|-- Cash
     Aggregate &lt;|-- Asset
     Aggregate &lt;|-- Liability
@@ -196,14 +226,17 @@ classDiagram
     Aggregate &lt;|-- Entitlement
     Aggregate --&gt; Rule : references
     Liability --&gt; Asset : secured by
-    StateEvent ..&gt; TaxState : tax step
+    StateEvent ..&gt; TaxAccumulator : tax step
+    FlowEvent ..&gt; Jurisdiction : account hooks
 
     ResultAssembler ..&gt; Household : reads
     ResultAssembler ..&gt; EventLog : reads
     EngineAPI ..&gt; Validator
+    EmitterFactory ..&gt; Preparation : compile_scenario first
     EngineAPI ..&gt; EmitterFactory
     EngineAPI ..&gt; ScenarioRunner
     EngineAPI ..&gt; ResultAssembler
-    App ..&gt; EngineAPI : calls
+    JsonAPI ..&gt; EngineAPI : calls
+    App ..&gt; JsonAPI : calls
     App ..&gt; Scenario : edits
 </code></pre></details>

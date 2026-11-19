@@ -1,0 +1,123 @@
+<h1 id="tutorial-add-a-rule">Tutorial: add a rule</h1>
+<p><strong>What you'll build:</strong> a US tax rule: a 10% additional tax when someone takes money out of a tax-deferred account (401(k), traditional IRA) before age 59½. You will write the rule as a small calculator and plug it into the US jurisdiction's <code>on_withdraw</code> hook.</p>
+<p>Big picture first? Read the <a href="/docs/docs-dev-readme">developer intro</a>.</p>
+<h2 id="concepts-you-need">Concepts you need</h2>
+<ul><li>A <strong>rule</strong> is a calculator (a <code>base.Rule</code> subclass). It computes a number; it does not decide <em>when</em> (emitters do) or move money (events do). Examples: <code>rules/indexing.py</code> (a flow's yearly step-up), <code>rules/tax.py</code> (the monthly tax step). See <a href="/docs/docs-dev-reference-rules">rules.md</a>.</li><li>Tax is collected during the month in each person's <strong>tax accumulator</strong> (<code>household.tax_of(person)</code>): <code>add_taxable</code>, <code>add_deduction</code>, <code>add_own_rate_tax</code>. The tax step at <code>Order.TAX</code> turns it into one <code>TAX</code> ledger line. See <a href="/docs/docs-dev-reference-ledger#tax">ledger.md</a>.</li><li>Country-specific tax belongs to a <strong>jurisdiction</strong>. Account events call its hooks <code>on_contribute</code>, <code>on_return</code> and <code>on_withdraw</code> with the rounded amount. The default hooks follow the account type's <code>Treatment</code> flags; override one for anything the flags cannot say. See <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>.</li><li>Where the code goes: generic calculators in <code>state_machine/rules/</code>; a rule of one country in its package (<code>state_machine/jurisdictions/us/</code>).</li></ul>
+<p>All commands run from <code>webapp/</code>.</p>
+<blockquote><p>In this project a new tax rule is a design decision. Record it in an ADR (<code>docs/adr/</code>) and agree it with the owner before you merge. This tutorial shows the mechanics.</p></blockquote>
+<h2 id="steps">Steps</h2>
+<h3 id="1-write-the-rule">1. Write the rule</h3>
+<p>Create <code>state_machine/jurisdictions/us/early.py</code>:</p>
+<pre><code>&quot;&quot;&quot;United States: the 10% additional tax on early withdrawals (before age 59 1/2) from a
+tax-deferred account. Simplified: no exceptions (disability, first home, ...).&quot;&quot;&quot;
+from decimal import Decimal
+
+from ...base import Rule
+from ...dates import month_index
+
+
+class EarlyWithdrawalTax(Rule):
+    &quot;&quot;&quot;``tax(amount, month, birth)``: the additional tax on ``amount`` taken out in
+    ``month`` by a person born in month ``birth`` (month indexes); 0 from age 59 1/2 or
+    without a birth date.&quot;&quot;&quot;
+    RATE = Decimal(&quot;0.10&quot;)
+    AGE_MONTHS = 59 * 12 + 6
+
+    def tax(self, amount, month, birth):
+        if birth is None or month - birth &gt;= self.AGE_MONTHS:
+            return Decimal(0)
+        return amount * self.RATE
+
+
+def birth_month(scenario, pid):
+    &quot;&quot;&quot;Month index of person ``pid``&#x27;s birthDate, or None.&quot;&quot;&quot;
+    for item in scenario.get(&quot;items&quot;, []):
+        if item.get(&quot;type&quot;) == &quot;person&quot; and item.get(&quot;id&quot;) == pid and item.get(&quot;birthDate&quot;):
+            return month_index(item[&quot;birthDate&quot;], &quot;birthDate&quot;)
+    return None</code></pre>
+<p>The engine counts months as integers (<code>dates.month_index(&quot;2030-01-01&quot;)</code>), so an age is a subtraction. The rule is plain arithmetic: easy to test alone.</p>
+<h3 id="2-call-it-from-the-hook">2. Call it from the hook</h3>
+<p>In <code>state_machine/jurisdictions/us/__init__.py</code>, import it:</p>
+<pre><code>from .early import EarlyWithdrawalTax, birth_month</code></pre>
+<p>and override <code>on_withdraw</code> in <code>UnitedStates</code> (before <code>validate_item</code>):</p>
+<pre><code>    early_withdrawal = EarlyWithdrawalTax()
+
+    def on_withdraw(self, household, account, amount):
+        &quot;&quot;&quot;The usual tax (the flags), plus the early-withdrawal tax on a tax-deferred
+        account before 59 1/2.&quot;&quot;&quot;
+        super().on_withdraw(household, account, amount)
+        treatment = self.treatment(account)
+        if treatment and treatment.withdrawal_taxed:
+            birth = birth_month(household.scenario, account.owner)
+            extra = self.early_withdrawal.tax(amount, household.month, birth)
+            household.tax_of(account.owner).add_own_rate_tax(extra)</code></pre>
+<ul><li>Call <code>super()</code> first: the flags still do their part (the withdrawal is taxable income).</li><li><code>add_own_rate_tax</code> adds tax at a fixed rate, kept unrounded until the tax step. It shows in the month's tax detail as <code>ownRateTax</code>.</li><li>The hook runs inside the <code>Withdrawal</code> event's <code>apply()</code> (<code>flows/withdrawal.py</code>), right after <code>household.move</code>. So <code>amount</code> is what actually left the account.</li></ul>
+<h3 id="3-test-the-rule-and-the-engine">3. Test the rule and the engine</h3>
+<p>Create <code>state_machine/tests/test_early_withdrawal.py</code>:</p>
+<pre><code>import unittest
+from decimal import Decimal
+
+from state_machine import engine
+from state_machine.jurisdictions.us.early import EarlyWithdrawalTax
+from state_machine.tests.support import scenario
+
+
+class Rule(unittest.TestCase):
+    def test_before_and_after_59_and_a_half(self):
+        rule, born = EarlyWithdrawalTax(), 1980 * 12        # January 1980
+        self.assertEqual(rule.tax(Decimal(&quot;1000&quot;), born + 59 * 12 + 5, born), Decimal(&quot;100.00&quot;))
+        self.assertEqual(rule.tax(Decimal(&quot;1000&quot;), born + 59 * 12 + 6, born), Decimal(&quot;0&quot;))
+        self.assertEqual(rule.tax(Decimal(&quot;1000&quot;), born, None), Decimal(&quot;0&quot;))
+
+
+def run(birth, account_type):
+    items = [{&quot;type&quot;: &quot;person&quot;, &quot;id&quot;: &quot;pat&quot;, &quot;birthDate&quot;: birth},
+             {&quot;type&quot;: &quot;account&quot;, &quot;id&quot;: &quot;ira&quot;, &quot;accountType&quot;: account_type,
+              &quot;openingBalance&quot;: &quot;50000&quot;, &quot;annualReturn&quot;: &quot;0&quot;},
+             {&quot;type&quot;: &quot;withdrawal&quot;, &quot;id&quot;: &quot;w&quot;, &quot;account&quot;: &quot;ira&quot;, &quot;method&quot;: &quot;amount&quot;,
+              &quot;amount&quot;: &quot;1000&quot;, &quot;per&quot;: &quot;month&quot;, &quot;startDate&quot;: &quot;2026-03-01&quot;,
+              &quot;endDate&quot;: &quot;2026-03-01&quot;}]
+    s = scenario(items, jurisdiction=&quot;US&quot;, effectiveTaxRate=&quot;0.2&quot;)
+    return engine.run_detailed(s)[&quot;tax&quot;][&quot;2026-03&quot;]
+
+
+class InTheEngine(unittest.TestCase):
+    def test_young_owner_pays_the_extra_tax(self):
+        tax = run(&quot;1990-01-01&quot;, &quot;traditionalIra&quot;)
+        self.assertEqual(tax[&quot;incomeTax&quot;], Decimal(&quot;200.00&quot;))     # 20% of 1000
+        self.assertEqual(tax[&quot;ownRateTax&quot;], Decimal(&quot;100.00&quot;))    # + 10% early withdrawal
+
+    def test_older_owner_and_roth_do_not(self):
+        self.assertEqual(run(&quot;1960-01-01&quot;, &quot;traditionalIra&quot;)[&quot;ownRateTax&quot;], Decimal(&quot;0.00&quot;))
+        self.assertEqual(run(&quot;1990-01-01&quot;, &quot;rothIra&quot;)[&quot;ownRateTax&quot;], Decimal(&quot;0.00&quot;))
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()</code></pre>
+<pre><code>.venv/bin/python -m unittest state_machine.tests.test_early_withdrawal</code></pre>
+<h3 id="4-review-the-golden-difference">4. Review the golden difference</h3>
+<p>This is a behaviour change, so the golden suite notices:</p>
+<pre><code>.venv/bin/python state_machine/tools/update_golden.py --check</code></pre>
+<pre><code>CA: 241 scenarios, 0 changed/new, 0 removed
+jurisdictions/us/sample.json: lastNetWorth differs
+  golden:  &#x27;1085572.70&#x27;
+  current: &#x27;1084372.70&#x27;
+US: 2 scenarios, 1 changed/new, 0 removed</code></pre>
+<p>Explain it before you accept it. In the US sample, Kim (born 1985) withdraws $6,000 a year ($500 a month) from a traditional IRA from 2030. 10% of $500 for the 24 months to the end of 2031 is $1,200, exactly the drop in net worth. Canada is untouched. Then:</p>
+<pre><code>.venv/bin/python state_machine/tools/update_golden.py --jurisdiction US</code></pre>
+<p>Commit <code>tests/golden/us/golden.json</code> with the change and say why in the message.</p>
+<h2 id="test-it">Test it</h2>
+<pre><code>.venv/bin/python -m unittest -q test_engine test_keep_payment test_ui_emitters test_api test_docs
+.venv/bin/python -m unittest discover -s state_machine/tests -t .
+.venv/bin/python state_machine/tools/update_golden.py --check     # 0 changed/new everywhere</code></pre>
+<p>Also update the "Not modelled yet" list in the <code>us/__init__.py</code> docstring, <code>webapp/SPEC.md</code> and <code>docs/IMPLEMENTATION_STATUS.md</code>.</p>
+<h2 id="when-a-rule-needs-its-own-monthly-step">When a rule needs its own monthly step</h2>
+<p>A hook runs only when an account event calls it. A rule that must run every month on its own, with no item behind it, needs a <strong>scenario-level emitter</strong>. The monthly tax step is registered this way, in <code>events/retirement.py</code>:</p>
+<pre><code>@scenario_setup(&quot;wp7.retirement_tax&quot;, order=50)
+def setup_retirement_and_tax(env):
+    ...
+    yield TaxEmitter()</code></pre>
+<ul><li><code>@scenario_setup(name, order)</code> (in <code>compiler.py</code>) runs once per scenario, before the item factories. It yields emitters.</li><li>The emitter subclasses <code>ScenarioEmitter</code> and sets <code>ORDER</code> (here <code>Order.TAX</code>). Its <code>emit()</code> returns one event, <code>TaxStepEvent</code>, whose <code>apply()</code> calls <code>TaxRule.apply</code>.</li><li>Give each scenario emitter at the same <code>ORDER</code> a distinct <code>SUB</code>: the order key <code>(order, ordinal, sub)</code> must be unique.</li></ul>
+<p>Use this for rules such as a yearly levy on the whole household. For anything tied to one item, use that item's emitter (see <a href="/docs/docs-dev-tutorials-add-item-type">add-item-type.md</a>).</p>
+<h2 id="where-to-go-next">Where to go next</h2>
+<ul><li>The rules that exist and what calls them: <a href="/docs/docs-dev-reference-rules">rules.md</a>.</li><li>The hook API and the <code>Treatment</code> flags: <a href="/docs/docs-dev-reference-jurisdictions">jurisdictions.md</a>.</li><li>Month order (<code>clock.Order</code>) and the order key: <code>state_machine/INTERFACES.md</code>.</li><li>Every formula and its deliberate quirks: <code>state_machine/OBJECTS.md</code>.</li></ul>
