@@ -360,7 +360,10 @@ Mortgage prepayments (added later) refer to a mortgage by its `id`:
   true/false is rejected. The builder offers it as "no: lower the payment" (default) /
   "yes: keep the payment, shorten the amortization".
 - Rates are **fractions** in JSON (`0.0379`); the builder form takes percentages
-  (`3.79`) and converts them. The engine rejects rates outside (−1, 1).
+  (`3.79`) and converts them. The engine rejects rates outside (−1, 1), except the
+  shares of a parent income's yearly amount (`associatedIncome.annualRate`,
+  `associatedOneOff.rate`): 0 < rate ≤ 10, since a one-off such as severance can exceed a
+  year's pay.
 - Income and expense items (added later) give `amount` with `per`: `month` (default) or
   `year`; a yearly amount is spread evenly, amount / 12 each month. Older files with
   `monthlyAmount` still load (per month).
