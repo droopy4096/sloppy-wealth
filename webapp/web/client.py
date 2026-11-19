@@ -30,7 +30,9 @@ NUMERIC = {"assets", "assetsNetWorth", "cash", "debts", "investments", "netWorth
 
 # A jurisdiction's limit columns in result rows (ADR-0071), e.g. rrspRoom.
 LIMIT_COLUMN = lambda key: isinstance(key, str) and key.endswith(("Room", "Limit"))
-LABELS = {"names", "items", "jurisdiction", "jurisdictions"}  # labels and items: not result fields
+# Not result fields: label tables, scenario items, and the builder view's tables keyed by
+# item id (an item may be called "closing" or "amount" like a result field).
+LABELS = {"names", "items", "jurisdiction", "jurisdictions", "starts", "off", "set_by"}
 
 
 def decimals(value, key=None):
