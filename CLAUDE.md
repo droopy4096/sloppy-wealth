@@ -59,7 +59,8 @@ outputs; `run_detailed()` returns rows, holdings, ledger, tax and the event log.
   where nothing happens.
 - **Adding an item type**: new module under `holdings/`, `events/`, `flows/` or `rules/`
   with an `@item_type("name")` factory returning emitters; validation in `validation.py`;
-  form fields in `webapp/schema.py` (`FIELDS`, `HINTS`, `SELECTS`); `webapp/SPEC.md`; tests. No
+  form fields in `webapp/schema.py` (`FIELDS`, `HINTS`, `SELECTS`); its date field in
+  `triggers.START_FIELD` (or `timeline.SKIPPED` if it has none); `webapp/SPEC.md`; tests. No
   shared registry edits are needed (auto-discovery). Anything country-specific (account
   types, tax treatment, limits, own item types and their form wording) belongs in a
   jurisdiction package `state_machine/jurisdictions/<code>/` (ADR-0071), not in the core.

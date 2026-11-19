@@ -175,6 +175,19 @@ if __name__ == "__main__":
 .venv/bin/python -m unittest state_machine.tests.test_gift
 ```
 
+### 6. Give triggers and the timeline its date
+`state_machine/triggers.py` `START_FIELD` maps each item type to the field holding its
+date. Triggers use it to set the date, and the timeline (`timeline.py`) uses it to place
+the item. Add the gift:
+
+```python
+               "associatedOneOff": "paymentDate", "gift": "giftDate"}
+```
+
+An item with an `endDate` also goes into `RECURRING`. An item with no dates at all (like
+`person`) goes into `SKIPPED` in `timeline.py` instead. If you forget,
+`test_ui_emitters.EveryItemTypeIsWired` fails and names the type.
+
 ## Test it
 Run the three gates:
 
@@ -193,8 +206,6 @@ To see it in the app: `.venv/bin/python app.py`, open http://127.0.0.1:5000, cli
 month shows a `GIFT` line and a `GiftReceived` event.
 
 ## Optional polish
-- Let triggers set its date: add `"gift": "giftDate"` to `START_FIELD` in
-  `state_machine/triggers.py`.
 - Show it in the builder card's estimate column: `cards.py` `_estimate()`.
 - A colour on the timeline: `web/timeline_draw.py`.
 

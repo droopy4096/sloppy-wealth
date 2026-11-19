@@ -57,6 +57,21 @@ def fake_events(result, month):
     return dict(result, events=events)
 
 
+class EveryItemTypeIsWired(unittest.TestCase):
+    def test_every_item_type_has_dates_for_triggers_and_the_timeline(self):
+        """Q-51: an item type registered with @item_type but unknown to triggers and the
+        timeline would silently get no trigger-set date and no mark on the timeline.
+        Each type is dated (triggers.START_FIELD), dated by its parent (an associated
+        lane), or explicitly has no dates (timeline.SKIPPED)."""
+        import timeline
+        from state_machine import compiler, triggers
+        unwired = sorted(set(compiler.registered_types()) - set(triggers.START_FIELD)
+                         - set(timeline.ASSOCIATED_LANES) - set(timeline.SKIPPED))
+        self.assertEqual(unwired, [], "add each to state_machine/triggers.py START_FIELD "
+                         "(the field holding its date; RECURRING too if it has an endDate), "
+                         "or to timeline.py SKIPPED if it has no dates")
+
+
 class AppUsesTheEventEmitterEngine(unittest.TestCase):
     def test_default_engine_and_events_table(self):
         import state_machine.engine
