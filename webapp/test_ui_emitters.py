@@ -527,6 +527,28 @@ class VehicleLoanInTheApp(unittest.TestCase):
         self.assertIn(">Loan interest</th>", page)
 
 
+class AssociatedAmountsInTodaysDollars(unittest.TestCase):
+    def test_amount_in_is_offered_and_honoured(self):
+        """Q-51 (5): an associated expense's form offers amountIn; "today's dollars" makes
+        a cost starting later grow with inflation from the base date."""
+        s = {"schemaVersion": 1, "name": "t", "jurisdiction": "CA",
+             "horizon": {"start": "2027-01-01", "end": "2031-02-01"}, "openingCash": "100000",
+             "annualInflation": "0.025", "dollarsOf": "2027-01-01",
+             "items": [{"type": "vehicle", "id": "car", "name": "Car",
+                        "purchaseDate": "2031-01-01", "price": "20000",
+                        "annualDepreciation": "0.1"}]}
+        client = client_with(s)
+        form = section(client.get("/").data.decode(), 'id="form-associatedExpense"', "</template>")
+        self.assertIn('name="amountIn"', form)
+        client.post("/items/add", data={"type": "associatedExpense", "parent": "car",
+                                         "name": "Insurance", "amount": "1200", "per": "year",
+                                         "amountIn": "base", "indexing": "inflation"})
+        self.assertEqual(client.scenario["items"][-1]["amountIn"], "base")
+        paid = [x["amount"] for x in engine.run_detailed(client.scenario)["ledger"]
+                if x["kind"] == "EXPENSE"]
+        self.assertEqual(paid[0], Decimal("110.38"))            # 100 x 1.025^4
+
+
 class ItemIdsLikeResultFields(unittest.TestCase):
     def test_an_id_named_like_a_result_field_does_not_break_the_builder(self):
         """The builder view's tables keyed by item id (starts, off, set_by) are not

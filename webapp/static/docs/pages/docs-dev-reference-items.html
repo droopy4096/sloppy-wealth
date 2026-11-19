@@ -126,7 +126,7 @@
 <tr><td>per</td><td>no</td><td>choice</td><td>Default <code>month</code>. With <code>paid: lump</code> it must be <code>quarter</code> or <code>year</code>.</td></tr>
 <tr><td>paid</td><td>no</td><td>choice <code>monthly</code>, <code>lump</code></td><td>Default <code>monthly</code>. <code>lump</code>: the sum of a period's monthly shares, paid in arrears on each quarterly or yearly anniversary of the parent's start; a partial last period is not paid.</td></tr>
 <tr><td>indexing, indexRate</td><td>no</td><td>as income</td><td>For <code>amount</code>.</td></tr>
-<tr><td>amountIn</td><td>no</td><td>as income</td><td>Accepted by the engine for <code>amount</code>; not on the form.</td></tr>
+<tr><td>amountIn</td><td>no</td><td>as income</td><td>For <code>amount</code>: dollars of its start (default) or of the base date.</td></tr>
 </table>
 <ul><li>Taxable, earned income and owner are the parent's.</li><li>Run: <code>INCOME</code> step: <a href="/docs/docs-dev-reference-ledger#income">INCOME</a>, source = this item. Not paid in <code>expensesCovered</code> mode for an income parent; paid for a pension parent. A lump for the last full period is paid the month after the parent's last month, if within the horizon.</li><li>Code: <code>state_machine/flows/associated_income.py</code> (<code>compile_associated_income</code>, <code>AssociatedIncomeEmitter</code>; event <code>Income</code>).</li></ul>
 <pre><code>{&quot;type&quot;: &quot;associatedIncome&quot;, &quot;id&quot;: &quot;bonus&quot;, &quot;name&quot;: &quot;Bonus&quot;, &quot;parent&quot;: &quot;salary&quot;,
@@ -357,7 +357,7 @@
 <tr><td>parent</td><td>yes</td><td>id</td><td>A <code>property</code>, <code>vehicle</code>, <code>account</code>, <code>mortgage</code>, <code>income</code>, <code>expense</code>, <code>contribution</code>, <code>withdrawal</code>, <code>pension</code>, <code>extraPayment</code> or another <code>associatedExpense</code>.</td></tr>
 <tr><td>amount</td><td>one of amount / annualRate</td><td>decimal</td><td>Per <code>per</code>, indexed from the parent's start (also before the horizon).</td></tr>
 <tr><td>per, indexing, indexRate</td><td>no</td><td>as expense</td><td>For <code>amount</code>.</td></tr>
-<tr><td>amountIn</td><td>no</td><td>as income</td><td>Accepted for <code>amount</code>; not on the form.</td></tr>
+<tr><td>amountIn</td><td>no</td><td>as income</td><td>For <code>amount</code>: dollars of its start (default) or of the base date.</td></tr>
 <tr><td>annualRate</td><td>one of amount / annualRate</td><td>fraction in (0, 1)</td><td>basis × rate / 12, re-set on the first month and each anniversary of the parent's start; not indexed.</td></tr>
 <tr><td>basis</td><td>with annualRate</td><td>choice</td><td>property / vehicle: <code>value</code> (value at the start of the month; at its sale, the sale price) or <code>price</code>; account: <code>balance</code>; mortgage: <code>principal</code> or <code>balance</code>; income: <code>amount</code> (its yearly amount). Other parents take no rate.</td></tr>
 <tr><td>alsoWhenRenting</td><td>no</td><td>bool</td><td>Default <code>false</code>. <code>true</code>: a renter pays it too; left out of the break-even's ownership variant. No effect on the run.</td></tr>
