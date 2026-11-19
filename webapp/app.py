@@ -12,9 +12,10 @@ from flask import Flask
 
 from api import MAX_BODY, api
 import schema as _schema
-FIELDS = _schema.merged()["fields"]  # noqa: F401  (tests: the Canadian forms)
 from state_machine import engine  # noqa: F401  (tests)
 from web.pages import web
+from os import getenv
+FIELDS = _schema.merged()["fields"]  # noqa: F401  (tests: the Canadian forms)
 
 app = Flask(__name__)
 # Request bodies over 1 MB are refused (ADR-0069 decision 6).
@@ -24,4 +25,5 @@ app.register_blueprint(web)
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug=getenv("DEBUG","true") == "true"
+    app.run(host=getenv('APP_HOST',"127.0.0.1"), port=getenv("APP_PORT", "5000"), debug=debug)
