@@ -14,12 +14,14 @@
 {% endif %}
 {% if rows %}
 {% set keys = ["cash", "investments", "assets", "debts", "realAssetsNetWorth", "netWorth", "realNetWorth"] %}
-<table>
+<table class="sticky">
+  <thead>
   <tr><th></th><th colspan="7">A: {{ a.name }} (inflation {{ (a.annualInflation or "0")|percent }}{% if a.incomeMode == "expensesCovered" %}, income not modelled{% endif %})</th><th></th><th colspan="7">B: {{ b.name }} (inflation {{ (b.annualInflation or "0")|percent }}{% if b.incomeMode == "expensesCovered" %}, income not modelled{% endif %})</th></tr>
   <tr><th>Month</th>
     <th>Cash</th><th>Investments</th><th>Property &amp; vehicles</th><th>Debts</th><th>Assets net worth ({{ summaries.a.dollarsOf }} $)</th><th>Net worth</th><th>Net worth ({{ summaries.a.dollarsOf }} $)</th>
     <th>&Delta; net worth (B &minus; A)</th>
     <th>Cash</th><th>Investments</th><th>Property &amp; vehicles</th><th>Debts</th><th>Assets net worth ({{ summaries.b.dollarsOf }} $)</th><th>Net worth</th><th>Net worth ({{ summaries.b.dollarsOf }} $)</th></tr>
+  </thead>
   {% for ra, rb in rows %}
   {% set delta = rb.netWorth - ra.netWorth %}
   <tr>

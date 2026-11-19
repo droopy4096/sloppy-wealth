@@ -34,7 +34,7 @@ renting"); <i>all</i> costs keep them. Hover a heading for its formula. Nominal 
     {% for v in ["ownership", "all"] %}<td class="num">{{ cur[v].rentEquivalent|money }}</td>{% endfor %}</tr>
   {% endif %}
 </table>
-<table>
+<table class="sticky">
   {# Short titles, each with its meaning as a tooltip (owner's choice 2026-11-18). #}
   {% set heads = [
     ("Month", "the month; a sale is assumed at its end"),
@@ -47,12 +47,12 @@ renting"); <i>all</i> costs keep them. Hover a heading for its formula. Nominal 
   ] %}
   {% set variants = [("owner", "owner costs: without expenses a renter pays too (utilities...)"),
                      ("all", "all costs: every expense and cost linked to the property")] %}
-  <tr>{% for title, tip in heads %}<th title="{{ tip }}">{{ title }}</th>{% endfor %}
+  <thead><tr>{% for title, tip in heads %}<th title="{{ tip }}">{{ title }}</th>{% endfor %}
     {% for short, tip in variants %}
     <th title="Invested ({{ tip }}): everything paid for the property so far (down payment, closing costs, mortgage payments, penalties, improvements, its expenses); the equity at the horizon start if bought before it">Invested ({{ short }})</th>
     <th title="Gain ({{ tip }}): Net proceeds - Invested; positive = ahead">Gain ({{ short }})</th>
     <th title="Rent equivalent ({{ tip }}): (Invested - Net proceeds) / Owned (mo): what owning has cost per month so far, the rent that would have cost the same; negative = owning is ahead">Rent eq. ({{ short }})</th>
-    {% endfor %}</tr>
+    {% endfor %}</tr></thead>
   {% for r in view.rows %}
   <tr>
     <td><a href="{{ url_for('web.run_ledger', month=r.month) }}">{{ r.month }}</a></td>

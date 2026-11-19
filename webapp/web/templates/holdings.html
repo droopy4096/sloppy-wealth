@@ -9,8 +9,8 @@
   <noscript><button type="submit">Show</button></noscript>
 </form>
 {% set loan = chosen.kind == "mortgage" %}
-<table>
-  <tr><th>Month</th><th>Opening</th>{% if loan %}<th>Interest</th><th>Paid</th><th>Principal paid</th>{% endif %}<th>Closing</th><th>Change</th></tr>
+<table class="sticky">
+  <thead><tr><th>Month</th><th>Opening</th>{% if loan %}<th>Interest</th><th>Paid</th><th>Principal paid</th>{% endif %}<th>Closing</th><th>Change</th></tr></thead>
   {% for p in chosen.points %}
   {% set change = p.closing - (p.opening if p.opening is not none else 0) %}
   <tr>
