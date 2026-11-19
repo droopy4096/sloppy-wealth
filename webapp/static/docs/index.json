@@ -19,6 +19,11 @@
      "path": "docs/user/house-break-even.md"
     },
     {
+     "slug": "docs-user-vehicle-cost-of-ownership",
+     "title": "Vehicle cost of ownership",
+     "path": "docs/user/vehicle-cost-of-ownership.md"
+    },
+    {
      "slug": "docs-user-vehicle-lease-or-own",
      "title": "Lease or buy a vehicle",
      "path": "docs/user/vehicle-lease-or-own.md"

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "What does my car really cost?",
+  "jurisdiction": "CA",
+  "horizon": {"start": "2027-01-01", "end": "2034-12-01"},
+  "openingCash": "20000",
+  "effectiveTaxRate": "0",
+  "annualInflation": "0.025",
+  "dollarsOf": "2027-01-01",
+  "items": [
+    {"type": "income", "id": "pay", "name": "Take-home pay", "startDate": "2027-01-01",
+     "amount": "4000", "per": "month", "taxable": false, "indexing": "inflation"},
+    {"type": "vehicle", "id": "car", "name": "Car", "purchaseDate": "2027-01-01",
+     "price": "38000", "annualDepreciation": "0.15"},
+    {"type": "mortgage", "id": "car-loan", "name": "Car loan (5 years)", "property": "car",
+     "principal": "32000", "annualRate": "0.069", "amortizationYears": "5"},
+    {"type": "associatedExpense", "id": "car-insurance", "name": "Insurance", "parent": "car",
+     "amount": "1800", "per": "year", "indexing": "inflation"},
+    {"type": "associatedExpense", "id": "car-maintenance", "name": "Maintenance", "parent": "car",
+     "amount": "700", "per": "year", "indexing": "inflation"},
+    {"type": "associatedExpense", "id": "car-fuel", "name": "Fuel", "parent": "car",
+     "amount": "250", "per": "month", "indexing": "inflation"}
+  ]
+}
