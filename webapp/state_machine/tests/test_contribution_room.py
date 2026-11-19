@@ -93,12 +93,16 @@ class Capping(unittest.TestCase):
         self.assertEqual(moved(r, "EMPLOYER_MATCH", feb), Decimal("0"))       # no room left
         self.assertEqual(moved(r, "CONTRIBUTION", "2027-03"), Decimal("0"))
 
-    def test_opening_from_cash_capped(self):
+    def test_opening_from_cash_is_current_state_not_capped(self):
+        """An opening balance (from cash or outside) is the account's current state, not
+        a contribution: moved in full, no room used (owner 2026-11-18, ADR-0060 am.)."""
         acct = {"type": "account", "id": "n", "name": "New TFSA", "accountType": "tfsa",
                 "openingBalance": "20000", "openedDate": "2027-05-01", "openingFrom": "cash",
                 "annualReturn": "0"}
-        r = run(scenario(tfsa_room(room="8000"), acct))
-        self.assertEqual(moved(r, "OPENING_TRANSFER"), Decimal("8000.00"))
+        later = transfer("n", "6000", "2027-06-01")
+        r = run(scenario(tfsa_room(room="8000"), acct, later))
+        self.assertEqual(moved(r, "OPENING_TRANSFER"), Decimal("20000.00"))
+        self.assertEqual(moved(r, "TRANSFER", to="n"), Decimal("6000.00"))   # room intact
 
     def test_accounts_of_a_type_share_the_room(self):
         acct = {"type": "account", "id": "r2", "name": "RRSP 2", "accountType": "rrsp",

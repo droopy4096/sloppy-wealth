@@ -236,8 +236,9 @@ Mortgage prepayments (added later) refer to a mortgage by its `id`:
   it adds new room: RRSP min(incomeRate × the previous calendar year's earned income, the
   year's maximum); TFSA the year's maximum plus the previous year's TFSA withdrawals. The
   year's maximum is `yearlyMax` indexed from `maxYear` and rounded to $10 (RRSP) or $500
-  (TFSA). Contributions (own share, then the match on the share paid), transfers and
-  opening balances moved from cash into an account of that type are capped at the room;
+  (TFSA). Contributions (own share, then the match on the share paid) and transfers into
+  an account of that type are capped at the room (an opening balance, from cash or from
+  outside, is the account's current state: never capped, uses no room);
   the excess stays in cash (a match beyond it is not paid) and only the amount
   contributed is deducted. Income items count as earned income when `earnedIncome`
   (default: `taxable`). Rows gain `rrspRoom` / `tfsaRoom` (room left at month end; null

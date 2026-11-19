@@ -293,7 +293,7 @@ How it is taxed comes from the type's treatment: see [jurisdictions.md](jurisdic
   expenses (basis `balance`) and costs.
 - Run: opened on or before the horizon start: exists before the first month with
   `openingBalance`, no ledger line. Opened later: in that month (`ACQUIRE`)
-  [OPENING_TRANSFER](ledger.md#opening_transfer) from cash (capped by limits) or
+  [OPENING_TRANSFER](ledger.md#opening_transfer) from cash (in full; not a contribution) or
   [OPENING_BALANCE](ledger.md#opening_balance) from outside. Every month it existed at the
   start of (`GROW`): [RETURN](ledger.md#return) = opening balance × monthly rate, then the
   jurisdiction's `on_return`.

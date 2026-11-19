@@ -111,11 +111,10 @@ class AccountOpening(LifecycleEvent):
         spec = self.spec
         household.add(InvestmentAccount(spec, Decimal("0.00")))
         if spec.opening_from == "cash":
-            account = household[spec.id]
-            amount = household.jurisdiction.limits.cap(household, account,
-                                                       spec.opening_balance)
-            self.note = capped_note(spec.opening_balance, amount)
-            household.move("OPENING_TRANSFER", "cash", spec.id, amount, spec.id)
+            # The balance is the account's current state, not a contribution (owner
+            # 2026-11-18, ADR-0060 amendment): moved in full, no room used, no deduction.
+            household.move("OPENING_TRANSFER", "cash", spec.id, spec.opening_balance,
+                           spec.id)
         else:
             household.move("OPENING_BALANCE", None, spec.id, spec.opening_balance, spec.id)
 

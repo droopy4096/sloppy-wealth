@@ -36,7 +36,7 @@ rule.amount(base, month) -&gt; Decimal                                       # r
 <p><code>household.jurisdiction.limits</code>, a <code>ContributionLimits</code> object (<a href="/docs/docs-dev-reference-jurisdictions#contributionlimits">jurisdictions.md</a>):</p>
 <table>
 <tr><th>Method</th><th>Called from</th></tr>
-<tr><td><code>cap(household, account, amount, match=False)</code></td><td><code>accept_contribution</code> (own share, then match with <code>match=True</code>), <code>Transfer.apply</code>, <code>AccountOpening.apply</code> (opening from cash)</td></tr>
+<tr><td><code>cap(household, account, amount, match=False)</code></td><td><code>accept_contribution</code> (own share, then match with <code>match=True</code>), <code>Transfer.apply</code> (not an opening balance: current state, ADR-0060 amendment)</td></tr>
 <tr><td><code>note_earned(household, amount, person)</code></td><td><code>Income.apply</code> when the income is earned</td></tr>
 <tr><td><code>note_withdrawal(household, account, amount)</code></td><td><code>Withdrawal.apply</code></td></tr>
 <tr><td><code>remaining(household)</code></td><td><code>results.row</code>: the limit columns of each row</td></tr>
