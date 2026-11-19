@@ -1,4 +1,6 @@
-# Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?
+# Lease or buy a vehicle
+
+*Would it be cheaper to lease a vehicle than to keep and maintain one for 20 years?*
 
 This tutorial compares three ways of having an SUV for the next 20 years:
 
