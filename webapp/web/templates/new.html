@@ -1,10 +1,32 @@
 {% extends "base.html" %}
 {% block title %}New scenario{% endblock %}
 {% block content %}
+{% if first %}
+<h1>Welcome</h1>
+<p>Welcome to Sloppy Wealth calculator. This is an approximation tool to aid anyone
+seeking answers to things like "What will be my net worth in year YYYY?" or 
+"When can I sell the house to not lose money on it?" or "Is it cheaper to buy or 
+ro rent/lease?", etc.</p>
+<h2>Important notes</h2>
+<ul>
+  <li>THIS IS NOT A FINANCIAL ADVISE</li>
+  <li>At not point in time is your data saved server-side.</li>
+  <li>Your data is TEMPORARILY stored in your CURRENT browser tab. No other tabs have access to that data</li>
+  <li>To preserve your data use <em>Save</em> to save file locally on your computer and subsequently use <em>Load</em> when you'd like to resume working on your data</li>
+  <li>This app is only a "calculator" and YOU will have to direct it and provide best data for best results</li>
+  <li>Results this app provides are "ballpark" figures usefull for planning but they will most definitely differ from real life</li>
+</ul>
+<h2>Useful resources</h2>
+<p>Please check out our <a href="{{ url_for('web.docs') }}">Documentation</a></p>
+<p>Alternatively you can <a href="{{ url_for('web.load') }}">Load</a> existing scenario</p>
+<h2>New scenario</h2>
+{% else %}
 <h1>New scenario</h1>
+{% endif %}
 <p>Start an empty scenario. The jurisdiction decides the tax rules, the account types
 (e.g. RRSP and TFSA in Canada, 401(k) and Roth IRA in the United States) and the limits
 the forms offer (ADR-0071). It replaces the current scenario.</p>
+
 <form method="post" action="{{ url_for('web.new') }}" data-confirm-unsaved="The current scenario has changes that are not saved. Start a new one anyway?">
   <input type="hidden" name="action" value="new">
   <fieldset>

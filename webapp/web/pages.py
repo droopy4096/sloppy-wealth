@@ -374,14 +374,15 @@ def new():
     """A new, empty scenario for the jurisdiction chosen (ADR-0071)."""
     if request.method == "GET":
         return shell()
+    first = not request.form.get("scenario", "").strip()
     scenario, messages = posted_scenario()
     listed = schema(scenario)["jurisdictions"]
     if request.form.get("action") != "new":
-        return page("new.html", scenario, messages, jurisdictions=listed)
+        return page("new.html", None if first else scenario, messages, jurisdictions=listed, first=first)
     code = request.form.get("jurisdiction") or ""
     if code not in {j["code"] for j in listed}:
-        return page("new.html", scenario, [f"unknown jurisdiction {code!r}"],
-                    jurisdictions=listed)
+        return page("new.html", None if first else scenario, [f"unknown jurisdiction {code!r}"],
+                    jurisdictions=listed, first=first)
     return builder_page(client.get("/new?jurisdiction=" + code)["scenario"], view="cards")
 
 

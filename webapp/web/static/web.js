@@ -286,6 +286,10 @@
   });
 
   const main = document.querySelector("main");
-  if (main && main.hasAttribute("data-shell")) show(location.pathname + location.search);
+  const FREE = ["/new", "/load", "/compare"];
+  if (main && main.hasAttribute("data-shell")){
+    if (!stored() && !FREE.includes(location.pathname)) history.replaceState(null, "", "/new");
+    show(location.pathname + location.search);
+  }
   else { if (main) keep(main); restoreOpen(); wire(); }
 })();
