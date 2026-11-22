@@ -19,6 +19,7 @@ import functools
 import json
 import os
 from decimal import Decimal
+from pathlib import Path
 
 from flask import Blueprint, abort, render_template, request
 from markupsafe import Markup
@@ -29,6 +30,12 @@ web = Blueprint("web", __name__, template_folder="templates", static_folder="sta
                 static_url_path="/web/static")
 ZERO = Decimal(0)
 
+SAMPLES_DIR = Path(__file__).resolve().parent.parent / "samples"
+
+def samples():
+    """key (file stem) -> title, for the list on /new."""
+    return {p.stem: json.loads(p.read_text(encoding="utf-8")).get("name") or p.stem
+            for p in sorted(SAMPLES_DIR.glob("*.json"))}
 
 # ---------------------------------------------------------------- the schema
 @functools.lru_cache(maxsize=16)
@@ -368,20 +375,33 @@ def load():
         return page("load.html", scenario, [f"load: {upload.filename}: {answer['messages'][0]}"])
     return builder_page(answer["scenario"], view="cards")
 
+@web.route("/samples/<key>", methods=["GET", "POST"])
+def sample(key):
+    if request.method == "GET":
+        return shell()
+    path = SAMPLES_DIR / f"{key}.json"
+    if key not in samples():          # only the listed files, never an arbitrary path
+        abort(404)
+    answer = client.call("/load", {"data": json.loads(path.read_text(encoding="utf-8"))})
+    if not answer["ok"]:
+        scenario, messages = posted_scenario()
+        return page("load.html", scenario, [f"sample {key}: {answer['messages'][0]}"])
+    return builder_page(answer["scenario"], view="cards")
 
 @web.route("/new", methods=["GET", "POST"])
 def new():
     """A new, empty scenario for the jurisdiction chosen (ADR-0071)."""
     if request.method == "GET":
         return shell()
+    first = not request.form.get("scenario", "").strip()
     scenario, messages = posted_scenario()
     listed = schema(scenario)["jurisdictions"]
     if request.form.get("action") != "new":
-        return page("new.html", scenario, messages, jurisdictions=listed)
+        return page("new.html", None if first else scenario, messages, jurisdictions=listed, first=first, samples=samples())
     code = request.form.get("jurisdiction") or ""
     if code not in {j["code"] for j in listed}:
-        return page("new.html", scenario, [f"unknown jurisdiction {code!r}"],
-                    jurisdictions=listed)
+        return page("new.html", None if first else scenario, [f"unknown jurisdiction {code!r}"],
+                    jurisdictions=listed, first=first)
     return builder_page(client.get("/new?jurisdiction=" + code)["scenario"], view="cards")
 
 
