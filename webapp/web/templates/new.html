@@ -19,6 +19,12 @@ ro rent/lease?", etc.</p>
 <h2>Useful resources</h2>
 <p>Please check out our <a href="{{ url_for('web.docs') }}">Documentation</a></p>
 <p>Alternatively you can <a href="{{ url_for('web.load') }}">Load</a> existing scenario</p>
+<p>Here are some existing Sample scenarios:</p>
+<ul>
+{% for key, title in samples.items() %}
+  <li><a href="{{ url_for('web.sample', key=key) }}">{{ title }}</a></li>
+{% endfor %}
+</ul>
 <h2>New scenario</h2>
 {% else %}
 <h1>New scenario</h1>
