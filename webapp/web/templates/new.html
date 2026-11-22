@@ -16,10 +16,7 @@ ro rent/lease?", etc.</p>
   <li>This app is only a "calculator" and YOU will have to direct it and provide best data for best results</li>
   <li>Results this app provides are "ballpark" figures usefull for planning but they will most definitely differ from real life</li>
 </ul>
-{% for key, title in samples.items() %}
-  <li><a href="{{ url_for('web.sample', key=key) }}">{{ title }}</a></li>
-{% endfor %}
-</ul>
+
 <h2>New scenario</h2>
 {% else %}
 <h1>New scenario</h1>
